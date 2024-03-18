@@ -1,0 +1,1239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsWindow</class>
+ <widget class="QDialog" name="SettingsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1920</width>
+    <height>1200</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1920</width>
+    <height>1200</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1920</width>
+    <height>1200</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background: #FFFFFF;
+font-family: Segoe UI;
+</string>
+  </property>
+  <property name="inputMethodHints">
+   <set>Qt::ImhNone</set>
+  </property>
+  <widget class="QLabel" name="SettingsTitle">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>50</y>
+     <width>600</width>
+     <height>100</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: #000000;
+font-size: 36pt;
+</string>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:64px; color:#000000;&quot;&gt;Settings&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QFrame" name="SettingsUIFrame">
+   <property name="geometry">
+    <rect>
+     <x>992</x>
+     <y>742</y>
+     <width>400</width>
+     <height>268</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QFrame {
+	background: #F5F5F5;
+	border-radius: 10px;
+}
+
+QComboBox {
+    border: 1px solid #E1DFDD;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: #FFFFFF;
+}
+
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 32px;
+	border-left-width: 1px;
+	border-left-color: #E1DFDD;
+	border-left-style: solid;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+QComboBox::down-arrow {
+	image: url(:/icons/icons/combo_box_arrow.svg);
+}
+
+QComboBox:hover {
+    border: 1px solid #5B5FC7;
+    background-color: #E1DFDD;
+}</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="SettingsThemeLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>170</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Theme:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="SettingsThemeComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>200</y>
+      <width>250</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <item>
+     <property name="text">
+      <string>Light</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Dark</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="SettingsLangLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>90</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Change language:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="SettingsLangComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>120</y>
+      <width>250</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="currentText">
+     <string>English</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>English</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Russian</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="SettingsUITitle">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>40</y>
+      <width>350</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 24px; 
+font-weight: 600;</string>
+    </property>
+    <property name="text">
+     <string>UI settings</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QFrame" name="SettingsHeaterFrame">
+   <property name="geometry">
+    <rect>
+     <x>992</x>
+     <y>542</y>
+     <width>400</width>
+     <height>170</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QFrame {
+	background: #F5F5F5;
+	border-radius: 10px;
+}</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="SettingsHeaterLabel">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>40</y>
+      <width>350</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 24px; 
+font-weight: 600;</string>
+    </property>
+    <property name="text">
+     <string>Check heater</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsStopButton">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>90</y>
+      <width>120</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: white;
+	font-size: 18px;
+	font-weight: 600;
+	background: #5B5FC7; 
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #4F52B2;
+}
+
+QPushButton::pressed {
+	background:  #161987; 
+}</string>
+    </property>
+    <property name="text">
+     <string>Stop</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsHeatButton">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>90</y>
+      <width>120</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: black;
+	font-size: 18px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string>Heat</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QFrame" name="SettingsCamFrame">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>610</y>
+     <width>800</width>
+     <height>400</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QFrame {
+	background: #F5F5F5;
+	border-radius: 10px;
+}
+
+QComboBox {
+    border: 1px solid #E1DFDD;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: #FFFFFF;
+}
+
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 32px;
+	border-left-width: 1px;
+	border-left-color: #E1DFDD;
+	border-left-style: solid;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+QComboBox::down-arrow {
+	image: url(:/icons/icons/combo_box_arrow.svg);
+}
+
+QComboBox:hover {
+    border: 1px solid #5B5FC7;
+    background-color: #E1DFDD;
+}</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="SettingsCamResLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>170</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Resolution:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="SettingsCamResComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>200</y>
+      <width>180</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>1936 x 1464</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="SettingsCamFPSComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>280</y>
+      <width>120</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>4 Hz</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>43 Hz</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="SettingsCamComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>120</y>
+      <width>250</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>16</width>
+      <height>16</height>
+     </size>
+    </property>
+    <item>
+     <property name="text">
+      <string>Blackfly S BFS-PGE-27S5C</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="SettingsCamFPSLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>250</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>FPS (preview):</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsCamConnectButton">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>120</y>
+      <width>96</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: white;
+	font-size: 13px;
+	font-weight: 600;
+	background: #5B5FC7; 
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #4F52B2;
+}
+
+QPushButton::pressed {
+	background:  #161987; 
+}</string>
+    </property>
+    <property name="text">
+     <string>Connect</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsCamTitle">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>40</y>
+      <width>400</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 24px; 
+font-weight: 600;</string>
+    </property>
+    <property name="text">
+     <string>Visible camera parameters</string>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="SettingsCamView">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>71</y>
+      <width>381</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGraphicsView {
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+	background: #FFFFFF;
+}</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsCamLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>90</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Use camera:</string>
+    </property>
+   </widget>
+   <zorder>SettingsCamLabel</zorder>
+   <zorder>SettingsCamResLabel</zorder>
+   <zorder>SettingsCamResComboBox</zorder>
+   <zorder>SettingsCamFPSComboBox</zorder>
+   <zorder>SettingsCamComboBox</zorder>
+   <zorder>SettingsCamFPSLabel</zorder>
+   <zorder>SettingsCamConnectButton</zorder>
+   <zorder>SettingsCamTitle</zorder>
+   <zorder>SettingsCamView</zorder>
+  </widget>
+  <widget class="QFrame" name="SettingsTCamFrame">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>160</y>
+     <width>800</width>
+     <height>420</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QFrame {
+	background: #F5F5F5;
+	border-radius: 10px;
+}
+
+QComboBox {
+    border: 1px solid #E1DFDD;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: #FFFFFF;
+}
+
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 32px;
+	border-left-width: 1px;
+	border-left-color: #E1DFDD;
+	border-left-style: solid;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+QComboBox::down-arrow {
+	image: url(:/icons/icons/combo_box_arrow.svg);
+}
+
+QComboBox:hover {
+    border: 1px solid #5B5FC7;
+    background-color: #E1DFDD;
+}</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QPushButton" name="SettingsTCamConnectButton">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>120</y>
+      <width>96</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: white;
+	font-size: 13px;
+	font-weight: 600;
+	background: #5B5FC7; 
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #4F52B2;
+}
+
+QPushButton::pressed {
+	background:  #161987; 
+}</string>
+    </property>
+    <property name="text">
+     <string>Connect</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsTCamResLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>170</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Resolution:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsTCamLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>90</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Use a thermal imager:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="SettingsTCamComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>120</y>
+      <width>250</width>
+      <height>32</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsTCamTitle">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>40</y>
+      <width>400</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 24px; 
+font-weight: 600;</string>
+    </property>
+    <property name="text">
+     <string>IR camera parameters</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsTCamFPSLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>250</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>FPS (preview):</string>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="SettingsTCamView">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>71</y>
+      <width>381</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGraphicsView {
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+	background: #FFFFFF;
+}</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="SettingsTCamResComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>200</y>
+      <width>180</width>
+      <height>32</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="SettingsTCamFPSComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>280</y>
+      <width>150</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsTCamCalibrationButton">
+    <property name="geometry">
+     <rect>
+      <x>485</x>
+      <y>340</y>
+      <width>96</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: black;
+	font-size: 13px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string>Сalibration</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsTCamFocusButton">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>340</y>
+      <width>96</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: black;
+	font-size: 13px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string>Focus</string>
+    </property>
+   </widget>
+   <zorder>SettingsTCamFPSComboBox</zorder>
+   <zorder>SettingsTCamResComboBox</zorder>
+   <zorder>SettingsTCamConnectButton</zorder>
+   <zorder>SettingsTCamResLabel</zorder>
+   <zorder>SettingsTCamLabel</zorder>
+   <zorder>SettingsTCamComboBox</zorder>
+   <zorder>SettingsTCamTitle</zorder>
+   <zorder>SettingsTCamFPSLabel</zorder>
+   <zorder>SettingsTCamView</zorder>
+   <zorder>SettingsTCamCalibrationButton</zorder>
+   <zorder>SettingsTCamFocusButton</zorder>
+  </widget>
+  <widget class="QFrame" name="SettingsTestingFrame">
+   <property name="geometry">
+    <rect>
+     <x>992</x>
+     <y>160</y>
+     <width>800</width>
+     <height>352</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QFrame {
+	background: #F5F5F5;
+	border-radius: 10px;
+}
+
+QComboBox {
+    border: 1px solid #E1DFDD;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: #FFFFFF;
+}
+
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 32px;
+	border-left-width: 1px;
+	border-left-color: #E1DFDD;
+	border-left-style: solid;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+QComboBox::down-arrow {
+	image: url(:/icons/icons/combo_box_arrow.svg);
+}
+
+QComboBox:hover {
+    border: 1px solid #5B5FC7;
+    background-color: #E1DFDD;
+}</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QSlider" name="SettingsTestingDurationSlider">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>120</y>
+      <width>640</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QSlider {
+	background-color: #F5F5F5;
+}
+
+QSlider::groove:horizontal {
+	background-color: #8B8B8B;
+	height: 7px;
+}
+
+QSlider::sub-page:horizontal {
+	background-color: #4F52B2;
+	border-radius: 10px;
+}
+
+QSlider::handle:horizontal {
+	background-color: #4F52B2;
+	width: 10px;
+	margin-top: -10px;
+	margin-bottom: -10px;
+	border-radius: 4px;
+}
+
+QSlider::handle:horizontal:pressed {
+	background-color: #161987;
+	width: 10px;
+	margin-top: -10px;
+	margin-bottom: -10px;
+	border-radius: 4px;
+}</string>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QSlider" name="SettingsHeatingDurationSlider">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>200</y>
+      <width>640</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QSlider {
+	background-color: #F5F5F5;
+}
+
+QSlider::groove:horizontal {
+	background-color: #8B8B8B;
+	height: 7px;
+}
+
+QSlider::sub-page:horizontal {
+	background-color: #4F52B2;
+	border-radius: 10px;
+}
+
+QSlider::handle:horizontal {
+	background-color: #4F52B2;
+	width: 10px;
+	margin-top: -10px;
+	margin-bottom: -10px;
+	border-radius: 4px;
+}
+
+QSlider::handle:horizontal:pressed {
+	background-color: #161987;
+	width: 10px;
+	margin-top: -10px;
+	margin-bottom: -10px;
+	border-radius: 4px;
+}</string>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsHeatingDurationLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>170</y>
+      <width>400</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Heating duration: ... sec</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsTestingTitle">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>40</y>
+      <width>400</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 24px; 
+font-weight: 600;</string>
+    </property>
+    <property name="text">
+     <string>Thermal testing parameters</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsTestingDurationLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>90</y>
+      <width>400</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>Duration of testing (heating + smooth cooling): ... sec</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="SettingsRecordFPSLabel">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>250</y>
+      <width>400</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #252525;
+font-size: 14px; </string>
+    </property>
+    <property name="text">
+     <string>FPS (record):</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="SettingsRecordFPSComboBox">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>280</y>
+      <width>120</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>1 Hz</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>2 Hz</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>3 Hz</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>10 Hz</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>20 Hz</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>30 Hz</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>60 Hz</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QPushButton" name="SettingsHeatingDurationPlusButton">
+    <property name="geometry">
+     <rect>
+      <x>736</x>
+      <y>200</y>
+      <width>32</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: black;
+	font-size: 13px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string>+</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsTestingDurationPlusButton">
+    <property name="geometry">
+     <rect>
+      <x>736</x>
+      <y>120</y>
+      <width>32</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: black;
+	font-size: 13px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string>+</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsTestingDurationMinusButton">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>120</y>
+      <width>32</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: black;
+	font-size: 13px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="SettingsHeatingDurationMinusButton">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>200</y>
+      <width>32</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: black;
+	font-size: 13px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="SettingsHomeButton">
+   <property name="geometry">
+    <rect>
+     <x>1570</x>
+     <y>1070</y>
+     <width>240</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+text-align: center;
+color: black;
+font-size: 36px;
+border: 1px solid #E1DFDD;
+border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+background: #E1DFDD;
+}
+
+QPushButton::pressed {
+background: #8B8B8B;
+}</string>
+   </property>
+   <property name="text">
+    <string>Home</string>
+   </property>
+   <property name="icon">
+    <iconset resource="res-rs.qrc">
+     <normaloff>:/icons/icons/home.svg</normaloff>:/icons/icons/home.svg</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>60</width>
+     <height>60</height>
+    </size>
+   </property>
+  </widget>
+  <zorder>SettingsTitle</zorder>
+  <zorder>SettingsUIFrame</zorder>
+  <zorder>SettingsCamFrame</zorder>
+  <zorder>SettingsTCamFrame</zorder>
+  <zorder>SettingsTestingFrame</zorder>
+  <zorder>SettingsHomeButton</zorder>
+  <zorder>SettingsHeaterFrame</zorder>
+ </widget>
+ <resources>
+  <include location="res-rs.qrc"/>
+ </resources>
+ <connections/>
+</ui>

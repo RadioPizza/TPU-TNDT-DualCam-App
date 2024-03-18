@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PaletteDialog</class>
+ <widget class="QDialog" name="PaletteDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background: #FFFFFF;
+font-family: Segoe UI;
+</string>
+  </property>
+  <widget class="QFrame" name="PaletteFrame">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>360</width>
+     <height>260</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QFrame {
+	background: #F5F5F5;
+	border-radius: 10px;
+}
+
+QPushButton {
+	color: black;
+	font-size: 18px;
+	font-weight: 600;
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #D1D1D1;;
+}
+
+QPushButton:checked {
+	border: 2px solid #4F52B2;
+	border-radius: 10px;
+}</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="PaletteLabel">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>20</y>
+      <width>400</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">width: 337px;
+height: 80px;
+color: #252525;
+font-size: 24px;
+font-family: Segoe UI;
+font-weight: 600;
+line-height: 28px; 
+word-wrap: break-word;
+</string>
+    </property>
+    <property name="text">
+     <string>Select palette</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="PaletteComboBox">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>70</y>
+      <width>250</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QComboBox {
+    border: 1px solid #E1DFDD;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: #FFFFFF;
+}
+
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 32px;
+	border-left-width: 1px;
+	border-left-color: #E1DFDD;
+	border-left-style: solid;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+QComboBox::down-arrow {
+	image: url(:/icons/icons/combo_box_arrow.svg);
+}
+
+QComboBox:hover {
+    border: 1px solid #5B5FC7;
+    background-color: #E1DFDD;
+}</string>
+    </property>
+    <property name="currentText">
+     <string/>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>16</width>
+      <height>16</height>
+     </size>
+    </property>
+    <property name="placeholderText">
+     <string> </string>
+    </property>
+    <item>
+     <property name="text">
+      <string>b/w</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>iron</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>rainbow</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>soil</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="PalleteIconLabel">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>130</y>
+      <width>250</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="res-rs.qrc">:/icons/icons/palette_bw.svg</pixmap>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PaletteReturnButton">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>190</y>
+      <width>120</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: white;
+	font-size: 18px;
+	font-weight: 600;
+	background: #5B5FC7; 
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #4F52B2;
+}
+
+QPushButton::pressed {
+	background:  #161987; 
+}</string>
+    </property>
+    <property name="text">
+     <string>Return</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="res-rs.qrc"/>
+ </resources>
+ <connections/>
+</ui>

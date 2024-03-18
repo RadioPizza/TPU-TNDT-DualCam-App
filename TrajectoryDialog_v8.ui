@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TrajectoryDialog</class>
+ <widget class="QDialog" name="TrajectoryDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>450</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>450</width>
+    <height>450</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>450</width>
+    <height>450</height>
+   </size>
+  </property>
+  <property name="cursor">
+   <cursorShape>ArrowCursor</cursorShape>
+  </property>
+  <property name="tabletTracking">
+   <bool>false</bool>
+  </property>
+  <property name="windowTitle">
+   <string>Zone testing completed!</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background: #FFFFFF;
+font-family: Segoe UI;
+
+</string>
+  </property>
+  <widget class="QFrame" name="TrajectoryFrame">
+   <property name="geometry">
+    <rect>
+     <x>25</x>
+     <y>25</y>
+     <width>400</width>
+     <height>400</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QFrame {
+	background: #F5F5F5;
+	border-radius: 10px;
+}</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="TrajectoryTitle">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>40</y>
+      <width>336</width>
+      <height>72</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:24px; font-weight:600; color:#252525;&quot;&gt;Zone testing completed!&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:14px; color:#252525;&quot;&gt;Select the location of the next testing zone&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="TrajectoryLeftButton">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>120</y>
+      <width>80</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="res-rs.qrc">
+      <normaloff>:/icons/icons/arrowLeft.svg</normaloff>:/icons/icons/arrowLeft.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>50</width>
+      <height>50</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="TrajectoryUpButton">
+    <property name="geometry">
+     <rect>
+      <x>117</x>
+      <y>120</y>
+      <width>80</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="res-rs.qrc">
+      <normaloff>:/icons/icons/arrowUp.svg</normaloff>:/icons/icons/arrowUp.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>50</width>
+      <height>50</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="TrajectoryDownButton">
+    <property name="geometry">
+     <rect>
+      <x>202</x>
+      <y>120</y>
+      <width>80</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="res-rs.qrc">
+      <normaloff>:/icons/icons/arrowDown.svg</normaloff>:/icons/icons/arrowDown.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>50</width>
+      <height>50</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="TrajectoryRightButton">
+    <property name="geometry">
+     <rect>
+      <x>288</x>
+      <y>120</y>
+      <width>80</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	border: 1px solid #E1DFDD;
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #E1DFDD;
+}
+
+QPushButton::pressed {
+	background: #8B8B8B;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="res-rs.qrc">
+      <normaloff>:/icons/icons/arrowRight.svg</normaloff>:/icons/icons/arrowRight.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>50</width>
+      <height>50</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="TrajectoryRepeatButton">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>280</y>
+      <width>336</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: white;
+	font-size: 18px;
+	font-weight: 600;
+	background: #5B5FC7; 
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #4F52B2;
+}
+
+QPushButton::pressed {
+	background:  #161987; 
+}</string>
+    </property>
+    <property name="text">
+     <string>Repeat</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="TrajectoryPreviewButton">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>230</y>
+      <width>336</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: white;
+	font-size: 18px;
+	font-weight: 600;
+	background: #5B5FC7; 
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #4F52B2;
+}
+
+QPushButton::pressed {
+	background:  #161987; 
+}</string>
+    </property>
+    <property name="text">
+     <string>Preview</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="TrajectoryFinishButton">
+    <property name="geometry">
+     <rect>
+      <x>32</x>
+      <y>330</y>
+      <width>336</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+	text-align: center;
+	color: white;
+	font-size: 18px;
+	font-weight: 600;
+	background: #5B5FC7; 
+	border-radius: 10px;
+}
+
+QPushButton::hover::!pressed {
+	background: #4F52B2;
+}
+
+QPushButton::pressed {
+	background:  #161987; 
+}</string>
+    </property>
+    <property name="text">
+     <string>Finish</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="res-rs.qrc"/>
+ </resources>
+ <connections/>
+</ui>
