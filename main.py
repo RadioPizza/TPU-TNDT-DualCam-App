@@ -1,3 +1,5 @@
+# PTT v0.2.0
+
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt

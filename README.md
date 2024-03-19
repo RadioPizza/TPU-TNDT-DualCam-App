@@ -14,3 +14,7 @@ Portable thermal testing app
 - `pyside6-uic StartDialog.ui -o StartDialog.py`
 - `pyside6-uic TrajectoryDialog.ui -o TrajectoryDialog.py`
 3. Заменить в этих файлах `import res-rs_rc` на `import res_rs`
+4. Прописать изменения в main.py, если необходимо
+5. `pip install auto-py-to-exe`
+6. `auto-py-to-exe`
+7. CONVERT .PY TO .EXE
