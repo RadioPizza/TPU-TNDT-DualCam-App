@@ -107,7 +107,7 @@ QPushButton::pressed {
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="res-rs.qrc">
+     <iconset>
       <normaloff>:/icons/icons/arrowLeft.svg</normaloff>:/icons/icons/arrowLeft.svg</iconset>
     </property>
     <property name="iconSize">
@@ -144,7 +144,7 @@ QPushButton::pressed {
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="res-rs.qrc">
+     <iconset>
       <normaloff>:/icons/icons/arrowUp.svg</normaloff>:/icons/icons/arrowUp.svg</iconset>
     </property>
     <property name="iconSize">
@@ -181,7 +181,7 @@ QPushButton::pressed {
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="res-rs.qrc">
+     <iconset>
       <normaloff>:/icons/icons/arrowDown.svg</normaloff>:/icons/icons/arrowDown.svg</iconset>
     </property>
     <property name="iconSize">
@@ -218,7 +218,7 @@ QPushButton::pressed {
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="res-rs.qrc">
+     <iconset>
       <normaloff>:/icons/icons/arrowRight.svg</normaloff>:/icons/icons/arrowRight.svg</iconset>
     </property>
     <property name="iconSize">

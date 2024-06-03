@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>416</width>
+    <height>339</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -122,7 +122,7 @@ QComboBox:hover {
 }</string>
     </property>
     <property name="currentText">
-     <string/>
+     <string>b/w</string>
     </property>
     <property name="iconSize">
      <size>
@@ -131,7 +131,7 @@ QComboBox:hover {
      </size>
     </property>
     <property name="placeholderText">
-     <string> </string>
+     <string/>
     </property>
     <item>
      <property name="text">
@@ -167,7 +167,7 @@ QComboBox:hover {
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap resource="res-rs.qrc">:/icons/icons/palette_bw.svg</pixmap>
+     <pixmap>:/icons/icons/palette_bw.svg</pixmap>
     </property>
    </widget>
    <widget class="QPushButton" name="PaletteReturnButton">

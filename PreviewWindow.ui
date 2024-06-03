@@ -79,7 +79,7 @@ background: #8B8B8B;
     <string>Home</string>
    </property>
    <property name="icon">
-    <iconset resource="res-rs.qrc">
+    <iconset>
      <normaloff>:/icons/icons/home.svg</normaloff>:/icons/icons/home.svg</iconset>
    </property>
    <property name="iconSize">

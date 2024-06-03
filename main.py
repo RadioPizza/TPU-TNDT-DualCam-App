@@ -1,6 +1,7 @@
-# PTT v0.2.0
+# PTT v0.2.2
 
 import sys
+from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt
 from StartDialog import Ui_StartDialog
@@ -57,7 +58,6 @@ class StartApp(QDialog):
             self.mainWindow.show()
             self.close()
 
-
 class MainApp(QMainWindow):
     def __init__(self, user_data):
         super(MainApp, self).__init__()
@@ -86,7 +86,6 @@ class MainApp(QMainWindow):
     def saveData(self):
         pass
 
-
 class SettingsWindow(QDialog):
     def __init__(self):
         super(SettingsWindow, self).__init__()
@@ -94,7 +93,6 @@ class SettingsWindow(QDialog):
         self.ui.setupUi(self)
         
         self.ui.SettingsHomeButton.clicked.connect(self.close)
-
 
 class TrajectoryDialog(QDialog):
     def __init__(self):
@@ -120,7 +118,6 @@ class TrajectoryDialog(QDialog):
         self.FinishDialog = FinishDialog()
         self.FinishDialog.show()
         self.close()
-
 
 class RetestDialog(QDialog):
     def __init__(self):
@@ -165,11 +162,13 @@ class FinishDialog(QDialog):
         self.ui.setupUi(self)
 
 
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
+    # Путь к файлу стилей
+    stylesheet_path = "LightStyle.qss"
+    app.setStyleSheet(Path(stylesheet_path).read_text())
+    
     startApp = StartApp()
     startApp.show()
 
