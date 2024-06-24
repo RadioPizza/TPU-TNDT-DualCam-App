@@ -42,8 +42,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.MainCameraTitle = QLabel(self.CentralWidget)
         self.MainCameraTitle.setObjectName(u"MainCameraTitle")
-        self.MainCameraTitle.setStyleSheet(u"font-size: 36pt;\n"
-"")
+        self.MainCameraTitle.setStyleSheet(u"")
 
         self.verticalLayout.addWidget(self.MainCameraTitle)
 
@@ -61,8 +60,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.MainTCameraTitle = QLabel(self.CentralWidget)
         self.MainTCameraTitle.setObjectName(u"MainTCameraTitle")
-        self.MainTCameraTitle.setStyleSheet(u"font-size: 36pt;\n"
-"")
+        self.MainTCameraTitle.setStyleSheet(u"")
 
         self.verticalLayout_2.addWidget(self.MainTCameraTitle)
 
@@ -79,7 +77,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_2)
 
-        self.verticalSpacer = QSpacerItem(20, 150, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.verticalSpacer = QSpacerItem(20, 100, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
         self.verticalLayout_5.addItem(self.verticalSpacer)
 
@@ -138,7 +136,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 50, QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.verticalSpacer_3 = QSpacerItem(20, 100, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 

@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QHBoxLayout,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+    QLabel, QLineEdit, QPushButton, QScrollArea,
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 import res_rs
 
 class Ui_StartDialog(object):
@@ -35,32 +35,52 @@ class Ui_StartDialog(object):
         StartDialog.setSizeGripEnabled(False)
         self.horizontalLayout = QHBoxLayout(StartDialog)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalSpacer = QSpacerItem(641, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.scrollArea = QScrollArea(StartDialog)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setEnabled(True)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
+        self.scrollArea.setSizePolicy(sizePolicy1)
+        self.scrollArea.setMinimumSize(QSize(0, 0))
+        self.scrollArea.setMaximumSize(QSize(16777215, 16777215))
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 1900, 2000))
+        self.scrollAreaWidgetContents.setMinimumSize(QSize(0, 2000))
+        self.horizontalLayoutWidget = QWidget(self.scrollAreaWidgetContents)
+        self.horizontalLayoutWidget.setObjectName(u"horizontalLayoutWidget")
+        self.horizontalLayoutWidget.setGeometry(QRect(0, 0, 1936, 1181))
+        self.horizontalLayout_2 = QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalSpacerL = QSpacerItem(660, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout.addItem(self.horizontalSpacer)
+        self.horizontalLayout_2.addItem(self.horizontalSpacerL)
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalSpacer = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Minimum)
-
-        self.verticalLayout.addItem(self.verticalSpacer)
-
-        self.StartTitle = QLabel(StartDialog)
+        self.StartTitle = QLabel(self.horizontalLayoutWidget)
         self.StartTitle.setObjectName(u"StartTitle")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.StartTitle.sizePolicy().hasHeightForWidth())
-        self.StartTitle.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.StartTitle.sizePolicy().hasHeightForWidth())
+        self.StartTitle.setSizePolicy(sizePolicy2)
         self.StartTitle.setMinimumSize(QSize(600, 100))
-        self.StartTitle.setStyleSheet(u"font-size: 36pt;")
+        self.StartTitle.setStyleSheet(u"")
 
         self.verticalLayout.addWidget(self.StartTitle)
 
-        self.Startframe = QFrame(StartDialog)
+        self.Startframe = QFrame(self.horizontalLayoutWidget)
         self.Startframe.setObjectName(u"Startframe")
-        sizePolicy1.setHeightForWidth(self.Startframe.sizePolicy().hasHeightForWidth())
-        self.Startframe.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.Startframe.sizePolicy().hasHeightForWidth())
+        self.Startframe.setSizePolicy(sizePolicy2)
         self.Startframe.setMinimumSize(QSize(600, 550))
         self.Startframe.setStyleSheet(u"")
         self.Startframe.setFrameShape(QFrame.StyledPanel)
@@ -68,8 +88,8 @@ class Ui_StartDialog(object):
         self.StartStartButton = QPushButton(self.Startframe)
         self.StartStartButton.setObjectName(u"StartStartButton")
         self.StartStartButton.setGeometry(QRect(436, 490, 120, 40))
-        sizePolicy1.setHeightForWidth(self.StartStartButton.sizePolicy().hasHeightForWidth())
-        self.StartStartButton.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.StartStartButton.sizePolicy().hasHeightForWidth())
+        self.StartStartButton.setSizePolicy(sizePolicy2)
         self.StartStartButton.setStyleSheet(u"")
         self.StartAuthorisationTitle = QLabel(self.Startframe)
         self.StartAuthorisationTitle.setObjectName(u"StartAuthorisationTitle")
@@ -90,8 +110,8 @@ class Ui_StartDialog(object):
         self.StartExitButton = QPushButton(self.Startframe)
         self.StartExitButton.setObjectName(u"StartExitButton")
         self.StartExitButton.setGeometry(QRect(306, 490, 120, 40))
-        sizePolicy1.setHeightForWidth(self.StartExitButton.sizePolicy().hasHeightForWidth())
-        self.StartExitButton.setSizePolicy(sizePolicy1)
+        sizePolicy2.setHeightForWidth(self.StartExitButton.sizePolicy().hasHeightForWidth())
+        self.StartExitButton.setSizePolicy(sizePolicy2)
         self.StartExitButton.setStyleSheet(u"")
         self.StartNameLabel = QLabel(self.Startframe)
         self.StartNameLabel.setObjectName(u"StartNameLabel")
@@ -119,9 +139,9 @@ class Ui_StartDialog(object):
         self.StartChangePathButton = QPushButton(self.Startframe)
         self.StartChangePathButton.setObjectName(u"StartChangePathButton")
         self.StartChangePathButton.setGeometry(QRect(460, 338, 96, 32))
-        sizePolicy1.setHeightForWidth(self.StartChangePathButton.sizePolicy().hasHeightForWidth())
-        self.StartChangePathButton.setSizePolicy(sizePolicy1)
-        self.StartChangePathButton.setStyleSheet(u"font-size: 13px;")
+        sizePolicy2.setHeightForWidth(self.StartChangePathButton.sizePolicy().hasHeightForWidth())
+        self.StartChangePathButton.setSizePolicy(sizePolicy2)
+        self.StartChangePathButton.setStyleSheet(u"")
         self.StartNameLabel.raise_()
         self.StartStartButton.raise_()
         self.StartAuthorisationTitle.raise_()
@@ -137,16 +157,20 @@ class Ui_StartDialog(object):
 
         self.verticalLayout.addWidget(self.Startframe)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.verticalLayout.addItem(self.verticalSpacer_2)
+        self.verticalLayout.addItem(self.verticalSpacer)
 
 
-        self.horizontalLayout.addLayout(self.verticalLayout)
+        self.horizontalLayout_2.addLayout(self.verticalLayout)
 
-        self.horizontalSpacer_2 = QSpacerItem(641, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacerR = QSpacerItem(660, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout.addItem(self.horizontalSpacer_2)
+        self.horizontalLayout_2.addItem(self.horizontalSpacerR)
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+
+        self.horizontalLayout.addWidget(self.scrollArea)
 
 
         self.retranslateUi(StartDialog)
@@ -167,7 +191,7 @@ class Ui_StartDialog(object):
         self.StartSurnameLabel.setText(QCoreApplication.translate("StartDialog", u"Surname", None))
         self.StartObjectLabel.setText(QCoreApplication.translate("StartDialog", u"Object of testing", None))
         self.StartPathLineEdit.setText(QCoreApplication.translate("StartDialog", u"...", None))
-        self.StartPathLabel.setText(QCoreApplication.translate("StartDialog", u"File saving path", None))
+        self.StartPathLabel.setText(QCoreApplication.translate("StartDialog", u"Files saving path", None))
         self.StartChangePathButton.setText(QCoreApplication.translate("StartDialog", u"Change path", None))
     # retranslateUi
 

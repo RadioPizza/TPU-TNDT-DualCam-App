@@ -43,12 +43,10 @@ font-family: Segoe UI;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: #000000;
-font-size: 36pt;
-</string>
+    <string notr="true"/>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:64px; color:#000000;&quot;&gt;Settings&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>Settings</string>
    </property>
   </widget>
   <widget class="QFrame" name="SettingsUIFrame">
@@ -61,37 +59,7 @@ font-size: 36pt;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QComboBox {
-    border: 1px solid #E1DFDD;
-    border-radius: 10px;
-    padding: 5px;
-    background-color: #FFFFFF;
-}
-
-QComboBox::drop-down {
-	subcontrol-origin: padding;
-	subcontrol-position: top right;
-	width: 32px;
-	border-left-width: 1px;
-	border-left-color: #E1DFDD;
-	border-left-style: solid;
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px;
-}
-
-QComboBox::down-arrow {
-	image: url(:/icons/icons/combo_box_arrow.svg);
-}
-
-QComboBox:hover {
-    border: 1px solid #5B5FC7;
-    background-color: #E1DFDD;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -109,8 +77,7 @@ QComboBox:hover {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Theme:</string>
@@ -149,8 +116,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Change language:</string>
@@ -192,9 +158,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 24px; 
-font-weight: 600;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>UI settings</string>
@@ -211,10 +175,7 @@ font-weight: 600;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -232,9 +193,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 24px; 
-font-weight: 600;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Check heater</string>
@@ -250,22 +209,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Stop</string>
@@ -281,22 +225,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Heat</string>
@@ -313,37 +242,8 @@ QPushButton::pressed {
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QComboBox {
-    border: 1px solid #E1DFDD;
-    border-radius: 10px;
-    padding: 5px;
-    background-color: #FFFFFF;
-}
-
-QComboBox::drop-down {
-	subcontrol-origin: padding;
-	subcontrol-position: top right;
-	width: 32px;
-	border-left-width: 1px;
-	border-left-color: #E1DFDD;
-	border-left-style: solid;
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px;
-}
-
-QComboBox::down-arrow {
-	image: url(:/icons/icons/combo_box_arrow.svg);
-}
-
-QComboBox:hover {
-    border: 1px solid #5B5FC7;
-    background-color: #E1DFDD;
-}</string>
+    <string notr="true">
+</string>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -361,8 +261,7 @@ QComboBox:hover {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Resolution:</string>
@@ -376,6 +275,9 @@ font-size: 14px; </string>
       <width>180</width>
       <height>32</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <item>
      <property name="text">
@@ -437,8 +339,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>FPS (preview):</string>
@@ -454,22 +355,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 13px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Connect</string>
@@ -485,9 +371,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 24px; 
-font-weight: 600;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Visible camera parameters</string>
@@ -503,11 +387,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QGraphicsView {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-	background: #FFFFFF;
-}</string>
+     <string notr="true"/>
     </property>
    </widget>
    <widget class="QLabel" name="SettingsCamLabel">
@@ -520,8 +400,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Use camera:</string>
@@ -547,37 +426,7 @@ font-size: 14px; </string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QComboBox {
-    border: 1px solid #E1DFDD;
-    border-radius: 10px;
-    padding: 5px;
-    background-color: #FFFFFF;
-}
-
-QComboBox::drop-down {
-	subcontrol-origin: padding;
-	subcontrol-position: top right;
-	width: 32px;
-	border-left-width: 1px;
-	border-left-color: #E1DFDD;
-	border-left-style: solid;
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px;
-}
-
-QComboBox::down-arrow {
-	image: url(:/icons/icons/combo_box_arrow.svg);
-}
-
-QComboBox:hover {
-    border: 1px solid #5B5FC7;
-    background-color: #E1DFDD;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -595,22 +444,7 @@ QComboBox:hover {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 13px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Connect</string>
@@ -626,8 +460,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Resolution:</string>
@@ -643,8 +476,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Use a thermal imager:</string>
@@ -670,9 +502,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 24px; 
-font-weight: 600;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>IR camera parameters</string>
@@ -688,8 +518,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>FPS (preview):</string>
@@ -705,11 +534,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QGraphicsView {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-	background: #FFFFFF;
-}</string>
+     <string notr="true"/>
     </property>
    </widget>
    <widget class="QComboBox" name="SettingsTCamResComboBox">
@@ -720,6 +545,9 @@ font-size: 14px; </string>
       <width>180</width>
       <height>32</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
    </widget>
    <widget class="QComboBox" name="SettingsTCamFPSComboBox">
@@ -745,22 +573,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Сalibration</string>
@@ -776,22 +589,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Focus</string>
@@ -819,37 +617,7 @@ QPushButton::pressed {
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QComboBox {
-    border: 1px solid #E1DFDD;
-    border-radius: 10px;
-    padding: 5px;
-    background-color: #FFFFFF;
-}
-
-QComboBox::drop-down {
-	subcontrol-origin: padding;
-	subcontrol-position: top right;
-	width: 32px;
-	border-left-width: 1px;
-	border-left-color: #E1DFDD;
-	border-left-style: solid;
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px;
-}
-
-QComboBox::down-arrow {
-	image: url(:/icons/icons/combo_box_arrow.svg);
-}
-
-QComboBox:hover {
-    border: 1px solid #5B5FC7;
-    background-color: #E1DFDD;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -867,35 +635,7 @@ QComboBox:hover {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QSlider {
-	background-color: #F5F5F5;
-}
-
-QSlider::groove:horizontal {
-	background-color: #8B8B8B;
-	height: 7px;
-}
-
-QSlider::sub-page:horizontal {
-	background-color: #4F52B2;
-	border-radius: 10px;
-}
-
-QSlider::handle:horizontal {
-	background-color: #4F52B2;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}
-
-QSlider::handle:horizontal:pressed {
-	background-color: #161987;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -911,35 +651,7 @@ QSlider::handle:horizontal:pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QSlider {
-	background-color: #F5F5F5;
-}
-
-QSlider::groove:horizontal {
-	background-color: #8B8B8B;
-	height: 7px;
-}
-
-QSlider::sub-page:horizontal {
-	background-color: #4F52B2;
-	border-radius: 10px;
-}
-
-QSlider::handle:horizontal {
-	background-color: #4F52B2;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}
-
-QSlider::handle:horizontal:pressed {
-	background-color: #161987;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -972,9 +684,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 24px; 
-font-weight: 600;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Thermal testing parameters</string>
@@ -990,8 +700,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Duration of testing (heating + smooth cooling): ... sec</string>
@@ -1007,8 +716,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 14px; </string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>FPS (record):</string>
@@ -1069,22 +777,7 @@ font-size: 14px; </string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>+</string>
@@ -1100,22 +793,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>+</string>
@@ -1131,22 +809,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>-</string>
@@ -1162,22 +825,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>-</string>
@@ -1194,27 +842,13 @@ QPushButton::pressed {
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QPushButton {
-text-align: center;
-color: black;
-font-size: 36px;
-border: 1px solid #E1DFDD;
-border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-background: #E1DFDD;
-}
-
-QPushButton::pressed {
-background: #8B8B8B;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string>Home</string>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="res_rs.qrc">
      <normaloff>:/icons/icons/home.svg</normaloff>:/icons/icons/home.svg</iconset>
    </property>
    <property name="iconSize">
@@ -1233,7 +867,7 @@ background: #8B8B8B;
   <zorder>SettingsHeaterFrame</zorder>
  </widget>
  <resources>
-  <include location="res-rs.qrc"/>
+  <include location="res_rs.qrc"/>
  </resources>
  <connections/>
 </ui>

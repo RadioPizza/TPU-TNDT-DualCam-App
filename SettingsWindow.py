@@ -34,50 +34,17 @@ class Ui_SettingsWindow(object):
         self.SettingsTitle = QLabel(SettingsWindow)
         self.SettingsTitle.setObjectName(u"SettingsTitle")
         self.SettingsTitle.setGeometry(QRect(120, 50, 600, 100))
-        self.SettingsTitle.setStyleSheet(u"color: #000000;\n"
-"font-size: 36pt;\n"
-"")
+        self.SettingsTitle.setStyleSheet(u"")
         self.SettingsUIFrame = QFrame(SettingsWindow)
         self.SettingsUIFrame.setObjectName(u"SettingsUIFrame")
         self.SettingsUIFrame.setGeometry(QRect(992, 742, 400, 268))
-        self.SettingsUIFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox {\n"
-"    border: 1px solid #E1DFDD;\n"
-"    border-radius: 10px;\n"
-"    padding: 5px;\n"
-"    background-color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QComboBox::drop-down {\n"
-"	subcontrol-origin: padding;\n"
-"	subcontrol-position: top right;\n"
-"	width: 32px;\n"
-"	border-left-width: 1px;\n"
-"	border-left-color: #E1DFDD;\n"
-"	border-left-style: solid;\n"
-"	border-top-right-radius: 10px;\n"
-"	border-bottom-right-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox::down-arrow {\n"
-"	image: url(:/icons/icons/combo_box_arrow.svg);\n"
-"}\n"
-"\n"
-"QComboBox:hover {\n"
-"    border: 1px solid #5B5FC7;\n"
-"    background-color: #E1DFDD;\n"
-"}")
+        self.SettingsUIFrame.setStyleSheet(u"")
         self.SettingsUIFrame.setFrameShape(QFrame.StyledPanel)
         self.SettingsUIFrame.setFrameShadow(QFrame.Raised)
         self.SettingsThemeLabel = QLabel(self.SettingsUIFrame)
         self.SettingsThemeLabel.setObjectName(u"SettingsThemeLabel")
         self.SettingsThemeLabel.setGeometry(QRect(42, 170, 350, 24))
-        self.SettingsThemeLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsThemeLabel.setStyleSheet(u"")
         self.SettingsThemeComboBox = QComboBox(self.SettingsUIFrame)
         self.SettingsThemeComboBox.addItem("")
         self.SettingsThemeComboBox.addItem("")
@@ -87,8 +54,7 @@ class Ui_SettingsWindow(object):
         self.SettingsLangLabel = QLabel(self.SettingsUIFrame)
         self.SettingsLangLabel.setObjectName(u"SettingsLangLabel")
         self.SettingsLangLabel.setGeometry(QRect(42, 90, 350, 24))
-        self.SettingsLangLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsLangLabel.setStyleSheet(u"")
         self.SettingsLangComboBox = QComboBox(self.SettingsUIFrame)
         self.SettingsLangComboBox.addItem("")
         self.SettingsLangComboBox.addItem("")
@@ -98,107 +64,40 @@ class Ui_SettingsWindow(object):
         self.SettingsUITitle = QLabel(self.SettingsUIFrame)
         self.SettingsUITitle.setObjectName(u"SettingsUITitle")
         self.SettingsUITitle.setGeometry(QRect(32, 40, 350, 32))
-        self.SettingsUITitle.setStyleSheet(u"color: #252525;\n"
-"font-size: 24px; \n"
-"font-weight: 600;")
+        self.SettingsUITitle.setStyleSheet(u"")
         self.SettingsHeaterFrame = QFrame(SettingsWindow)
         self.SettingsHeaterFrame.setObjectName(u"SettingsHeaterFrame")
         self.SettingsHeaterFrame.setGeometry(QRect(992, 542, 400, 170))
-        self.SettingsHeaterFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.SettingsHeaterFrame.setStyleSheet(u"")
         self.SettingsHeaterFrame.setFrameShape(QFrame.StyledPanel)
         self.SettingsHeaterFrame.setFrameShadow(QFrame.Raised)
         self.SettingsHeaterLabel = QLabel(self.SettingsHeaterFrame)
         self.SettingsHeaterLabel.setObjectName(u"SettingsHeaterLabel")
         self.SettingsHeaterLabel.setGeometry(QRect(32, 40, 350, 32))
-        self.SettingsHeaterLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 24px; \n"
-"font-weight: 600;")
+        self.SettingsHeaterLabel.setStyleSheet(u"")
         self.SettingsStopButton = QPushButton(self.SettingsHeaterFrame)
         self.SettingsStopButton.setObjectName(u"SettingsStopButton")
         self.SettingsStopButton.setGeometry(QRect(170, 90, 120, 40))
-        self.SettingsStopButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.SettingsStopButton.setStyleSheet(u"")
         self.SettingsHeatButton = QPushButton(self.SettingsHeaterFrame)
         self.SettingsHeatButton.setObjectName(u"SettingsHeatButton")
         self.SettingsHeatButton.setGeometry(QRect(32, 90, 120, 40))
-        self.SettingsHeatButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.SettingsHeatButton.setStyleSheet(u"")
         self.SettingsCamFrame = QFrame(SettingsWindow)
         self.SettingsCamFrame.setObjectName(u"SettingsCamFrame")
         self.SettingsCamFrame.setGeometry(QRect(120, 610, 800, 400))
-        self.SettingsCamFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox {\n"
-"    border: 1px solid #E1DFDD;\n"
-"    border-radius: 10px;\n"
-"    padding: 5px;\n"
-"    background-color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QComboBox::drop-down {\n"
-"	subcontrol-origin: padding;\n"
-"	subcontrol-position: top right;\n"
-"	width: 32px;\n"
-"	border-left-width: 1px;\n"
-"	border-left-color: #E1DFDD;\n"
-"	border-left-style: solid;\n"
-"	border-top-right-radius: 10px;\n"
-"	border-bottom-right-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox::down-arrow {\n"
-"	image: url(:/icons/icons/combo_box_arrow.svg);\n"
-"}\n"
-"\n"
-"QComboBox:hover {\n"
-"    border: 1px solid #5B5FC7;\n"
-"    background-color: #E1DFDD;\n"
-"}")
+        self.SettingsCamFrame.setStyleSheet(u"")
         self.SettingsCamFrame.setFrameShape(QFrame.StyledPanel)
         self.SettingsCamFrame.setFrameShadow(QFrame.Raised)
         self.SettingsCamResLabel = QLabel(self.SettingsCamFrame)
         self.SettingsCamResLabel.setObjectName(u"SettingsCamResLabel")
         self.SettingsCamResLabel.setGeometry(QRect(42, 170, 350, 24))
-        self.SettingsCamResLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsCamResLabel.setStyleSheet(u"")
         self.SettingsCamResComboBox = QComboBox(self.SettingsCamFrame)
         self.SettingsCamResComboBox.addItem("")
         self.SettingsCamResComboBox.setObjectName(u"SettingsCamResComboBox")
         self.SettingsCamResComboBox.setGeometry(QRect(32, 200, 180, 32))
+        self.SettingsCamResComboBox.setStyleSheet(u"")
         self.SettingsCamFPSComboBox = QComboBox(self.SettingsCamFrame)
         self.SettingsCamFPSComboBox.addItem("")
         self.SettingsCamFPSComboBox.addItem("")
@@ -213,46 +112,23 @@ class Ui_SettingsWindow(object):
         self.SettingsCamFPSLabel = QLabel(self.SettingsCamFrame)
         self.SettingsCamFPSLabel.setObjectName(u"SettingsCamFPSLabel")
         self.SettingsCamFPSLabel.setGeometry(QRect(42, 250, 350, 24))
-        self.SettingsCamFPSLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsCamFPSLabel.setStyleSheet(u"")
         self.SettingsCamConnectButton = QPushButton(self.SettingsCamFrame)
         self.SettingsCamConnectButton.setObjectName(u"SettingsCamConnectButton")
         self.SettingsCamConnectButton.setGeometry(QRect(290, 120, 96, 32))
-        self.SettingsCamConnectButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.SettingsCamConnectButton.setStyleSheet(u"")
         self.SettingsCamTitle = QLabel(self.SettingsCamFrame)
         self.SettingsCamTitle.setObjectName(u"SettingsCamTitle")
         self.SettingsCamTitle.setGeometry(QRect(32, 40, 400, 32))
-        self.SettingsCamTitle.setStyleSheet(u"color: #252525;\n"
-"font-size: 24px; \n"
-"font-weight: 600;")
+        self.SettingsCamTitle.setStyleSheet(u"")
         self.SettingsCamView = QGraphicsView(self.SettingsCamFrame)
         self.SettingsCamView.setObjectName(u"SettingsCamView")
         self.SettingsCamView.setGeometry(QRect(400, 71, 381, 241))
-        self.SettingsCamView.setStyleSheet(u"QGraphicsView {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"	background: #FFFFFF;\n"
-"}")
+        self.SettingsCamView.setStyleSheet(u"")
         self.SettingsCamLabel = QLabel(self.SettingsCamFrame)
         self.SettingsCamLabel.setObjectName(u"SettingsCamLabel")
         self.SettingsCamLabel.setGeometry(QRect(42, 90, 350, 24))
-        self.SettingsCamLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsCamLabel.setStyleSheet(u"")
         self.SettingsCamLabel.raise_()
         self.SettingsCamResLabel.raise_()
         self.SettingsCamResComboBox.raise_()
@@ -265,93 +141,40 @@ class Ui_SettingsWindow(object):
         self.SettingsTCamFrame = QFrame(SettingsWindow)
         self.SettingsTCamFrame.setObjectName(u"SettingsTCamFrame")
         self.SettingsTCamFrame.setGeometry(QRect(120, 160, 800, 420))
-        self.SettingsTCamFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox {\n"
-"    border: 1px solid #E1DFDD;\n"
-"    border-radius: 10px;\n"
-"    padding: 5px;\n"
-"    background-color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QComboBox::drop-down {\n"
-"	subcontrol-origin: padding;\n"
-"	subcontrol-position: top right;\n"
-"	width: 32px;\n"
-"	border-left-width: 1px;\n"
-"	border-left-color: #E1DFDD;\n"
-"	border-left-style: solid;\n"
-"	border-top-right-radius: 10px;\n"
-"	border-bottom-right-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox::down-arrow {\n"
-"	image: url(:/icons/icons/combo_box_arrow.svg);\n"
-"}\n"
-"\n"
-"QComboBox:hover {\n"
-"    border: 1px solid #5B5FC7;\n"
-"    background-color: #E1DFDD;\n"
-"}")
+        self.SettingsTCamFrame.setStyleSheet(u"")
         self.SettingsTCamFrame.setFrameShape(QFrame.StyledPanel)
         self.SettingsTCamFrame.setFrameShadow(QFrame.Raised)
         self.SettingsTCamConnectButton = QPushButton(self.SettingsTCamFrame)
         self.SettingsTCamConnectButton.setObjectName(u"SettingsTCamConnectButton")
         self.SettingsTCamConnectButton.setGeometry(QRect(290, 120, 96, 32))
-        self.SettingsTCamConnectButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.SettingsTCamConnectButton.setStyleSheet(u"")
         self.SettingsTCamResLabel = QLabel(self.SettingsTCamFrame)
         self.SettingsTCamResLabel.setObjectName(u"SettingsTCamResLabel")
         self.SettingsTCamResLabel.setGeometry(QRect(42, 170, 350, 24))
-        self.SettingsTCamResLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsTCamResLabel.setStyleSheet(u"")
         self.SettingsTCamLabel = QLabel(self.SettingsTCamFrame)
         self.SettingsTCamLabel.setObjectName(u"SettingsTCamLabel")
         self.SettingsTCamLabel.setGeometry(QRect(42, 90, 350, 24))
-        self.SettingsTCamLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsTCamLabel.setStyleSheet(u"")
         self.SettingsTCamComboBox = QComboBox(self.SettingsTCamFrame)
         self.SettingsTCamComboBox.setObjectName(u"SettingsTCamComboBox")
         self.SettingsTCamComboBox.setGeometry(QRect(32, 120, 250, 32))
         self.SettingsTCamTitle = QLabel(self.SettingsTCamFrame)
         self.SettingsTCamTitle.setObjectName(u"SettingsTCamTitle")
         self.SettingsTCamTitle.setGeometry(QRect(32, 40, 400, 32))
-        self.SettingsTCamTitle.setStyleSheet(u"color: #252525;\n"
-"font-size: 24px; \n"
-"font-weight: 600;")
+        self.SettingsTCamTitle.setStyleSheet(u"")
         self.SettingsTCamFPSLabel = QLabel(self.SettingsTCamFrame)
         self.SettingsTCamFPSLabel.setObjectName(u"SettingsTCamFPSLabel")
         self.SettingsTCamFPSLabel.setGeometry(QRect(42, 250, 350, 24))
-        self.SettingsTCamFPSLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsTCamFPSLabel.setStyleSheet(u"")
         self.SettingsTCamView = QGraphicsView(self.SettingsTCamFrame)
         self.SettingsTCamView.setObjectName(u"SettingsTCamView")
         self.SettingsTCamView.setGeometry(QRect(400, 71, 381, 241))
-        self.SettingsTCamView.setStyleSheet(u"QGraphicsView {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"	background: #FFFFFF;\n"
-"}")
+        self.SettingsTCamView.setStyleSheet(u"")
         self.SettingsTCamResComboBox = QComboBox(self.SettingsTCamFrame)
         self.SettingsTCamResComboBox.setObjectName(u"SettingsTCamResComboBox")
         self.SettingsTCamResComboBox.setGeometry(QRect(32, 200, 180, 32))
+        self.SettingsTCamResComboBox.setStyleSheet(u"")
         self.SettingsTCamFPSComboBox = QComboBox(self.SettingsTCamFrame)
         self.SettingsTCamFPSComboBox.setObjectName(u"SettingsTCamFPSComboBox")
         self.SettingsTCamFPSComboBox.setGeometry(QRect(32, 280, 150, 32))
@@ -359,41 +182,11 @@ class Ui_SettingsWindow(object):
         self.SettingsTCamCalibrationButton = QPushButton(self.SettingsTCamFrame)
         self.SettingsTCamCalibrationButton.setObjectName(u"SettingsTCamCalibrationButton")
         self.SettingsTCamCalibrationButton.setGeometry(QRect(485, 340, 96, 32))
-        self.SettingsTCamCalibrationButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.SettingsTCamCalibrationButton.setStyleSheet(u"")
         self.SettingsTCamFocusButton = QPushButton(self.SettingsTCamFrame)
         self.SettingsTCamFocusButton.setObjectName(u"SettingsTCamFocusButton")
         self.SettingsTCamFocusButton.setGeometry(QRect(600, 340, 96, 32))
-        self.SettingsTCamFocusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.SettingsTCamFocusButton.setStyleSheet(u"")
         self.SettingsTCamFPSComboBox.raise_()
         self.SettingsTCamResComboBox.raise_()
         self.SettingsTCamConnectButton.raise_()
@@ -408,104 +201,18 @@ class Ui_SettingsWindow(object):
         self.SettingsTestingFrame = QFrame(SettingsWindow)
         self.SettingsTestingFrame.setObjectName(u"SettingsTestingFrame")
         self.SettingsTestingFrame.setGeometry(QRect(992, 160, 800, 352))
-        self.SettingsTestingFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox {\n"
-"    border: 1px solid #E1DFDD;\n"
-"    border-radius: 10px;\n"
-"    padding: 5px;\n"
-"    background-color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QComboBox::drop-down {\n"
-"	subcontrol-origin: padding;\n"
-"	subcontrol-position: top right;\n"
-"	width: 32px;\n"
-"	border-left-width: 1px;\n"
-"	border-left-color: #E1DFDD;\n"
-"	border-left-style: solid;\n"
-"	border-top-right-radius: 10px;\n"
-"	border-bottom-right-radius: 10px;\n"
-"}\n"
-"\n"
-"QComboBox::down-arrow {\n"
-"	image: url(:/icons/icons/combo_box_arrow.svg);\n"
-"}\n"
-"\n"
-"QComboBox:hover {\n"
-"    border: 1px solid #5B5FC7;\n"
-"    background-color: #E1DFDD;\n"
-"}")
+        self.SettingsTestingFrame.setStyleSheet(u"")
         self.SettingsTestingFrame.setFrameShape(QFrame.StyledPanel)
         self.SettingsTestingFrame.setFrameShadow(QFrame.Raised)
         self.SettingsTestingDurationSlider = QSlider(self.SettingsTestingFrame)
         self.SettingsTestingDurationSlider.setObjectName(u"SettingsTestingDurationSlider")
         self.SettingsTestingDurationSlider.setGeometry(QRect(80, 120, 640, 32))
-        self.SettingsTestingDurationSlider.setStyleSheet(u"QSlider {\n"
-"	background-color: #F5F5F5;\n"
-"}\n"
-"\n"
-"QSlider::groove:horizontal {\n"
-"	background-color: #8B8B8B;\n"
-"	height: 7px;\n"
-"}\n"
-"\n"
-"QSlider::sub-page:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal:pressed {\n"
-"	background-color: #161987;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}")
+        self.SettingsTestingDurationSlider.setStyleSheet(u"")
         self.SettingsTestingDurationSlider.setOrientation(Qt.Horizontal)
         self.SettingsHeatingDurationSlider = QSlider(self.SettingsTestingFrame)
         self.SettingsHeatingDurationSlider.setObjectName(u"SettingsHeatingDurationSlider")
         self.SettingsHeatingDurationSlider.setGeometry(QRect(80, 200, 640, 32))
-        self.SettingsHeatingDurationSlider.setStyleSheet(u"QSlider {\n"
-"	background-color: #F5F5F5;\n"
-"}\n"
-"\n"
-"QSlider::groove:horizontal {\n"
-"	background-color: #8B8B8B;\n"
-"	height: 7px;\n"
-"}\n"
-"\n"
-"QSlider::sub-page:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal:pressed {\n"
-"	background-color: #161987;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}")
+        self.SettingsHeatingDurationSlider.setStyleSheet(u"")
         self.SettingsHeatingDurationSlider.setOrientation(Qt.Horizontal)
         self.SettingsHeatingDurationLabel = QLabel(self.SettingsTestingFrame)
         self.SettingsHeatingDurationLabel.setObjectName(u"SettingsHeatingDurationLabel")
@@ -515,19 +222,15 @@ class Ui_SettingsWindow(object):
         self.SettingsTestingTitle = QLabel(self.SettingsTestingFrame)
         self.SettingsTestingTitle.setObjectName(u"SettingsTestingTitle")
         self.SettingsTestingTitle.setGeometry(QRect(32, 40, 400, 32))
-        self.SettingsTestingTitle.setStyleSheet(u"color: #252525;\n"
-"font-size: 24px; \n"
-"font-weight: 600;")
+        self.SettingsTestingTitle.setStyleSheet(u"")
         self.SettingsTestingDurationLabel = QLabel(self.SettingsTestingFrame)
         self.SettingsTestingDurationLabel.setObjectName(u"SettingsTestingDurationLabel")
         self.SettingsTestingDurationLabel.setGeometry(QRect(42, 90, 400, 24))
-        self.SettingsTestingDurationLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsTestingDurationLabel.setStyleSheet(u"")
         self.SettingsRecordFPSLabel = QLabel(self.SettingsTestingFrame)
         self.SettingsRecordFPSLabel.setObjectName(u"SettingsRecordFPSLabel")
         self.SettingsRecordFPSLabel.setGeometry(QRect(42, 250, 400, 24))
-        self.SettingsRecordFPSLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
+        self.SettingsRecordFPSLabel.setStyleSheet(u"")
         self.SettingsRecordFPSComboBox = QComboBox(self.SettingsTestingFrame)
         self.SettingsRecordFPSComboBox.addItem("")
         self.SettingsRecordFPSComboBox.addItem("")
@@ -541,97 +244,23 @@ class Ui_SettingsWindow(object):
         self.SettingsHeatingDurationPlusButton = QPushButton(self.SettingsTestingFrame)
         self.SettingsHeatingDurationPlusButton.setObjectName(u"SettingsHeatingDurationPlusButton")
         self.SettingsHeatingDurationPlusButton.setGeometry(QRect(736, 200, 32, 32))
-        self.SettingsHeatingDurationPlusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.SettingsHeatingDurationPlusButton.setStyleSheet(u"")
         self.SettingsTestingDurationPlusButton = QPushButton(self.SettingsTestingFrame)
         self.SettingsTestingDurationPlusButton.setObjectName(u"SettingsTestingDurationPlusButton")
         self.SettingsTestingDurationPlusButton.setGeometry(QRect(736, 120, 32, 32))
-        self.SettingsTestingDurationPlusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.SettingsTestingDurationPlusButton.setStyleSheet(u"")
         self.SettingsTestingDurationMinusButton = QPushButton(self.SettingsTestingFrame)
         self.SettingsTestingDurationMinusButton.setObjectName(u"SettingsTestingDurationMinusButton")
         self.SettingsTestingDurationMinusButton.setGeometry(QRect(32, 120, 32, 32))
-        self.SettingsTestingDurationMinusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.SettingsTestingDurationMinusButton.setStyleSheet(u"")
         self.SettingsHeatingDurationMinusButton = QPushButton(self.SettingsTestingFrame)
         self.SettingsHeatingDurationMinusButton.setObjectName(u"SettingsHeatingDurationMinusButton")
         self.SettingsHeatingDurationMinusButton.setGeometry(QRect(32, 200, 32, 32))
-        self.SettingsHeatingDurationMinusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.SettingsHeatingDurationMinusButton.setStyleSheet(u"")
         self.SettingsHomeButton = QPushButton(SettingsWindow)
         self.SettingsHomeButton.setObjectName(u"SettingsHomeButton")
         self.SettingsHomeButton.setGeometry(QRect(1570, 1070, 240, 80))
-        self.SettingsHomeButton.setStyleSheet(u"QPushButton {\n"
-"text-align: center;\n"
-"color: black;\n"
-"font-size: 36px;\n"
-"border: 1px solid #E1DFDD;\n"
-"border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"background: #8B8B8B;\n"
-"}")
+        self.SettingsHomeButton.setStyleSheet(u"")
         icon = QIcon()
         icon.addFile(u":/icons/icons/home.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.SettingsHomeButton.setIcon(icon)
@@ -651,7 +280,7 @@ class Ui_SettingsWindow(object):
 
     def retranslateUi(self, SettingsWindow):
         SettingsWindow.setWindowTitle(QCoreApplication.translate("SettingsWindow", u"Settings", None))
-        self.SettingsTitle.setText(QCoreApplication.translate("SettingsWindow", u"<html><head/><body><p><span style=\" font-size:64px; color:#000000;\">Settings</span></p></body></html>", None))
+        self.SettingsTitle.setText(QCoreApplication.translate("SettingsWindow", u"Settings", None))
         self.SettingsThemeLabel.setText(QCoreApplication.translate("SettingsWindow", u"Theme:", None))
         self.SettingsThemeComboBox.setItemText(0, QCoreApplication.translate("SettingsWindow", u"Light", None))
         self.SettingsThemeComboBox.setItemText(1, QCoreApplication.translate("SettingsWindow", u"Dark", None))

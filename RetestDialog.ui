@@ -132,7 +132,7 @@ QPushButton::pressed {
   </widget>
  </widget>
  <resources>
-  <include location="res-rs.qrc"/>
+  <include location="res_rs.qrc"/>
  </resources>
  <connections/>
 </ui>

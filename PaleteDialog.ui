@@ -167,7 +167,7 @@ QComboBox:hover {
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>:/icons/icons/palette_bw.svg</pixmap>
+     <pixmap resource="res_rs.qrc">:/icons/icons/palette_bw.svg</pixmap>
     </property>
    </widget>
    <widget class="QPushButton" name="PaletteReturnButton">
@@ -204,7 +204,7 @@ QPushButton::pressed {
   </widget>
  </widget>
  <resources>
-  <include location="res-rs.qrc"/>
+  <include location="res_rs.qrc"/>
  </resources>
  <connections/>
 </ui>

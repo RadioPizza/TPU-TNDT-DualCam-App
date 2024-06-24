@@ -79,7 +79,7 @@ background: #8B8B8B;
     <string>Home</string>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="res_rs.qrc">
      <normaloff>:/icons/icons/home.svg</normaloff>:/icons/icons/home.svg</iconset>
    </property>
    <property name="iconSize">
@@ -913,7 +913,7 @@ QPushButton::pressed {
   </widget>
  </widget>
  <resources>
-  <include location="res-rs.qrc"/>
+  <include location="res_rs.qrc"/>
  </resources>
  <connections/>
 </ui>

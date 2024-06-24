@@ -3,63 +3,109 @@ QWidget {
   font-family: "Segoe UI";
 }
 
+QScrollArea {
+  border: none;
+}
+
 QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
+  background: #F4F5F5;
+  border-radius: 10px;
 }
 
 QLabel {
-	color: #252525;
-	font-size: 11px;
-	font-weight: 600;
-	text-transform: uppercase;
+  color: #252525;
+  font-size: 11px;
+  font-weight: 600;
+  background: transparent;
+}
+
+/* Специальный стиль для больших заголовков */
+QLabel#StartTitle,
+QLabel#MainCameraTitle,
+QLabel#MainTCameraTitle {
+  font-size: 36pt;
+  font-weight: 500;
+  background: transparent;
+}
+
+/* Специальный стиль для средних заголовков */
+QLabel#MainProcessLabel {
+  font-size: 24pt;
+  font-weight: 400;
+  background: transparent;
 }
 
 QLineEdit {
-	background: white;
-	border-radius: 10px;
-	padding: 5px 15px;
-	border-bottom-color: #D1D1D1;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
+  background: white;
+  border-radius: 10px;
+  padding: 5px 15px;
+  border-bottom-color: #D1D1D1;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
 }
 
 QLineEdit::hover::!focus {
-	border-bottom-color: #252525;
+  border-bottom-color: #252525;
 }
 
 QLineEdit::focus {
-	border-bottom-color: #5B5FC7;
+  border-bottom-color: #5B5FC7;
 }
 
+/* Стиль для основных кнопок */
 QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
+  text-align: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  background: #5B5FC7; 
+  border-radius: 10px;
 }
 
-QPushButton::hover::!pressed {
-	background: #4F52B2;
+/* Стиль для кнопки выбора директории */
+QPushButton#StartChangePathButton {
+  font-size: 13px;
 }
 
-QPushButton::pressed {
-	background:  #161987; 
+QPushButton:hover:!pressed {
+  background: #4F52B2;
+}
+
+QPushButton:pressed {
+  background: #161987; 
+}
+
+/* Стиль для кнопок в сообщениях QMessageBox */
+QMessageBox QPushButton {
+  text-align: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  background: #5B5FC7; 
+  border-radius: 5px;
+  padding: 5px; /* Уменьшенный радиус скругления */
+  padding: 4px 24px;  /* Увеличение высоты и ширины */
+}
+
+QMessageBox QPushButton:hover {
+  background: #4F52B2;  /* Цвет при наведении совпадает с основными кнопками */
+}
+
+QMessageBox QPushButton:pressed {
+  background: #161987;  /* Цвет при нажатии совпадает */
 }
 
 QGraphicsView {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
+  border: 1px solid #E1DFDD;
+  border-radius: 10px;
 }
 
 QProgressBar {
-    border: 1px solid #E1DFDD;
-    border-radius: 5px;
+  border: 1px solid #E1DFDD;
+  border-radius: 5px;
 }
 
 QProgressBar::chunk {
-    background: #4F52B2;
-	border-radius: 5px;
+  background: #4F52B2;
+  border-radius: 5px;
 }
