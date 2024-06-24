@@ -24,7 +24,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1920, 1200)
+        MainWindow.resize(1305, 922)
         MainWindow.setMinimumSize(QSize(0, 0))
         MainWindow.setBaseSize(QSize(0, 0))
         MainWindow.setStyleSheet(u"")
@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.CentralWidget.setObjectName(u"CentralWidget")
         self.verticalLayout_5 = QVBoxLayout(self.CentralWidget)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.verticalSpacer_2 = QSpacerItem(20, 13, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.verticalSpacer_2 = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
@@ -48,7 +48,12 @@ class Ui_MainWindow(object):
 
         self.MainCameraView = QGraphicsView(self.CentralWidget)
         self.MainCameraView.setObjectName(u"MainCameraView")
-        self.MainCameraView.setMinimumSize(QSize(250, 200))
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.MainCameraView.sizePolicy().hasHeightForWidth())
+        self.MainCameraView.setSizePolicy(sizePolicy)
+        self.MainCameraView.setMinimumSize(QSize(400, 200))
         self.MainCameraView.setStyleSheet(u"")
 
         self.verticalLayout.addWidget(self.MainCameraView)
@@ -66,7 +71,9 @@ class Ui_MainWindow(object):
 
         self.MainTCameraView = QGraphicsView(self.CentralWidget)
         self.MainTCameraView.setObjectName(u"MainTCameraView")
-        self.MainTCameraView.setMinimumSize(QSize(250, 200))
+        sizePolicy.setHeightForWidth(self.MainTCameraView.sizePolicy().hasHeightForWidth())
+        self.MainTCameraView.setSizePolicy(sizePolicy)
+        self.MainTCameraView.setMinimumSize(QSize(400, 200))
         self.MainTCameraView.setStyleSheet(u"")
 
         self.verticalLayout_2.addWidget(self.MainTCameraView)
@@ -77,7 +84,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_2)
 
-        self.verticalSpacer = QSpacerItem(20, 100, QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.verticalSpacer = QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Maximum)
 
         self.verticalLayout_5.addItem(self.verticalSpacer)
 
@@ -104,11 +111,11 @@ class Ui_MainWindow(object):
 
         self.MainStopButton = QPushButton(self.CentralWidget)
         self.MainStopButton.setObjectName(u"MainStopButton")
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.MainStopButton.sizePolicy().hasHeightForWidth())
-        self.MainStopButton.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.MainStopButton.sizePolicy().hasHeightForWidth())
+        self.MainStopButton.setSizePolicy(sizePolicy1)
         self.MainStopButton.setMinimumSize(QSize(120, 40))
         self.MainStopButton.setStyleSheet(u"")
         self.MainStopButton.setIconSize(QSize(16, 16))
@@ -121,8 +128,8 @@ class Ui_MainWindow(object):
 
         self.MainPlayButton = QPushButton(self.CentralWidget)
         self.MainPlayButton.setObjectName(u"MainPlayButton")
-        sizePolicy.setHeightForWidth(self.MainPlayButton.sizePolicy().hasHeightForWidth())
-        self.MainPlayButton.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.MainPlayButton.sizePolicy().hasHeightForWidth())
+        self.MainPlayButton.setSizePolicy(sizePolicy1)
         self.MainPlayButton.setMinimumSize(QSize(120, 40))
         self.MainPlayButton.setStyleSheet(u"")
         self.MainPlayButton.setIconSize(QSize(16, 16))
@@ -136,7 +143,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 100, QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.verticalSpacer_3 = QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
@@ -148,8 +155,8 @@ class Ui_MainWindow(object):
 
         self.MainSettingsButton = QPushButton(self.CentralWidget)
         self.MainSettingsButton.setObjectName(u"MainSettingsButton")
-        sizePolicy.setHeightForWidth(self.MainSettingsButton.sizePolicy().hasHeightForWidth())
-        self.MainSettingsButton.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.MainSettingsButton.sizePolicy().hasHeightForWidth())
+        self.MainSettingsButton.setSizePolicy(sizePolicy1)
         self.MainSettingsButton.setMinimumSize(QSize(120, 40))
         self.MainSettingsButton.setStyleSheet(u"")
         icon = QIcon()
@@ -162,7 +169,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_3)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 50, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.verticalSpacer_4 = QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_4)
 

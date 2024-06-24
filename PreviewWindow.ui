@@ -41,9 +41,7 @@ font-family: Segoe UI;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: #000000;
-font-size: 36pt;
-</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:58px; color:#000000;&quot;&gt;Preview&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -59,21 +57,7 @@ font-size: 36pt;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QPushButton {
-text-align: center;
-color: black;
-font-size: 36px;
-border: 1px solid #E1DFDD;
-border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-background: #E1DFDD;
-}
-
-QPushButton::pressed {
-background: #8B8B8B;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string>Home</string>
@@ -99,21 +83,7 @@ background: #8B8B8B;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QPushButton {
-text-align: center;
-color: black;
-font-size: 36px;
-border: 1px solid #E1DFDD;
-border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-background: #E1DFDD;
-}
-
-QPushButton::pressed {
-background: #8B8B8B;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string>Finish</string>
@@ -135,31 +105,7 @@ background: #8B8B8B;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QPushButton {
-	color: black;
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #D1D1D1;;
-}
-
-QPushButton:checked {
-	border: 2px solid #4F52B2;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -199,11 +145,7 @@ QPushButton:checked {
      <cursorShape>CrossCursor</cursorShape>
     </property>
     <property name="styleSheet">
-     <string notr="true">QGraphicsView {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-	background: #FFFFFF;
-}</string>
+     <string notr="true"/>
     </property>
    </widget>
    <widget class="QPushButton" name="PreviewGraph3DButton">
@@ -235,9 +177,7 @@ QPushButton:checked {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 24px; 
-font-weight: 600;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Graph</string>
@@ -254,10 +194,7 @@ font-weight: 600;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -278,11 +215,7 @@ font-weight: 600;</string>
      <cursorShape>CrossCursor</cursorShape>
     </property>
     <property name="styleSheet">
-     <string notr="true">QGraphicsView {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-	background: #FFFFFF;
-}</string>
+     <string notr="true"/>
     </property>
    </widget>
    <widget class="QPushButton" name="PreviewMapReturnButton">
@@ -295,20 +228,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Return</string>
@@ -324,9 +244,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 24px; 
-font-weight: 600;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Map</string>
@@ -342,20 +260,7 @@ font-weight: 600;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Palette</string>
@@ -372,31 +277,7 @@ QPushButton::pressed {
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QPushButton {
-	color: black;
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #D1D1D1;;
-}
-
-QPushButton:checked {
-	border: 2px solid #4F52B2;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -471,15 +352,7 @@ QPushButton:checked {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">width: 337px;
-height: 80px;
-color: #252525;
-font-size: 24px;
-font-family: Segoe UI;
-font-weight: 600;
-line-height: 28px; 
-word-wrap: break-word;
-</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Post-processing algorithms</string>
@@ -515,31 +388,7 @@ word-wrap: break-word;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QPushButton {
-	color: black;
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #D1D1D1;;
-}
-
-QPushButton:checked {
-	border: 2px solid #4F52B2;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -557,22 +406,7 @@ QPushButton:checked {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>+</string>
@@ -608,35 +442,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QSlider {
-	background-color: #F5F5F5;
-}
-
-QSlider::groove:horizontal {
-	background-color: #8B8B8B;
-	height: 7px;
-}
-
-QSlider::sub-page:horizontal {
-	background-color: #4F52B2;
-	border-radius: 10px;
-}
-
-QSlider::handle:horizontal {
-	background-color: #4F52B2;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}
-
-QSlider::handle:horizontal:pressed {
-	background-color: #161987;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -652,22 +458,7 @@ QSlider::handle:horizontal:pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>-</string>
@@ -683,22 +474,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>-</string>
@@ -714,22 +490,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 13px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>+</string>
@@ -745,35 +506,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QSlider {
-	background-color: #F5F5F5;
-}
-
-QSlider::groove:horizontal {
-	background-color: #8B8B8B;
-	height: 7px;
-}
-
-QSlider::sub-page:horizontal {
-	background-color: #4F52B2;
-	border-radius: 10px;
-}
-
-QSlider::handle:horizontal {
-	background-color: #4F52B2;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}
-
-QSlider::handle:horizontal:pressed {
-	background-color: #161987;
-	width: 10px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-	border-radius: 4px;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -789,20 +522,7 @@ QSlider::handle:horizontal:pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Overlay</string>
@@ -818,15 +538,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">width: 337px;
-height: 80px;
-color: #252525;
-font-size: 24px;
-font-family: Segoe UI;
-font-weight: 600;
-line-height: 28px; 
-word-wrap: break-word;
-</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Display parameters</string>
@@ -862,20 +574,7 @@ word-wrap: break-word;
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Play</string>
@@ -891,20 +590,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Stop</string>

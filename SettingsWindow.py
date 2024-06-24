@@ -27,9 +27,7 @@ class Ui_SettingsWindow(object):
         SettingsWindow.resize(1920, 1200)
         SettingsWindow.setMinimumSize(QSize(1920, 1200))
         SettingsWindow.setMaximumSize(QSize(1920, 1200))
-        SettingsWindow.setStyleSheet(u"background: #FFFFFF;\n"
-"font-family: Segoe UI;\n"
-"")
+        SettingsWindow.setStyleSheet(u"")
         SettingsWindow.setInputMethodHints(Qt.ImhNone)
         self.SettingsTitle = QLabel(SettingsWindow)
         self.SettingsTitle.setObjectName(u"SettingsTitle")

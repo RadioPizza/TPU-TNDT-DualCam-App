@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>1200</height>
+    <width>1305</width>
+    <height>922</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -41,7 +41,7 @@
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>13</height>
+        <height>10</height>
        </size>
       </property>
      </spacer>
@@ -62,9 +62,15 @@
         </item>
         <item>
          <widget class="QGraphicsView" name="MainCameraView">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
-            <width>250</width>
+            <width>400</width>
             <height>200</height>
            </size>
           </property>
@@ -89,9 +95,15 @@
         </item>
         <item>
          <widget class="QGraphicsView" name="MainTCameraView">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
-            <width>250</width>
+            <width>400</width>
             <height>200</height>
            </size>
           </property>
@@ -110,12 +122,12 @@
        <enum>Qt::Vertical</enum>
       </property>
       <property name="sizeType">
-       <enum>QSizePolicy::Preferred</enum>
+       <enum>QSizePolicy::Maximum</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>100</height>
+        <height>25</height>
        </size>
       </property>
      </spacer>
@@ -262,7 +274,7 @@
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>100</height>
+        <height>25</height>
        </size>
       </property>
      </spacer>
@@ -330,7 +342,7 @@
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>50</height>
+        <height>25</height>
        </size>
       </property>
      </spacer>

@@ -31,6 +31,7 @@ class Ui_StartDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(StartDialog.sizePolicy().hasHeightForWidth())
         StartDialog.setSizePolicy(sizePolicy)
+        StartDialog.setMinimumSize(QSize(600, 0))
         StartDialog.setStyleSheet(u"")
         StartDialog.setSizeGripEnabled(False)
         self.horizontalLayout = QHBoxLayout(StartDialog)
@@ -53,19 +54,17 @@ class Ui_StartDialog(object):
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 1900, 2000))
         self.scrollAreaWidgetContents.setMinimumSize(QSize(0, 2000))
-        self.horizontalLayoutWidget = QWidget(self.scrollAreaWidgetContents)
-        self.horizontalLayoutWidget.setObjectName(u"horizontalLayoutWidget")
-        self.horizontalLayoutWidget.setGeometry(QRect(0, 0, 1936, 1181))
-        self.horizontalLayout_2 = QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout_4 = QHBoxLayout(self.scrollAreaWidgetContents)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalSpacerL = QSpacerItem(660, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacerL)
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.StartTitle = QLabel(self.horizontalLayoutWidget)
+        self.StartTitle = QLabel(self.scrollAreaWidgetContents)
         self.StartTitle.setObjectName(u"StartTitle")
         sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
@@ -77,7 +76,7 @@ class Ui_StartDialog(object):
 
         self.verticalLayout.addWidget(self.StartTitle)
 
-        self.Startframe = QFrame(self.horizontalLayoutWidget)
+        self.Startframe = QFrame(self.scrollAreaWidgetContents)
         self.Startframe.setObjectName(u"Startframe")
         sizePolicy2.setHeightForWidth(self.Startframe.sizePolicy().hasHeightForWidth())
         self.Startframe.setSizePolicy(sizePolicy2)
@@ -167,6 +166,9 @@ class Ui_StartDialog(object):
         self.horizontalSpacerR = QSpacerItem(660, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacerR)
+
+
+        self.horizontalLayout_4.addLayout(self.horizontalLayout_2)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 

@@ -14,9 +14,7 @@
    <string>Dialog</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: #FFFFFF;
-font-family: Segoe UI;
-</string>
+   <string notr="true"/>
   </property>
   <widget class="QFrame" name="PaletteFrame">
    <property name="geometry">
@@ -28,31 +26,7 @@ font-family: Segoe UI;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}
-
-QPushButton {
-	color: black;
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #D1D1D1;;
-}
-
-QPushButton:checked {
-	border: 2px solid #4F52B2;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -70,15 +44,7 @@ QPushButton:checked {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">width: 337px;
-height: 80px;
-color: #252525;
-font-size: 24px;
-font-family: Segoe UI;
-font-weight: 600;
-line-height: 28px; 
-word-wrap: break-word;
-</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Select palette</string>
@@ -94,32 +60,7 @@ word-wrap: break-word;
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QComboBox {
-    border: 1px solid #E1DFDD;
-    border-radius: 10px;
-    padding: 5px;
-    background-color: #FFFFFF;
-}
-
-QComboBox::drop-down {
-	subcontrol-origin: padding;
-	subcontrol-position: top right;
-	width: 32px;
-	border-left-width: 1px;
-	border-left-color: #E1DFDD;
-	border-left-style: solid;
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px;
-}
-
-QComboBox::down-arrow {
-	image: url(:/icons/icons/combo_box_arrow.svg);
-}
-
-QComboBox:hover {
-    border: 1px solid #5B5FC7;
-    background-color: #E1DFDD;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="currentText">
      <string>b/w</string>
@@ -163,6 +104,9 @@ QComboBox:hover {
       <height>20</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
     <property name="text">
      <string/>
     </property>
@@ -180,22 +124,7 @@ QComboBox:hover {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Return</string>

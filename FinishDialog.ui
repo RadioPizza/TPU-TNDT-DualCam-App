@@ -26,9 +26,7 @@
    <string>Finish thermal testing</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: #FFFFFF;
-font-family: Segoe UI;
-</string>
+   <string notr="true"/>
   </property>
   <widget class="QFrame" name="FinishFrame">
    <property name="geometry">
@@ -40,10 +38,7 @@ font-family: Segoe UI;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -80,22 +75,7 @@ font-family: Segoe UI;
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>No</string>
@@ -111,22 +91,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Yes</string>
@@ -142,22 +107,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 13px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Change path</string>
@@ -173,10 +123,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #252525;
-font-size: 11px;
-font-weight: 600;
-text-transform: uppercase;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>File saving path</string>
@@ -195,26 +142,7 @@ text-transform: uppercase;</string>
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">QLineEdit {
-	background: white;
-	border-radius: 10px;
-	align-items: center;
-	overflow: hidden;
-	padding: 5px 15px;
-	border-bottom-color: #D1D1D1;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
-}
-
-QLineEdit::hover::!focus {
-	border-bottom-color: #252525;
-}
-
-QLineEdit::focus {
-	border-bottom-color: #5B5FC7;
-}
-
-</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>...</string>

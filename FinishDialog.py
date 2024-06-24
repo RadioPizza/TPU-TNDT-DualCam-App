@@ -25,16 +25,11 @@ class Ui_FinishDialog(object):
         FinishDialog.resize(450, 375)
         FinishDialog.setMinimumSize(QSize(450, 375))
         FinishDialog.setMaximumSize(QSize(450, 375))
-        FinishDialog.setStyleSheet(u"background: #FFFFFF;\n"
-"font-family: Segoe UI;\n"
-"")
+        FinishDialog.setStyleSheet(u"")
         self.FinishFrame = QFrame(FinishDialog)
         self.FinishFrame.setObjectName(u"FinishFrame")
         self.FinishFrame.setGeometry(QRect(25, 25, 400, 325))
-        self.FinishFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.FinishFrame.setStyleSheet(u"")
         self.FinishFrame.setFrameShape(QFrame.StyledPanel)
         self.FinishFrame.setFrameShadow(QFrame.Raised)
         self.FinishTitle = QLabel(self.FinishFrame)
@@ -45,91 +40,24 @@ class Ui_FinishDialog(object):
         self.FinishNoButton = QPushButton(self.FinishFrame)
         self.FinishNoButton.setObjectName(u"FinishNoButton")
         self.FinishNoButton.setGeometry(QRect(248, 265, 120, 40))
-        self.FinishNoButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.FinishNoButton.setStyleSheet(u"")
         self.FinishYesButton = QPushButton(self.FinishFrame)
         self.FinishYesButton.setObjectName(u"FinishYesButton")
         self.FinishYesButton.setGeometry(QRect(32, 265, 120, 40))
-        self.FinishYesButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.FinishYesButton.setStyleSheet(u"")
         self.FinishChangePathButton = QPushButton(self.FinishFrame)
         self.FinishChangePathButton.setObjectName(u"FinishChangePathButton")
         self.FinishChangePathButton.setGeometry(QRect(272, 200, 96, 32))
-        self.FinishChangePathButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.FinishChangePathButton.setStyleSheet(u"")
         self.FinishPathLabel = QLabel(self.FinishFrame)
         self.FinishPathLabel.setObjectName(u"FinishPathLabel")
         self.FinishPathLabel.setGeometry(QRect(32, 125, 110, 32))
-        self.FinishPathLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 11px;\n"
-"font-weight: 600;\n"
-"text-transform: uppercase;")
+        self.FinishPathLabel.setStyleSheet(u"")
         self.FinishPathLineEdit = QLineEdit(self.FinishFrame)
         self.FinishPathLineEdit.setObjectName(u"FinishPathLineEdit")
         self.FinishPathLineEdit.setGeometry(QRect(32, 160, 336, 32))
         self.FinishPathLineEdit.setAcceptDrops(False)
-        self.FinishPathLineEdit.setStyleSheet(u"QLineEdit {\n"
-"	background: white;\n"
-"	border-radius: 10px;\n"
-"	align-items: center;\n"
-"	overflow: hidden;\n"
-"	padding: 5px 15px;\n"
-"	border-bottom-color: #D1D1D1;\n"
-"	border-bottom-style: solid;\n"
-"	border-bottom-width: 1px;\n"
-"}\n"
-"\n"
-"QLineEdit::hover::!focus {\n"
-"	border-bottom-color: #252525;\n"
-"}\n"
-"\n"
-"QLineEdit::focus {\n"
-"	border-bottom-color: #5B5FC7;\n"
-"}\n"
-"\n"
-"")
+        self.FinishPathLineEdit.setStyleSheet(u"")
         self.FinishPathLineEdit.setFrame(True)
         self.FinishPathLineEdit.setReadOnly(True)
 

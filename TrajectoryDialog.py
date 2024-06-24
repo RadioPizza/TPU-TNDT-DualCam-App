@@ -33,17 +33,11 @@ class Ui_TrajectoryDialog(object):
         TrajectoryDialog.setMaximumSize(QSize(450, 450))
         TrajectoryDialog.setCursor(QCursor(Qt.ArrowCursor))
         TrajectoryDialog.setTabletTracking(False)
-        TrajectoryDialog.setStyleSheet(u"background: #FFFFFF;\n"
-"font-family: Segoe UI;\n"
-"\n"
-"")
+        TrajectoryDialog.setStyleSheet(u"")
         self.TrajectoryFrame = QFrame(TrajectoryDialog)
         self.TrajectoryFrame.setObjectName(u"TrajectoryFrame")
         self.TrajectoryFrame.setGeometry(QRect(25, 25, 400, 400))
-        self.TrajectoryFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.TrajectoryFrame.setStyleSheet(u"")
         self.TrajectoryFrame.setFrameShape(QFrame.StyledPanel)
         self.TrajectoryFrame.setFrameShadow(QFrame.Raised)
         self.TrajectoryTitle = QLabel(self.TrajectoryFrame)
@@ -53,136 +47,47 @@ class Ui_TrajectoryDialog(object):
         self.TrajectoryLeftButton = QPushButton(self.TrajectoryFrame)
         self.TrajectoryLeftButton.setObjectName(u"TrajectoryLeftButton")
         self.TrajectoryLeftButton.setGeometry(QRect(32, 120, 80, 60))
-        self.TrajectoryLeftButton.setStyleSheet(u"QPushButton {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.TrajectoryLeftButton.setStyleSheet(u"")
         icon = QIcon()
-        icon.addFile(u":/icons/icons/arrowLeft.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/icons/arrow_left.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.TrajectoryLeftButton.setIcon(icon)
         self.TrajectoryLeftButton.setIconSize(QSize(50, 50))
         self.TrajectoryUpButton = QPushButton(self.TrajectoryFrame)
         self.TrajectoryUpButton.setObjectName(u"TrajectoryUpButton")
         self.TrajectoryUpButton.setGeometry(QRect(117, 120, 80, 60))
-        self.TrajectoryUpButton.setStyleSheet(u"QPushButton {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.TrajectoryUpButton.setStyleSheet(u"")
         icon1 = QIcon()
-        icon1.addFile(u":/icons/icons/arrowUp.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/icons/arrow_up.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.TrajectoryUpButton.setIcon(icon1)
         self.TrajectoryUpButton.setIconSize(QSize(50, 50))
         self.TrajectoryDownButton = QPushButton(self.TrajectoryFrame)
         self.TrajectoryDownButton.setObjectName(u"TrajectoryDownButton")
         self.TrajectoryDownButton.setGeometry(QRect(202, 120, 80, 60))
-        self.TrajectoryDownButton.setStyleSheet(u"QPushButton {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.TrajectoryDownButton.setStyleSheet(u"")
         icon2 = QIcon()
-        icon2.addFile(u":/icons/icons/arrowDown.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/icons/icons/arrow_down.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.TrajectoryDownButton.setIcon(icon2)
         self.TrajectoryDownButton.setIconSize(QSize(50, 50))
         self.TrajectoryRightButton = QPushButton(self.TrajectoryFrame)
         self.TrajectoryRightButton.setObjectName(u"TrajectoryRightButton")
         self.TrajectoryRightButton.setGeometry(QRect(288, 120, 80, 60))
-        self.TrajectoryRightButton.setStyleSheet(u"QPushButton {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.TrajectoryRightButton.setStyleSheet(u"")
         icon3 = QIcon()
-        icon3.addFile(u":/icons/icons/arrowRight.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/icons/icons/arrow_right.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.TrajectoryRightButton.setIcon(icon3)
         self.TrajectoryRightButton.setIconSize(QSize(50, 50))
         self.TrajectoryRepeatButton = QPushButton(self.TrajectoryFrame)
         self.TrajectoryRepeatButton.setObjectName(u"TrajectoryRepeatButton")
         self.TrajectoryRepeatButton.setGeometry(QRect(32, 280, 336, 40))
-        self.TrajectoryRepeatButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.TrajectoryRepeatButton.setStyleSheet(u"")
         self.TrajectoryPreviewButton = QPushButton(self.TrajectoryFrame)
         self.TrajectoryPreviewButton.setObjectName(u"TrajectoryPreviewButton")
         self.TrajectoryPreviewButton.setGeometry(QRect(32, 230, 336, 40))
-        self.TrajectoryPreviewButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.TrajectoryPreviewButton.setStyleSheet(u"")
         self.TrajectoryFinishButton = QPushButton(self.TrajectoryFrame)
         self.TrajectoryFinishButton.setObjectName(u"TrajectoryFinishButton")
         self.TrajectoryFinishButton.setGeometry(QRect(32, 330, 336, 40))
-        self.TrajectoryFinishButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.TrajectoryFinishButton.setStyleSheet(u"")
 
         self.retranslateUi(TrajectoryDialog)
 

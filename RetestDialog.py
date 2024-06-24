@@ -26,16 +26,11 @@ class Ui_RetestDialog(object):
         RetestDialog.resize(450, 250)
         RetestDialog.setMinimumSize(QSize(450, 250))
         RetestDialog.setMaximumSize(QSize(450, 250))
-        RetestDialog.setStyleSheet(u"background: #FFFFFF;\n"
-"font-family: Segoe UI;\n"
-"")
+        RetestDialog.setStyleSheet(u"")
         self.RetestFrame = QFrame(RetestDialog)
         self.RetestFrame.setObjectName(u"RetestFrame")
         self.RetestFrame.setGeometry(QRect(25, 25, 400, 200))
-        self.RetestFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.RetestFrame.setStyleSheet(u"")
         self.RetestFrame.setFrameShape(QFrame.StyledPanel)
         self.RetestFrame.setFrameShadow(QFrame.Raised)
         self.RetestTitle = QLabel(self.RetestFrame)
@@ -45,41 +40,11 @@ class Ui_RetestDialog(object):
         self.RetestYesButton = QPushButton(self.RetestFrame)
         self.RetestYesButton.setObjectName(u"RetestYesButton")
         self.RetestYesButton.setGeometry(QRect(248, 140, 120, 40))
-        self.RetestYesButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: white;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	background: #5B5FC7; \n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #4F52B2;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background:  #161987; \n"
-"}")
+        self.RetestYesButton.setStyleSheet(u"")
         self.RetestNoButton = QPushButton(self.RetestFrame)
         self.RetestNoButton.setObjectName(u"RetestNoButton")
         self.RetestNoButton.setGeometry(QRect(32, 140, 120, 40))
-        self.RetestNoButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.RetestNoButton.setStyleSheet(u"")
 
         self.retranslateUi(RetestDialog)
 

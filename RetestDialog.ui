@@ -26,9 +26,7 @@
    <string>Test this zone again?</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: #FFFFFF;
-font-family: Segoe UI;
-</string>
+   <string notr="true"/>
   </property>
   <widget class="QFrame" name="RetestFrame">
    <property name="geometry">
@@ -40,10 +38,7 @@ font-family: Segoe UI;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -77,22 +72,7 @@ font-family: Segoe UI;
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>No</string>
@@ -108,22 +88,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: black;
-	font-size: 18px;
-	font-weight: 600;
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Yes</string>

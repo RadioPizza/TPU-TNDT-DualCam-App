@@ -38,10 +38,7 @@
    <string>Zone testing completed!</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: #FFFFFF;
-font-family: Segoe UI;
-
-</string>
+   <string notr="true"/>
   </property>
   <widget class="QFrame" name="TrajectoryFrame">
    <property name="geometry">
@@ -53,10 +50,7 @@ font-family: Segoe UI;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QFrame {
-	background: #F5F5F5;
-	border-radius: 10px;
-}</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
@@ -90,25 +84,14 @@ font-family: Segoe UI;
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
     </property>
     <property name="icon">
      <iconset resource="res_rs.qrc">
-      <normaloff>:/icons/icons/arrowLeft.svg</normaloff>:/icons/icons/arrowLeft.svg</iconset>
+      <normaloff>:/icons/icons/arrow_left.svg</normaloff>:/icons/icons/arrow_left.svg</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -127,25 +110,14 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
     </property>
     <property name="icon">
      <iconset resource="res_rs.qrc">
-      <normaloff>:/icons/icons/arrowUp.svg</normaloff>:/icons/icons/arrowUp.svg</iconset>
+      <normaloff>:/icons/icons/arrow_up.svg</normaloff>:/icons/icons/arrow_up.svg</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -164,25 +136,14 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
     </property>
     <property name="icon">
      <iconset resource="res_rs.qrc">
-      <normaloff>:/icons/icons/arrowDown.svg</normaloff>:/icons/icons/arrowDown.svg</iconset>
+      <normaloff>:/icons/icons/arrow_down.svg</normaloff>:/icons/icons/arrow_down.svg</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -201,25 +162,14 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	border: 1px solid #E1DFDD;
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #E1DFDD;
-}
-
-QPushButton::pressed {
-	background: #8B8B8B;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
     </property>
     <property name="icon">
      <iconset resource="res_rs.qrc">
-      <normaloff>:/icons/icons/arrowRight.svg</normaloff>:/icons/icons/arrowRight.svg</iconset>
+      <normaloff>:/icons/icons/arrow_right.svg</normaloff>:/icons/icons/arrow_right.svg</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -238,22 +188,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Repeat</string>
@@ -269,22 +204,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Preview</string>
@@ -300,22 +220,7 @@ QPushButton::pressed {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-	text-align: center;
-	color: white;
-	font-size: 18px;
-	font-weight: 600;
-	background: #5B5FC7; 
-	border-radius: 10px;
-}
-
-QPushButton::hover::!pressed {
-	background: #4F52B2;
-}
-
-QPushButton::pressed {
-	background:  #161987; 
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Finish</string>

@@ -26,9 +26,7 @@
    <string>Settings</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: #FFFFFF;
-font-family: Segoe UI;
-</string>
+   <string notr="true"/>
   </property>
   <property name="inputMethodHints">
    <set>Qt::ImhNone</set>
@@ -242,8 +240,7 @@ font-family: Segoe UI;
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">
-</string>
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>

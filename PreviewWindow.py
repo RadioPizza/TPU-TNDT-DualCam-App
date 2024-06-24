@@ -34,27 +34,11 @@ class Ui_PreviewWindow(object):
         self.PreviewTitle = QLabel(PreviewWindow)
         self.PreviewTitle.setObjectName(u"PreviewTitle")
         self.PreviewTitle.setGeometry(QRect(50, 50, 600, 90))
-        self.PreviewTitle.setStyleSheet(u"color: #000000;\n"
-"font-size: 36pt;\n"
-"")
+        self.PreviewTitle.setStyleSheet(u"")
         self.PreviewHomeButton = QPushButton(PreviewWindow)
         self.PreviewHomeButton.setObjectName(u"PreviewHomeButton")
         self.PreviewHomeButton.setGeometry(QRect(1570, 1070, 240, 80))
-        self.PreviewHomeButton.setStyleSheet(u"QPushButton {\n"
-"text-align: center;\n"
-"color: black;\n"
-"font-size: 36px;\n"
-"border: 1px solid #E1DFDD;\n"
-"border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"background: #8B8B8B;\n"
-"}")
+        self.PreviewHomeButton.setStyleSheet(u"")
         icon = QIcon()
         icon.addFile(u":/icons/icons/home.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.PreviewHomeButton.setIcon(icon)
@@ -62,50 +46,12 @@ class Ui_PreviewWindow(object):
         self.PreviewFinishButton = QPushButton(PreviewWindow)
         self.PreviewFinishButton.setObjectName(u"PreviewFinishButton")
         self.PreviewFinishButton.setGeometry(QRect(1310, 1070, 240, 80))
-        self.PreviewFinishButton.setStyleSheet(u"QPushButton {\n"
-"text-align: center;\n"
-"color: black;\n"
-"font-size: 36px;\n"
-"border: 1px solid #E1DFDD;\n"
-"border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"background: #8B8B8B;\n"
-"}")
+        self.PreviewFinishButton.setStyleSheet(u"")
         self.PreviewFinishButton.setIconSize(QSize(60, 60))
         self.PreviewGraphFrame = QFrame(PreviewWindow)
         self.PreviewGraphFrame.setObjectName(u"PreviewGraphFrame")
         self.PreviewGraphFrame.setGeometry(QRect(988, 160, 882, 700))
-        self.PreviewGraphFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton {\n"
-"	color: black;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #D1D1D1;;\n"
-"}\n"
-"\n"
-"QPushButton:checked {\n"
-"	border: 2px solid #4F52B2;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.PreviewGraphFrame.setStyleSheet(u"")
         self.PreviewGraphFrame.setFrameShape(QFrame.StyledPanel)
         self.PreviewGraphFrame.setFrameShadow(QFrame.Raised)
         self.PreviewGraph2DButton = QPushButton(self.PreviewGraphFrame)
@@ -117,11 +63,7 @@ class Ui_PreviewWindow(object):
         self.PreviewGraphView.setObjectName(u"PreviewGraphView")
         self.PreviewGraphView.setGeometry(QRect(32, 70, 818, 600))
         self.PreviewGraphView.viewport().setProperty("cursor", QCursor(Qt.CrossCursor))
-        self.PreviewGraphView.setStyleSheet(u"QGraphicsView {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"	background: #FFFFFF;\n"
-"}")
+        self.PreviewGraphView.setStyleSheet(u"")
         self.PreviewGraph3DButton = QPushButton(self.PreviewGraphFrame)
         self.PreviewGraph3DButton.setObjectName(u"PreviewGraph3DButton")
         self.PreviewGraph3DButton.setGeometry(QRect(730, 20, 120, 40))
@@ -130,95 +72,34 @@ class Ui_PreviewWindow(object):
         self.PreviewGraphLabel = QLabel(self.PreviewGraphFrame)
         self.PreviewGraphLabel.setObjectName(u"PreviewGraphLabel")
         self.PreviewGraphLabel.setGeometry(QRect(32, 20, 400, 32))
-        self.PreviewGraphLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 24px; \n"
-"font-weight: 600;")
+        self.PreviewGraphLabel.setStyleSheet(u"")
         self.PreviewMapFrame = QFrame(PreviewWindow)
         self.PreviewMapFrame.setObjectName(u"PreviewMapFrame")
         self.PreviewMapFrame.setGeometry(QRect(50, 160, 882, 700))
-        self.PreviewMapFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.PreviewMapFrame.setStyleSheet(u"")
         self.PreviewMapFrame.setFrameShape(QFrame.StyledPanel)
         self.PreviewMapFrame.setFrameShadow(QFrame.Raised)
         self.PreviewMapView = QGraphicsView(self.PreviewMapFrame)
         self.PreviewMapView.setObjectName(u"PreviewMapView")
         self.PreviewMapView.setGeometry(QRect(32, 70, 818, 600))
         self.PreviewMapView.viewport().setProperty("cursor", QCursor(Qt.CrossCursor))
-        self.PreviewMapView.setStyleSheet(u"QGraphicsView {\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"	background: #FFFFFF;\n"
-"}")
+        self.PreviewMapView.setStyleSheet(u"")
         self.PreviewMapReturnButton = QPushButton(self.PreviewMapFrame)
         self.PreviewMapReturnButton.setObjectName(u"PreviewMapReturnButton")
         self.PreviewMapReturnButton.setGeometry(QRect(730, 20, 120, 40))
-        self.PreviewMapReturnButton.setStyleSheet(u"QPushButton {\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewMapReturnButton.setStyleSheet(u"")
         self.PreviewMapTitle = QLabel(self.PreviewMapFrame)
         self.PreviewMapTitle.setObjectName(u"PreviewMapTitle")
         self.PreviewMapTitle.setGeometry(QRect(32, 20, 400, 32))
-        self.PreviewMapTitle.setStyleSheet(u"color: #252525;\n"
-"font-size: 24px; \n"
-"font-weight: 600;")
+        self.PreviewMapTitle.setStyleSheet(u"")
         self.PreviewMapPaletteButton = QPushButton(self.PreviewMapFrame)
         self.PreviewMapPaletteButton.setObjectName(u"PreviewMapPaletteButton")
         self.PreviewMapPaletteButton.setGeometry(QRect(600, 20, 120, 40))
-        self.PreviewMapPaletteButton.setStyleSheet(u"QPushButton {\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewMapPaletteButton.setStyleSheet(u"")
         self.PreviewAlgFrame = QFrame(PreviewWindow)
         self.PreviewAlgFrame.setObjectName(u"PreviewAlgFrame")
         self.PreviewAlgFrame.setGeometry(QRect(988, 875, 882, 130))
-        self.PreviewAlgFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton {\n"
-"	color: black;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #D1D1D1;;\n"
-"}\n"
-"\n"
-"QPushButton:checked {\n"
-"	border: 2px solid #4F52B2;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.PreviewAlgFrame.setStyleSheet(u"")
         self.PreviewAlgFrame.setFrameShape(QFrame.StyledPanel)
         self.PreviewAlgFrame.setFrameShadow(QFrame.Raised)
         self.PreviewAlgAVGButton = QPushButton(self.PreviewAlgFrame)
@@ -239,15 +120,7 @@ class Ui_PreviewWindow(object):
         self.PreviewAlgLabel = QLabel(self.PreviewAlgFrame)
         self.PreviewAlgLabel.setObjectName(u"PreviewAlgLabel")
         self.PreviewAlgLabel.setGeometry(QRect(40, 20, 400, 32))
-        self.PreviewAlgLabel.setStyleSheet(u"width: 337px;\n"
-"height: 80px;\n"
-"color: #252525;\n"
-"font-size: 24px;\n"
-"font-family: Segoe UI;\n"
-"font-weight: 600;\n"
-"line-height: 28px; \n"
-"word-wrap: break-word;\n"
-"")
+        self.PreviewAlgLabel.setStyleSheet(u"")
         self.PreviewAlgBGButton = QPushButton(self.PreviewAlgFrame)
         self.PreviewAlgBGButton.setObjectName(u"PreviewAlgBGButton")
         self.PreviewAlgBGButton.setGeometry(QRect(40, 70, 120, 40))
@@ -256,52 +129,13 @@ class Ui_PreviewWindow(object):
         self.PreviewSettingsFrame = QFrame(PreviewWindow)
         self.PreviewSettingsFrame.setObjectName(u"PreviewSettingsFrame")
         self.PreviewSettingsFrame.setGeometry(QRect(50, 875, 882, 271))
-        self.PreviewSettingsFrame.setStyleSheet(u"QFrame {\n"
-"	background: #F5F5F5;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton {\n"
-"	color: black;\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #D1D1D1;;\n"
-"}\n"
-"\n"
-"QPushButton:checked {\n"
-"	border: 2px solid #4F52B2;\n"
-"	border-radius: 10px;\n"
-"}")
+        self.PreviewSettingsFrame.setStyleSheet(u"")
         self.PreviewSettingsFrame.setFrameShape(QFrame.StyledPanel)
         self.PreviewSettingsFrame.setFrameShadow(QFrame.Raised)
         self.PreviewOverlayPlusButton = QPushButton(self.PreviewSettingsFrame)
         self.PreviewOverlayPlusButton.setObjectName(u"PreviewOverlayPlusButton")
         self.PreviewOverlayPlusButton.setGeometry(QRect(820, 180, 32, 32))
-        self.PreviewOverlayPlusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewOverlayPlusButton.setStyleSheet(u"")
         self.PreviewTCamLabel = QLabel(self.PreviewSettingsFrame)
         self.PreviewTCamLabel.setObjectName(u"PreviewTCamLabel")
         self.PreviewTCamLabel.setGeometry(QRect(460, 160, 350, 24))
@@ -313,155 +147,33 @@ class Ui_PreviewWindow(object):
         self.PreviewOverlaySlider = QSlider(self.PreviewSettingsFrame)
         self.PreviewOverlaySlider.setObjectName(u"PreviewOverlaySlider")
         self.PreviewOverlaySlider.setGeometry(QRect(82, 180, 730, 32))
-        self.PreviewOverlaySlider.setStyleSheet(u"QSlider {\n"
-"	background-color: #F5F5F5;\n"
-"}\n"
-"\n"
-"QSlider::groove:horizontal {\n"
-"	background-color: #8B8B8B;\n"
-"	height: 7px;\n"
-"}\n"
-"\n"
-"QSlider::sub-page:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal:pressed {\n"
-"	background-color: #161987;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}")
+        self.PreviewOverlaySlider.setStyleSheet(u"")
         self.PreviewOverlaySlider.setOrientation(Qt.Horizontal)
         self.PreviewFrameMinusButton = QPushButton(self.PreviewSettingsFrame)
         self.PreviewFrameMinusButton.setObjectName(u"PreviewFrameMinusButton")
         self.PreviewFrameMinusButton.setGeometry(QRect(34, 70, 32, 32))
-        self.PreviewFrameMinusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewFrameMinusButton.setStyleSheet(u"")
         self.PreviewOverlayMinusButton = QPushButton(self.PreviewSettingsFrame)
         self.PreviewOverlayMinusButton.setObjectName(u"PreviewOverlayMinusButton")
         self.PreviewOverlayMinusButton.setGeometry(QRect(34, 180, 32, 32))
-        self.PreviewOverlayMinusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewOverlayMinusButton.setStyleSheet(u"")
         self.PreviewFramePlusButton = QPushButton(self.PreviewSettingsFrame)
         self.PreviewFramePlusButton.setObjectName(u"PreviewFramePlusButton")
         self.PreviewFramePlusButton.setGeometry(QRect(820, 70, 32, 32))
-        self.PreviewFramePlusButton.setStyleSheet(u"QPushButton {\n"
-"	text-align: center;\n"
-"	color: black;\n"
-"	font-size: 13px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewFramePlusButton.setStyleSheet(u"")
         self.PreviewFrameSlider = QSlider(self.PreviewSettingsFrame)
         self.PreviewFrameSlider.setObjectName(u"PreviewFrameSlider")
         self.PreviewFrameSlider.setGeometry(QRect(82, 70, 730, 32))
-        self.PreviewFrameSlider.setStyleSheet(u"QSlider {\n"
-"	background-color: #F5F5F5;\n"
-"}\n"
-"\n"
-"QSlider::groove:horizontal {\n"
-"	background-color: #8B8B8B;\n"
-"	height: 7px;\n"
-"}\n"
-"\n"
-"QSlider::sub-page:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal {\n"
-"	background-color: #4F52B2;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}\n"
-"\n"
-"QSlider::handle:horizontal:pressed {\n"
-"	background-color: #161987;\n"
-"	width: 10px;\n"
-"	margin-top: -10px;\n"
-"	margin-bottom: -10px;\n"
-"	border-radius: 4px;\n"
-"}")
+        self.PreviewFrameSlider.setStyleSheet(u"")
         self.PreviewFrameSlider.setOrientation(Qt.Horizontal)
         self.PreviewOverlayButton = QPushButton(self.PreviewSettingsFrame)
         self.PreviewOverlayButton.setObjectName(u"PreviewOverlayButton")
         self.PreviewOverlayButton.setGeometry(QRect(387, 210, 120, 40))
-        self.PreviewOverlayButton.setStyleSheet(u"QPushButton {\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewOverlayButton.setStyleSheet(u"")
         self.PreviewParametersTitle = QLabel(self.PreviewSettingsFrame)
         self.PreviewParametersTitle.setObjectName(u"PreviewParametersTitle")
         self.PreviewParametersTitle.setGeometry(QRect(34, 20, 400, 32))
-        self.PreviewParametersTitle.setStyleSheet(u"width: 337px;\n"
-"height: 80px;\n"
-"color: #252525;\n"
-"font-size: 24px;\n"
-"font-family: Segoe UI;\n"
-"font-weight: 600;\n"
-"line-height: 28px; \n"
-"word-wrap: break-word;\n"
-"")
+        self.PreviewParametersTitle.setStyleSheet(u"")
         self.PreviewCamLabel = QLabel(self.PreviewSettingsFrame)
         self.PreviewCamLabel.setObjectName(u"PreviewCamLabel")
         self.PreviewCamLabel.setGeometry(QRect(82, 160, 350, 24))
@@ -473,37 +185,11 @@ class Ui_PreviewWindow(object):
         self.PreviewFramePlayButton = QPushButton(self.PreviewSettingsFrame)
         self.PreviewFramePlayButton.setObjectName(u"PreviewFramePlayButton")
         self.PreviewFramePlayButton.setGeometry(QRect(387, 100, 55, 40))
-        self.PreviewFramePlayButton.setStyleSheet(u"QPushButton {\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewFramePlayButton.setStyleSheet(u"")
         self.PreviewFrameStopButton = QPushButton(self.PreviewSettingsFrame)
         self.PreviewFrameStopButton.setObjectName(u"PreviewFrameStopButton")
         self.PreviewFrameStopButton.setGeometry(QRect(452, 100, 55, 40))
-        self.PreviewFrameStopButton.setStyleSheet(u"QPushButton {\n"
-"	font-size: 18px;\n"
-"	font-weight: 600;\n"
-"	border: 1px solid #E1DFDD;\n"
-"	border-radius: 10px;\n"
-"}\n"
-"\n"
-"QPushButton::hover::!pressed {\n"
-"	background: #E1DFDD;\n"
-"}\n"
-"\n"
-"QPushButton::pressed {\n"
-"	background: #8B8B8B;\n"
-"}")
+        self.PreviewFrameStopButton.setStyleSheet(u"")
 
         self.retranslateUi(PreviewWindow)
 
