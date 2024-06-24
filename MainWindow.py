@@ -24,7 +24,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1305, 922)
+        MainWindow.resize(1920, 1200)
         MainWindow.setMinimumSize(QSize(0, 0))
         MainWindow.setBaseSize(QSize(0, 0))
         MainWindow.setStyleSheet(u"")
