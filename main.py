@@ -12,7 +12,8 @@ from FinishDialog import Ui_FinishDialog
 
 import sys
 from pathlib import Path
-import subprocess
+import os
+import psutil
 
 class FocusWatcher(QObject):
     focus_in = Signal()
@@ -50,21 +51,24 @@ class StartWindow(QDialog):
         self.osk_process = None 
         
     def open_osk(self):
-        if not self.osk_process:
-            try:
-                self.osk_process = subprocess.Popen('osk.exe')
-                print("Экранная клавиатура запущена.")
-            except Exception as e:
-                print(f"Не удалось запустить экранную клавиатуру: {e}")
+        try:
+            os.startfile("osk")
+            print("Экранная клавиатура запущена.")
+        except Exception as e:
+            print(f"Не удалось запустить экранную клавиатуру: {e}")
 
     def close_osk(self):
-        if self.osk_process:
-            try:
-                self.osk_process.terminate()
-                self.osk_process = None
-                print("Экранная клавиатура закрыта.")
-            except Exception as e:
-                print(f"Не удалось закрыть экранную клавиатуру: {e}")
+        try:
+            for proc in psutil.process_iter(['name']):
+                if proc.info['name'] == 'osk.exe':
+                    proc.terminate()
+                    proc.wait(timeout=5)
+                    print("Экранная клавиатура закрыта.")
+                    break
+            else:
+                print("Экранная клавиатура не запущена.")
+        except Exception as e:
+            print(f"Не удалось закрыть экранную клавиатуру: {e}")
 
 
     def keyPressEvent(self, event):
