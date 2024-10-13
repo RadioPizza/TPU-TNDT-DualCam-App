@@ -1,9 +1,7 @@
 # PTT v0.2.2
 
-import sys
-from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QObject, Signal, QEvent
 from StartDialog import Ui_StartDialog
 from MainWindow import Ui_MainWindow
 from SettingsWindow import Ui_SettingsWindow
@@ -12,17 +10,63 @@ from RetestDialog import Ui_RetestDialog
 from PreviewWindow import Ui_PreviewWindow
 from FinishDialog import Ui_FinishDialog
 
+import sys
+from pathlib import Path
+import subprocess
 
-class StartApp(QDialog):
+class FocusWatcher(QObject):
+    focus_in = Signal()
+    focus_out = Signal()
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.FocusIn:
+            self.focus_in.emit()
+        elif event.type() == QEvent.FocusOut:
+            self.focus_out.emit()
+        return super(FocusWatcher, self).eventFilter(obj, event)
+    
+class StartWindow(QDialog):
     def __init__(self):
-        super(StartApp, self).__init__()
+        super(StartWindow, self).__init__()
         self.ui = Ui_StartDialog()
         self.ui.setupUi(self)
 
         self.ui.StartStartButton.clicked.connect(self.openMainWindow)
         self.ui.StartExitButton.clicked.connect(self.close)
         self.ui.StartChangePathButton.clicked.connect(self.changePath)
-    
+
+        # Создаем экземпляр наблюдателя за фокусом
+        self.focus_watcher = FocusWatcher()
+
+        # Устанавливаем фильтр событий на поля ввода
+        self.ui.StartNameLineEdit.installEventFilter(self.focus_watcher)
+        self.ui.StartSurnameLineEdit.installEventFilter(self.focus_watcher)
+
+        # Подключаем сигналы
+        self.focus_watcher.focus_in.connect(self.open_osk)
+        self.focus_watcher.focus_out.connect(self.close_osk)
+        
+        # Инициализация переменной для процесса экранной клавиатуры
+        self.osk_process = None 
+        
+    def open_osk(self):
+        if not self.osk_process:
+            try:
+                self.osk_process = subprocess.Popen('osk.exe')
+                print("Экранная клавиатура запущена.")
+            except Exception as e:
+                print(f"Не удалось запустить экранную клавиатуру: {e}")
+
+    def close_osk(self):
+        if self.osk_process:
+            try:
+                self.osk_process.terminate()
+                self.osk_process = None
+                print("Экранная клавиатура закрыта.")
+            except Exception as e:
+                print(f"Не удалось закрыть экранную клавиатуру: {e}")
+
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             pass
@@ -54,13 +98,13 @@ class StartApp(QDialog):
                 "object_of_testing": object_of_testing,
                 "files_saving_path": files_saving_path,
             }
-            self.mainWindow = MainApp(user_data)  # Передача данных пользователя в главное окно
+            self.mainWindow = MainWindow(user_data)  # Передача данных пользователя в главное окно
             self.mainWindow.show()
             self.close()
 
-class MainApp(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, user_data):
-        super(MainApp, self).__init__()
+        super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -169,7 +213,7 @@ if __name__ == '__main__':
     stylesheet_path = "LightStyle.qss"
     app.setStyleSheet(Path(stylesheet_path).read_text())
     
-    startApp = StartApp()
-    startApp.show()
+    StartWindow = StartWindow()
+    StartWindow.show()
 
     sys.exit(app.exec())
