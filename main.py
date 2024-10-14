@@ -167,14 +167,14 @@ class StartWindow(QDialog):
             field.setStyleSheet("")
 
 class MainWindow(QMainWindow):
+    current_position = np.zeros(2)  # вектор, хранящий координаты текущей зоны [x, y]
+    last_moving = np.zeros(2)    # вектор, хранящий последнее перемещение [x, y]
+
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
-        current_position = np.zeros(2)  # вектор, хранящий координаты текущей зоны [x, y]
-        last_moving = np.zeros(2)    # вектор, хранящий последнее перемещение [x, y]
-
         # Подключаем сигналы кнопок
         self.ui.MainPlayButton.clicked.connect(self.startTesting)
         self.ui.MainStopButton.clicked.connect(self.stopTesting)
@@ -222,25 +222,42 @@ class SettingsWindow(QDialog):
 
 class TrajectoryDialog(QDialog):
     def __init__(self):
-        super(TrajectoryDialog, self).__init__()
+        super().__init__()
         self.ui = Ui_TrajectoryDialog()
         self.ui.setupUi(self)
+
+        self.ui.TrajectoryRightButton.clicked.connect(lambda: self.trajectory_handler('right'))
+        self.ui.TrajectoryLeftButton.clicked.connect(lambda: self.trajectory_handler('left'))
+        self.ui.TrajectoryUpButton.clicked.connect(lambda: self.trajectory_handler('up'))
+        self.ui.TrajectoryDownButton.clicked.connect(lambda: self.trajectory_handler('down'))
 
         self.ui.TrajectoryRepeatButton.clicked.connect(self.openRetestDialog)
         self.ui.TrajectoryPreviewButton.clicked.connect(self.openPreviewWindow)
         self.ui.TrajectoryFinishButton.clicked.connect(self.openFinishDialog)
 
+    def trajectory_handler(self, direction: str):
+        match direction:
+            case 'right':   MainWindow.last_moving = np.array([ 1,  0])
+            case 'left':    MainWindow.last_moving = np.array([-1,  0])
+            case 'up':      MainWindow.last_moving = np.array([ 0,  1])
+            case 'down':    MainWindow.last_moving = np.array([ 0, -1])
+        MainWindow.current_position += MainWindow.last_moving
+        self.close()
+
     def openRetestDialog(self):
+        """Открывает диалоговое окно Retest, закрывая себя."""
         self.RetestDialog = RetestDialog()
         self.RetestDialog.show()
         self.close()
     
     def openPreviewWindow(self):
+        """Открывает окно предпросмотра, закрывая себя."""
         self.PreviewWindow = PreviewWindow()
         self.PreviewWindow.show()
         self.close()
     
     def openFinishDialog(self):
+        """Открывает финальное окно, закрывая себя."""
         self.FinishDialog = FinishDialog()
         self.FinishDialog.show()
         self.close()
@@ -298,6 +315,6 @@ if __name__ == '__main__':
         "object_of_testing": None,
         "save_path": None
     }
-    StartWindow = StartWindow()
+    StartWindow = TrajectoryDialog()
     StartWindow.show()
     sys.exit(app.exec())
