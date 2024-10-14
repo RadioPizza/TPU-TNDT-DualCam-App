@@ -1,13 +1,11 @@
-# PTT v0.3.0
+# PTT v0.3.1
 
 import sys
-import os
 from pathlib import Path
-import psutil
-
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QTimer
-
+from utils import Utilities as utils
+from osk import OnScreenKeyboard as osk
 from StartDialog import Ui_StartDialog
 from MainWindow import Ui_MainWindow
 from SettingsWindow import Ui_SettingsWindow
@@ -33,64 +31,43 @@ class FocusWatcher(QObject):
 
 class StartWindow(QDialog):
     def __init__(self):
-        super(StartWindow, self).__init__()
+        super().__init__()
         self.ui = Ui_StartDialog()
         self.ui.setupUi(self)
 
-        # Создаем экземпляр наблюдателя за фокусом
-        self.focus_watcher = FocusWatcher()
-
-        # Устанавливаем фильтр событий на поля ввода
-        self.ui.StartNameLineEdit.installEventFilter(self.focus_watcher)
-        self.ui.StartSurnameLineEdit.installEventFilter(self.focus_watcher)
-        self.ui.StartObjectLineEdit.installEventFilter(self.focus_watcher)
-
-        # Подключаем сигналы
-        self.ui.StartStartButton.clicked.connect(self.open_MainWindow)
-        self.ui.StartExitButton.clicked.connect(self.close)
-        self.ui.StartChangePathButton.clicked.connect(self.change_save_path)
-        self.focus_watcher.focus_in.connect(self.open_osk)
-        self.focus_watcher.focus_out.connect(self.close_osk)
-    
-    def is_osk_running(self) -> bool:
-        """Проверяет, запущена ли экранная клавиатура."""
-        for proc in psutil.process_iter(['name']):
-            if proc.info['name'] == 'osk.exe':
-                return True
-        return False
-     
-    def open_osk(self) -> None:
-        """Запускает экранную клавиатуру."""
-        if not self.is_osk_running():
-            try:
-                os.startfile("osk")
-            except Exception as e:
-                print(f"Не удалось запустить экранную клавиатуру: {e}")
-
-    def close_osk(self) -> None:
-        """Закрывает экранную клавиатуру, если фокус ушел не на другое текстовое поле."""
-        QTimer.singleShot(250, self._conditional_close_osk)
-
-    def _conditional_close_osk(self):
-        focused_widget = QApplication.focusWidget()
-        # Список текстовых полей
-        text_fields = [
+        # Список полей ввода, за которыми будем отслеживать фокус
+        self.input_fields = [
             self.ui.StartNameLineEdit,
             self.ui.StartSurnameLineEdit,
             self.ui.StartObjectLineEdit
         ]
-        if focused_widget not in text_fields:
-            # Если фокус не на текстовом поле, закрываем osk
-            try:
-                for proc in psutil.process_iter(['pid', 'name']):
-                    if proc.info['name'] == 'osk.exe':
-                        proc.kill()  # Принудительно завершает процесс
-                        break
-            except (psutil.NoSuchProcess, Exception) as e:
-                print(f"Не удалось закрыть экранную клавиатуру: {e}")
-        # Иначе не делаем ничего, osk остается открытой
+
+        # Создаем экземпляр наблюдателя за фокусом и устанавливаем на поля
+        self.focus_watcher = FocusWatcher()
+        for field in self.input_fields:
+            field.installEventFilter(self.focus_watcher)
+
+        # Подключаем сигналы фокусировки
+        self.focus_watcher.focus_in.connect(osk.open)
+        self.focus_watcher.focus_out.connect(self.hide_osk)
+
+        # Подключаем сигналы кнопок
+        self.ui.StartStartButton.clicked.connect(self.open_main_window)
+        self.ui.StartExitButton.clicked.connect(self.close)
+        self.ui.StartChangePathButton.clicked.connect(self.change_save_path)
+    
+    def hide_osk(self) -> None:
+        """Закрывает экранную клавиатуру, если фокус ушел не на другое текстовое поле."""
+        QTimer.singleShot(250, self._conditional_close_osk)
+
+    def _conditional_close_osk(self) -> None:
+        focused_widget = QApplication.focusWidget()
+        if focused_widget not in self.input_fields:
+            osk.close()
+        # Если фокус на одном из текстовых полей, ничего не делаем
 
     def keyPressEvent(self, event) -> None:
+        """Обрабатывает нажатия клавиш, игнорируя Enter и Return."""
         if event.key() not in (Qt.Key_Return, Qt.Key_Enter):
             super().keyPressEvent(event)
 
@@ -101,10 +78,10 @@ class StartWindow(QDialog):
             if path:
                 self.ui.StartPathLineEdit.setText(path)
         except Exception as e:
-             self.show_error(f"Произошла ошибка при выборе пути сохранения: {e}")
+            QMessageBox.critical(self, "Error", f"An error occurred while selecting the save path: {e}.")
 
-    def open_MainWindow(self) -> None:
-        '''Открывает основное окно, закрывая стартовое'''
+    def open_main_window(self) -> None:
+        """Открывает основное окно, закрывая стартовое."""
         if self._validate_form():
             user_data = {
                 "name": self.ui.StartNameLineEdit.text().strip(),
@@ -112,32 +89,24 @@ class StartWindow(QDialog):
                 "object_of_testing": self.ui.StartObjectLineEdit.text().strip(),
                 "save_path": self.ui.StartPathLineEdit.text().strip(),
             }
-            self.mainWindow = MainWindow(user_data)
-            self.mainWindow.show()
+            self.main_window = MainWindow(user_data)
+            self.main_window.show()
             self.close()
     
     def _validate_form(self) -> bool:
-        '''Проверяет заполнены ли все поля'''
+        """Проверяет заполнены ли все необходимые поля."""
         name = self.ui.StartNameLineEdit.text().strip()
         surname = self.ui.StartSurnameLineEdit.text().strip()
         object_of_testing = self.ui.StartObjectLineEdit.text().strip()
         save_path = self.ui.StartPathLineEdit.text().strip()
 
         if not all([name, surname, object_of_testing]) or save_path == '...':
-            QMessageBox.warning(self, "Incomplete Form", "Please fill in all fields and select a save path.")
+            QMessageBox.critical(self, "Error: incomplete form", "Please fill in all fields and select a save path.")
             return False
-        elif not self.is_valid_path(save_path):
-            self.show_error("The specified save path is invalid. Please select an existing folder.")
+        elif not utils.is_valid_path(save_path):
+            QMessageBox.critical(self, "Error: invalid path", "The specified save path is invalid. Please select an existing folder.")
             return False
         return True
-        
-    def is_valid_path(self, path: str) -> bool:
-        '''Проверяет путь'''
-        return Path(path).exists() and Path(path).is_dir()
-    
-    def show_error(self, message: str) -> None:
-        """Показывает сообщение об ошибке."""
-        QMessageBox.critical(self, message)
 
 class MainWindow(QMainWindow):
     def __init__(self, user_data):
