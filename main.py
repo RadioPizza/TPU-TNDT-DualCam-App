@@ -177,41 +177,41 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         
         # Подключаем сигналы кнопок
-        self.ui.MainPlayButton.clicked.connect(self.startTesting)
-        self.ui.MainStopButton.clicked.connect(self.stopTesting)
-        self.ui.MainSettingsButton.clicked.connect(self.openSettingsWindow)
+        self.ui.MainPlayButton.clicked.connect(self.start_testing)
+        self.ui.MainStopButton.clicked.connect(self.stop_testing)
+        self.ui.MainSettingsButton.clicked.connect(self.open_settings_window)
     
     def keyPressEvent(self, event) -> None:
         """Обрабатывает нажатия клавиш, игнорируя Esc."""
         if event.key() != Qt.Key_Escape:
             super().keyPressEvent(event)
 
-    def startTesting(self):
+    def start_testing(self) -> None:
         """Запускает/продолжает контроль?"""
         Heater.turn_on()
-        # код самой логики контроля
+        # здесь будеь код самой логики контроля
         #self.openTrajectoryDialog()
 
-    def stopTesting(self):
+    def stop_testing(self) -> None:
         """Останавливает контроль?"""
         Heater.turn_off()
-        # код остановки самой логики контроля
-        #self.delete_current_zone_data()
+        # здесь будеь код остановки самой логики контроля
+        self.delete_current_zone_data()
 
-    def openSettingsWindow(self):
+    def open_settings_window(self) -> None:
         """Открывает окно настроек."""
         self.settingsWindow = SettingsWindow()
         self.settingsWindow.show()
     
-    def openTrajectoryDialog(self):
+    def open_trajectory_dialog(self) -> None:
         """Открывает диалоговое окно выбора следующего положения."""
         self.TrajectoryDialog = TrajectoryDialog()
         self.TrajectoryDialog.show()
 
-    def delete_current_zone_data():
+    def delete_current_zone_data(self) -> None:
         """Удаляет данные о текущей зоне контроля и последнем перемещении."""
-        # delete last video
-        current_position -= last_moving
+        # здесь будет delete last video
+        self.current_position -= self.last_moving
         
     
 class SettingsWindow(QDialog):
@@ -228,16 +228,17 @@ class TrajectoryDialog(QDialog):
         self.ui = Ui_TrajectoryDialog()
         self.ui.setupUi(self)
 
+        # Подключаем сигналы кнопок
         self.ui.TrajectoryRightButton.clicked.connect(lambda: self.trajectory_handler('right'))
         self.ui.TrajectoryLeftButton.clicked.connect(lambda: self.trajectory_handler('left'))
         self.ui.TrajectoryUpButton.clicked.connect(lambda: self.trajectory_handler('up'))
         self.ui.TrajectoryDownButton.clicked.connect(lambda: self.trajectory_handler('down'))
+        self.ui.TrajectoryRepeatButton.clicked.connect(self.open_retest_dialog)
+        self.ui.TrajectoryPreviewButton.clicked.connect(self.open_preview_window)
+        self.ui.TrajectoryFinishButton.clicked.connect(self.open_finish_dialog)
 
-        self.ui.TrajectoryRepeatButton.clicked.connect(self.openRetestDialog)
-        self.ui.TrajectoryPreviewButton.clicked.connect(self.openPreviewWindow)
-        self.ui.TrajectoryFinishButton.clicked.connect(self.openFinishDialog)
-
-    def trajectory_handler(self, direction: str):
+    def trajectory_handler(self, direction: str) -> None:
+        """Здесь нужно написать описание."""
         match direction:
             case 'right':   MainWindow.last_moving = np.array([ 1,  0])
             case 'left':    MainWindow.last_moving = np.array([-1,  0])
@@ -246,19 +247,19 @@ class TrajectoryDialog(QDialog):
         MainWindow.current_position += MainWindow.last_moving
         self.close()
 
-    def openRetestDialog(self):
+    def open_retest_dialog(self) -> None:
         """Открывает диалоговое окно Retest, закрывая себя."""
         self.RetestDialog = RetestDialog()
         self.RetestDialog.show()
         self.close()
     
-    def openPreviewWindow(self):
+    def open_preview_window(self) -> None:
         """Открывает окно предпросмотра, закрывая себя."""
         self.PreviewWindow = PreviewWindow()
         self.PreviewWindow.show()
         self.close()
     
-    def openFinishDialog(self):
+    def open_finish_dialog(self) -> None:
         """Открывает финальное окно, закрывая себя."""
         self.FinishDialog = FinishDialog()
         self.FinishDialog.show()
@@ -266,20 +267,25 @@ class TrajectoryDialog(QDialog):
 
 class RetestDialog(QDialog):
     def __init__(self):
-        super(RetestDialog, self).__init__()
+        super().__init__()
         self.ui = Ui_RetestDialog()
         self.ui.setupUi(self)
-
-        self.ui.RetestYesButton.clicked.connect(self.openMainWindow)
+        
+        # Подключаем сигналы кнопок
         self.ui.RetestNoButton.clicked.connect(self.openTrajectoryDialog)
+        self.ui.RetestYesButton.clicked.connect(self.close())
 
-    def openMainWindow(self):
+    def open_trajectory_dialog(self) -> None:
+        """Открывает диалоговое окно выбора следующего положения."""
+        self.TrajectoryDialog = TrajectoryDialog()
+        self.TrajectoryDialog.show()
         self.close()
-    
-    def openTrajectoryDialog(self):
-        self.openTrajectoryDialog = TrajectoryDialog()
-        self.openTrajectoryDialog.show()
+
+    def retest(self):
+        """Здесь нужно написать описание."""
+        self.main_window.delete_current_zone_data()
         self.close()
+
 
 class PreviewWindow(QDialog):
     def __init__(self):
@@ -317,6 +323,6 @@ if __name__ == '__main__':
         "object_of_testing": None,
         "save_path": None
     }
-    StartWindow = MainWindow()
+    StartWindow = StartWindow()
     StartWindow.show()
     sys.exit(app.exec())
