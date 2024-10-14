@@ -182,8 +182,9 @@ class MainWindow(QMainWindow):
     
     def keyPressEvent(self, event) -> None:
         """Обрабатывает нажатия клавиш, игнорируя Esc."""
-        if event.key() not in (Qt.Key_Enter): # здесь надо заменить Enter на Esc
+        if event.key() != Qt.Key_Escape:
             super().keyPressEvent(event)
+
 
     def startTesting(self):
         """Запускает/продолжает контроль?"""
@@ -315,6 +316,6 @@ if __name__ == '__main__':
         "object_of_testing": None,
         "save_path": None
     }
-    StartWindow = TrajectoryDialog()
+    StartWindow = MainWindow()
     StartWindow.show()
     sys.exit(app.exec())
