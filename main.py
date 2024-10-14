@@ -10,6 +10,7 @@ from utils import Utilities as utils
 from osk import OnScreenKeyboard as osk
 
 from MainWindow import Ui_MainWindow
+from heater_interface import Heater
 import numpy as np
 
 from SettingsWindow import Ui_SettingsWindow
@@ -185,18 +186,17 @@ class MainWindow(QMainWindow):
         if event.key() != Qt.Key_Escape:
             super().keyPressEvent(event)
 
-
     def startTesting(self):
         """Запускает/продолжает контроль?"""
-        #heater.turn_on()
+        Heater.turn_on()
+        # код самой логики контроля
         #self.openTrajectoryDialog()
-        pass
 
     def stopTesting(self):
         """Останавливает контроль?"""
-        #heater.turn_off()
+        Heater.turn_off()
+        # код остановки самой логики контроля
         #self.delete_current_zone_data()
-        pass
 
     def openSettingsWindow(self):
         """Открывает окно настроек."""
@@ -209,9 +209,10 @@ class MainWindow(QMainWindow):
         self.TrajectoryDialog.show()
 
     def delete_current_zone_data():
-        """Удаляет данные о текущей зоне контроля."""
+        """Удаляет данные о текущей зоне контроля и последнем перемещении."""
+        # delete last video
         current_position -= last_moving
-        # + delete last video
+        
     
 class SettingsWindow(QDialog):
     def __init__(self):
