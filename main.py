@@ -4,10 +4,14 @@ import sys
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QLineEdit
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QTimer
+
+from StartDialog import Ui_StartDialog
 from utils import Utilities as utils
 from osk import OnScreenKeyboard as osk
-from StartDialog import Ui_StartDialog
+
 from MainWindow import Ui_MainWindow
+import numpy as np
+
 from SettingsWindow import Ui_SettingsWindow
 from TrajectoryDialog import Ui_TrajectoryDialog
 from RetestDialog import Ui_RetestDialog
@@ -56,6 +60,11 @@ class StartWindow(QDialog):
         self.ui.StartExitButton.clicked.connect(self.close)
         self.ui.StartChangePathButton.clicked.connect(self.change_save_path)
     
+    def keyPressEvent(self, event) -> None:
+        """Обрабатывает нажатия клавиш, игнорируя Enter и Return."""
+        if event.key() not in (Qt.Key_Return, Qt.Key_Enter):
+            super().keyPressEvent(event)
+
     def hide_osk(self) -> None:
         """Закрывает экранную клавиатуру, если фокус ушел не на другое текстовое поле."""
         QTimer.singleShot(250, self._conditional_close_osk)
@@ -65,11 +74,6 @@ class StartWindow(QDialog):
         if focused_widget not in self.input_fields:
             osk.close()
         # Если фокус на одном из текстовых полей, ничего не делаем
-
-    def keyPressEvent(self, event) -> None:
-        """Обрабатывает нажатия клавиш, игнорируя Enter и Return."""
-        if event.key() not in (Qt.Key_Return, Qt.Key_Enter):
-            super().keyPressEvent(event)
 
     def change_save_path(self) -> None:
         """Открывает диалоговое окно выбора каталога и устанавливает путь в поле StartPathLineEdit."""
@@ -82,14 +86,14 @@ class StartWindow(QDialog):
 
     def open_main_window(self) -> None:
         """Открывает основное окно, закрывая стартовое."""
+        global user_data
         if self._validate_form():
-            user_data = {
-                "name": self.ui.StartNameLineEdit.text().strip(),
-                "surname": self.ui.StartSurnameLineEdit.text().strip(),
-                "object_of_testing": self.ui.StartObjectLineEdit.text().strip(),
-                "save_path": self.ui.StartPathLineEdit.text().strip(),
-            }
-            self.main_window = MainWindow(user_data)
+            user_data['user_name'] = self.ui.StartNameLineEdit.text().strip()
+            user_data['user_surname'] = self.ui.StartSurnameLineEdit.text().strip()
+            user_data['object_of_testing'] = self.ui.StartObjectLineEdit.text().strip()
+            user_data['save_path'] = self.ui.StartPathLineEdit.text().strip()
+
+            self.main_window = MainWindow()
             self.main_window.show()
             self.close()
     
@@ -97,8 +101,8 @@ class StartWindow(QDialog):
         """Проверяет заполнены ли все необходимые поля и корректны ли введенные данные."""
         errors = []
 
-        name = self.ui.StartNameLineEdit.text().strip()
-        surname = self.ui.StartSurnameLineEdit.text().strip()
+        user_name = self.ui.StartNameLineEdit.text().strip()
+        user_surname = self.ui.StartSurnameLineEdit.text().strip()
         object_of_testing = self.ui.StartObjectLineEdit.text().strip()
         save_path = self.ui.StartPathLineEdit.text().strip()
 
@@ -106,24 +110,24 @@ class StartWindow(QDialog):
         self._reset_field_styles()
 
         # Проверка имени
-        if not name:
+        if not user_name:
             errors.append("Name cannot be empty.")
             self._highlight_field(self.ui.StartNameLineEdit)
-        elif not name.isalpha():
+        elif not user_name.isalpha():
             errors.append("The name must contain only letters.")
             self._highlight_field(self.ui.StartNameLineEdit)
-        elif len(name) == 1:
+        elif len(user_name) == 1:
             errors.append("The name cannot consist of one letter.")
             self._highlight_field(self.ui.StartNameLineEdit)
 
         # Проверка фамилии
-        if not surname:
+        if not user_surname:
             errors.append("The last name cannot be empty.")
             self._highlight_field(self.ui.StartSurnameLineEdit)
-        elif not surname.isalpha():
+        elif not user_surname.isalpha():
             errors.append("The last name must contain only letters.")
             self._highlight_field(self.ui.StartSurnameLineEdit)
-        elif len(surname) == 1:
+        elif len(user_surname) == 1:
             errors.append("The surname cannot consist of one letter.")
             self._highlight_field(self.ui.StartSurnameLineEdit)
 
@@ -163,33 +167,51 @@ class StartWindow(QDialog):
             field.setStyleSheet("")
 
 class MainWindow(QMainWindow):
-    def __init__(self, user_data):
-        super(MainWindow, self).__init__()
+    def __init__(self):
+        super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        self.ui.MainSettingsButton.clicked.connect(self.openSettingsWindow)
-        self.ui.MainPlayButton.clicked.connect(self.startTesting)
         
-        print(user_data)
+        current_position = np.zeros(2)  # вектор, хранящий координаты текущей зоны [x, y]
+        last_moving = np.zeros(2)    # вектор, хранящий последнее перемещение [x, y]
+
+        # Подключаем сигналы кнопок
+        self.ui.MainPlayButton.clicked.connect(self.startTesting)
+        self.ui.MainStopButton.clicked.connect(self.stopTesting)
+        self.ui.MainSettingsButton.clicked.connect(self.openSettingsWindow)
+    
+    def keyPressEvent(self, event) -> None:
+        """Обрабатывает нажатия клавиш, игнорируя Esc."""
+        if event.key() not in (Qt.Key_Enter): # здесь надо заменить Enter на Esc
+            super().keyPressEvent(event)
+
+    def startTesting(self):
+        """Запускает/продолжает контроль?"""
+        #heater.turn_on()
+        #self.openTrajectoryDialog()
+        pass
+
+    def stopTesting(self):
+        """Останавливает контроль?"""
+        #heater.turn_off()
+        #self.delete_current_zone_data()
+        pass
 
     def openSettingsWindow(self):
+        """Открывает окно настроек."""
         self.settingsWindow = SettingsWindow()
         self.settingsWindow.show()
     
     def openTrajectoryDialog(self):
+        """Открывает диалоговое окно выбора следующего положения."""
         self.TrajectoryDialog = TrajectoryDialog()
         self.TrajectoryDialog.show()
 
-    def startTesting(self):
-        self.openTrajectoryDialog()
-
-    def stopTesting(self):
-        pass
-
-    def saveData(self):
-        pass
-
+    def delete_current_zone_data():
+        """Удаляет данные о текущей зоне контроля."""
+        current_position -= last_moving
+        # + delete last video
+    
 class SettingsWindow(QDialog):
     def __init__(self):
         super(SettingsWindow, self).__init__()
@@ -270,6 +292,12 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     stylesheet_path = "LightStyle.qss"
     app.setStyleSheet(Path(stylesheet_path).read_text())
+    user_data = {
+        'user_name': None,
+        'user_surname': None,
+        "object_of_testing": None,
+        "save_path": None
+    }
     StartWindow = StartWindow()
     StartWindow.show()
     sys.exit(app.exec())
