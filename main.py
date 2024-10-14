@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QLineEdit
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QTimer
 from utils import Utilities as utils
 from osk import OnScreenKeyboard as osk
@@ -94,19 +94,73 @@ class StartWindow(QDialog):
             self.close()
     
     def _validate_form(self) -> bool:
-        """Проверяет заполнены ли все необходимые поля."""
+        """Проверяет заполнены ли все необходимые поля и корректны ли введенные данные."""
+        errors = []
+
         name = self.ui.StartNameLineEdit.text().strip()
         surname = self.ui.StartSurnameLineEdit.text().strip()
         object_of_testing = self.ui.StartObjectLineEdit.text().strip()
         save_path = self.ui.StartPathLineEdit.text().strip()
 
-        if not all([name, surname, object_of_testing]) or save_path == '...':
-            QMessageBox.critical(self, "Error: incomplete form", "Please fill in all fields and select a save path.")
-            return False
+        # Сброс ранее установленных стилей
+        self._reset_field_styles()
+
+        # Проверка имени
+        if not name:
+            errors.append("Name cannot be empty.")
+            self._highlight_field(self.ui.StartNameLineEdit)
+        elif not name.isalpha():
+            errors.append("The name must contain only letters.")
+            self._highlight_field(self.ui.StartNameLineEdit)
+        elif len(name) == 1:
+            errors.append("The name cannot consist of one letter.")
+            self._highlight_field(self.ui.StartNameLineEdit)
+
+        # Проверка фамилии
+        if not surname:
+            errors.append("The last name cannot be empty.")
+            self._highlight_field(self.ui.StartSurnameLineEdit)
+        elif not surname.isalpha():
+            errors.append("The last name must contain only letters.")
+            self._highlight_field(self.ui.StartSurnameLineEdit)
+        elif len(surname) == 1:
+            errors.append("The surname cannot consist of one letter.")
+            self._highlight_field(self.ui.StartSurnameLineEdit)
+
+        # Проверка объекта тестирования
+        if not object_of_testing:
+            errors.append("The test object cannot be empty.")
+            self._highlight_field(self.ui.StartObjectLineEdit)
+
+        # Проверка пути сохранения
+        if not save_path or save_path == '...':
+            errors.append("You must select a path to save.")
+            self._highlight_field(self.ui.StartPathLineEdit)
         elif not utils.is_valid_path(save_path):
-            QMessageBox.critical(self, "Error: invalid path", "The specified save path is invalid. Please select an existing folder.")
+            errors.append("The specified save path is invalid. Please select an existing folder..")
+            self._highlight_field(self.ui.StartPathLineEdit)
+
+        if errors:
+            error_message = "\n".join(errors)
+            QMessageBox.critical(self, "Error filling out the form", error_message)
             return False
+
         return True
+    
+    def _highlight_field(self, field: QLineEdit) -> None:
+        """Выделяет поле, в котором обнаружена ошибка."""
+        field.setStyleSheet("border: 1px solid red;")
+
+    def _reset_field_styles(self) -> None:
+        """Сбрасывает стили всех полей ввода."""
+        fields = [
+            self.ui.StartNameLineEdit,
+            self.ui.StartSurnameLineEdit,
+            self.ui.StartObjectLineEdit,
+            self.ui.StartPathLineEdit
+        ]
+        for field in fields:
+            field.setStyleSheet("")
 
 class MainWindow(QMainWindow):
     def __init__(self, user_data):
