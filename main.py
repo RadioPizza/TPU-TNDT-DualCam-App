@@ -1,4 +1,4 @@
-# PTT v0.3.1
+# PTT v0.4.1
 
 import sys
 from pathlib import Path
@@ -170,12 +170,16 @@ class StartWindow(QDialog):
 class MainWindow(QMainWindow):
     current_position = np.zeros(2)  # вектор, хранящий координаты текущей зоны [x, y]
     last_moving = np.zeros(2)    # вектор, хранящий последнее перемещение [x, y]
+    progress = 0
 
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
+        # Выставляем 0 на полосе прогресса
+        self.ui.MainProgressBar.setValue(0)
+
         # Подключаем сигналы кнопок
         self.ui.MainPlayButton.clicked.connect(self.start_testing)
         self.ui.MainStopButton.clicked.connect(self.stop_testing)
@@ -323,6 +327,6 @@ if __name__ == '__main__':
         "object_of_testing": None,
         "save_path": None
     }
-    StartWindow = StartWindow()
+    StartWindow = MainWindow()
     StartWindow.show()
     sys.exit(app.exec())
