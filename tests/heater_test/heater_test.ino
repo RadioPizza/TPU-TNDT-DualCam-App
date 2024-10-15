@@ -1,13 +1,13 @@
 // Имитация контроллера нагревателя
 
 #define BAUD_RATE 115200
-#define LED_PIN 13
+#define LED_PIN 7
 bool heaterState = false;
 
 void setup() {
   Serial.begin(BAUD_RATE);
   pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW); // Выключаем светодиод при старте
+  digitalWrite(LED_PIN, LOW);
 }
 
 void loop() {

@@ -5,12 +5,12 @@ class Heater:
     Класс для управления нагревателем через последовательный порт.
     """
 
-    def __init__(self, com_port_number, baud_rate=115200):
+    def __init__(self, com_port_number, baud_rate):
         """
         Инициализация подключения к нагревателю.
 
         :param com_port_number: Строка с номером COM-порта (например, 'COM3', '/dev/ttyUSB0').
-        :param baud_rate: Скорость передачи данных в бодах (по умолчанию 115200).
+        :param baud_rate: Скорость передачи данных в бодах (например, 115200).
         """
         self.state = False  # Текущее состояние нагревателя (включен/выключен)
         self.ser = None     # Объект serial.Serial
