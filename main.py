@@ -1,4 +1,4 @@
-# PTT v0.5.0
+# PTT v0.5.1
 
 import sys
 from pathlib import Path
@@ -197,9 +197,6 @@ class MainWindow(QMainWindow):
 
         # Выставляем 0 на полосе прогресса
         self.ui.MainProgressBar.setValue(0)
-        
-        # Запускаем таймер
-        self.timer.start(30)
     
     def keyPressEvent(self, event) -> None:
         """Обрабатывает нажатия клавиш, игнорируя Esc."""
@@ -207,15 +204,16 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(event)
 
     def start_testing(self) -> None:
-        """Запускает/продолжает контроль?"""
+        """Запускает/продолжает контроль."""
         Heater.turn_on()
-        # здесь будеь код самой логики контроля
-        #self.openTrajectoryDialog()
+        self.timer.start(30)  # Обновляем изображение каждые 30 мс
+        # здесь будет код самой логики контроля
 
     def stop_testing(self) -> None:
-        """Останавливает контроль?"""
+        """Останавливает контроль."""
         Heater.turn_off()
-        # здесь будеь код остановки самой логики контроля
+        self.timer.stop()  # Останавливаем таймер и поток с камеры
+        # здесь будет код остановки самой логики контроля
         self.delete_current_zone_data()
 
     def open_settings_window(self) -> None:
@@ -250,8 +248,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Закрываем камеру при закрытии окна."""
         self.camera.release()
-        event.accept()
-        
+        event.accept()      
     
 class SettingsWindow(QDialog):
     def __init__(self):
@@ -325,7 +322,6 @@ class RetestDialog(QDialog):
         self.main_window.delete_current_zone_data()
         self.close()
 
-
 class PreviewWindow(QDialog):
     def __init__(self):
         super(PreviewWindow, self).__init__()
@@ -350,7 +346,6 @@ class FinishDialog(QDialog):
         super(FinishDialog, self).__init__()
         self.ui = Ui_FinishDialog()
         self.ui.setupUi(self)
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
