@@ -1,4 +1,4 @@
-# PTT v0.5.1
+# PTT v0.5.3
 
 import sys
 from pathlib import Path
@@ -173,14 +173,15 @@ class StartWindow(QDialog):
             field.setStyleSheet("")
 
 class MainWindow(QMainWindow):
-    current_position = np.zeros(2)  # вектор, хранящий координаты текущей зоны [x, y]
-    last_moving = np.zeros(2)    # вектор, хранящий последнее перемещение [x, y]
-    progress = 0
-
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        # Поля
+        self.current_position = np.zeros(2)  # вектор, хранящий координаты текущей зоны [x, y]
+        self.last_moving = np.zeros(2)    # вектор, хранящий последнее перемещение [x, y]
+        self.progress = 0
 
         # Подключаем сигналы кнопок
         self.ui.MainPlayButton.clicked.connect(self.start_testing)
