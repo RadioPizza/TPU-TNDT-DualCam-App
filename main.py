@@ -1,9 +1,10 @@
-# PTT v0.4.1
+# PTT v0.5.0
 
 import sys
 from pathlib import Path
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QLineEdit
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QLineEdit, QGraphicsScene, QGraphicsPixmapItem
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QTimer
+from PySide6.QtGui import QPixmap, QImage
 
 from StartDialog import Ui_StartDialog
 from utils import Utilities as utils
@@ -12,6 +13,7 @@ from osk import OnScreenKeyboard as osk
 from MainWindow import Ui_MainWindow
 from heater_interface import Heater
 import numpy as np
+import cv2
 
 from SettingsWindow import Ui_SettingsWindow
 from TrajectoryDialog import Ui_TrajectoryDialog
@@ -177,13 +179,27 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # Выставляем 0 на полосе прогресса
-        self.ui.MainProgressBar.setValue(0)
-
         # Подключаем сигналы кнопок
         self.ui.MainPlayButton.clicked.connect(self.start_testing)
         self.ui.MainStopButton.clicked.connect(self.stop_testing)
         self.ui.MainSettingsButton.clicked.connect(self.open_settings_window)
+
+        # Настройка камеры
+        self.camera = cv2.VideoCapture(0)   # 0 - это индекс камеры
+        self.timer = QTimer(self)           # Таймер для обновления кадров с камеры
+        self.timer.timeout.connect(self.update_frame)
+        
+        # Настройка QGraphicsView для отображения видео
+        self.scene = QGraphicsScene(self)
+        self.ui.MainCameraView.setScene(self.scene)
+        self.pixmap_item = QGraphicsPixmapItem()
+        self.scene.addItem(self.pixmap_item)
+
+        # Выставляем 0 на полосе прогресса
+        self.ui.MainProgressBar.setValue(0)
+        
+        # Запускаем таймер
+        self.timer.start(30)
     
     def keyPressEvent(self, event) -> None:
         """Обрабатывает нажатия клавиш, игнорируя Esc."""
@@ -216,6 +232,25 @@ class MainWindow(QMainWindow):
         """Удаляет данные о текущей зоне контроля и последнем перемещении."""
         # здесь будет delete last video
         self.current_position -= self.last_moving
+    
+    def update_frame(self):
+        """Захватывает и обновляет кадры с камеры."""
+        ret, frame = self.camera.read()  # Читаем кадр с камеры
+        if ret:
+            # Преобразуем изображение из формата BGR (OpenCV) в RGB (для отображения в PySide6)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+
+            # Преобразуем QImage в QPixmap и обновляем QGraphicsPixmapItem
+            pixmap = QPixmap.fromImage(q_image)
+            self.pixmap_item.setPixmap(pixmap)
+
+    def closeEvent(self, event):
+        """Закрываем камеру при закрытии окна."""
+        self.camera.release()
+        event.accept()
         
     
 class SettingsWindow(QDialog):
@@ -327,6 +362,6 @@ if __name__ == '__main__':
         "object_of_testing": None,
         "save_path": None
     }
-    StartWindow = MainWindow()
+    StartWindow = StartWindow()
     StartWindow.show()
     sys.exit(app.exec())
