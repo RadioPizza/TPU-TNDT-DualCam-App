@@ -16,6 +16,10 @@ import numpy as np
 import cv2
 
 from SettingsWindow import Ui_SettingsWindow
+import json
+from dataclasses import dataclass, field, asdict
+from typing import List, Optional
+
 from TrajectoryDialog import Ui_TrajectoryDialog
 from RetestDialog import Ui_RetestDialog
 from PreviewWindow import Ui_PreviewWindow
@@ -89,12 +93,11 @@ class StartWindow(QDialog):
 
     def open_main_window(self) -> None:
         """Открывает основное окно, закрывая стартовое."""
-        global user_data
         if self._validate_form():
-            user_data['user_name'] = self.ui.StartNameLineEdit.text().strip()
-            user_data['user_surname'] = self.ui.StartSurnameLineEdit.text().strip()
-            user_data['object_of_testing'] = self.ui.StartObjectLineEdit.text().strip()
-            user_data['save_path'] = self.ui.StartPathLineEdit.text().strip()
+            user_data.user_name = self.ui.StartNameLineEdit.text().strip()
+            user_data.user_surname = self.ui.StartSurnameLineEdit.text().strip()
+            user_data.object_of_testing = self.ui.StartObjectLineEdit.text().strip()
+            user_data.save_path = self.ui.StartPathLineEdit.text().strip()
 
             self.main_window = MainWindow()
             self.main_window.show()
@@ -347,16 +350,62 @@ class FinishDialog(QDialog):
         self.ui = Ui_FinishDialog()
         self.ui.setupUi(self)
 
+@dataclass
+class UserData:
+    user_name: Optional[str] = None
+    user_surname: Optional[str] = None
+    object_of_testing: Optional[str] = None
+    save_path: Optional[str] = None
+
+@dataclass
+class Settings:
+    duration_of_testing: int = 30
+    heating_duration: int = 10
+    language: str = 'EN'
+    theme: str = 'Light'
+    thermal_camera_index: int = 1
+    thermal_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
+    thermal_camera_previewFPS: int = 20
+    thermal_camera_recordFPS: int = 5
+    camera_index: int = 0
+    camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
+    camera_previewFPS: int = 30
+    camera_recordFPS: int = 5
+
+    def save_settings(self, filename: str = 'settings.json') -> None:
+        """Сохраняет настройки в файл"""
+        settings_dict = asdict(self)
+        with open(filename, 'w') as f:
+            json.dump(settings_dict, f, indent=4)
+        print(f"Настройки сохранены в файл {filename}.")
+
+    def load_settings(self, path: str) -> None:
+        """Устанавливает настройки из файла"""
+        with open(path, 'r') as f:
+            settings_dict = json.load(f)
+        for key, value in settings_dict.items():
+            setattr(self, key, value)
+        print(f"Настройки загружены из файла {path}.")
+
+@dataclass
+class PreviewSettings:
+    number_of_zone: List[int] = [0, 0]  # выбранная для просмотра зона контроля
+    map_flag: int = 1                   # показывает, активен ли режим карты
+    current_frame: int = 0              # текущий просматриваемый кадр видео
+    type_of_graph: int = 0              # 0 - 2D, 1 - 3D
+
+    # Алгоритмы постобработки изображений: 0 - off, 1 - on
+    bs_alg: int = 0     # Background Subtraction
+    fft_alg: int = 0    # Fast Fourier Transform
+    pca_alg: int = 0    # Principal Component Analysis
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     stylesheet_path = "LightStyle.qss"
     app.setStyleSheet(Path(stylesheet_path).read_text())
-    user_data = {
-        'user_name': None,
-        'user_surname': None,
-        "object_of_testing": None,
-        "save_path": None
-    }
     StartWindow = StartWindow()
     StartWindow.show()
+    user_data = UserData()
+    settings = Settings()
+    preview_settings = PreviewSettings()
     sys.exit(app.exec())
