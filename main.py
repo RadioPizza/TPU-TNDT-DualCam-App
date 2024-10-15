@@ -1,4 +1,4 @@
-# PTT v0.5.3
+# PTT v0.6.0
 
 import sys
 from pathlib import Path
@@ -209,13 +209,13 @@ class MainWindow(QMainWindow):
 
     def start_testing(self) -> None:
         """Запускает/продолжает контроль."""
-        Heater.turn_on()
+        heater.turn_on()
         self.timer.start(30)  # Обновляем изображение каждые 30 мс
         # здесь будет код самой логики контроля
 
     def stop_testing(self) -> None:
         """Останавливает контроль."""
-        Heater.turn_off()
+        heater.turn_off()
         self.timer.stop()  # Останавливаем таймер и поток с камеры
         # здесь будет код остановки самой логики контроля
         self.delete_current_zone_data()
@@ -372,6 +372,8 @@ class Settings:
     camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
     camera_previewFPS: int = 30
     camera_recordFPS: int = 5
+    heater_COM_port_number: int = 0
+    heater_baud_rate: int = 9600
 
     def save_settings(self, filename: str = 'settings.json') -> None:
         """Сохраняет настройки в файл"""
@@ -409,4 +411,5 @@ if __name__ == '__main__':
     user_data = UserData()
     settings = Settings()
     preview_settings = PreviewSettings()
+    heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
     sys.exit(app.exec())
