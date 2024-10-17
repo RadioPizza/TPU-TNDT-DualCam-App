@@ -392,10 +392,10 @@ class Settings:
 
 @dataclass
 class PreviewSettings:
-    number_of_zone: List[int] = [0, 0]  # выбранная для просмотра зона контроля
-    map_flag: int = 1                   # показывает, активен ли режим карты
-    current_frame: int = 0              # текущий просматриваемый кадр видео
-    type_of_graph: int = 0              # 0 - 2D, 1 - 3D
+    number_of_zone: List[int] = field(default_factory=lambda: [0, 0])  # выбранная для просмотра зона контроля
+    map_flag: int = 1       # показывает, активен ли режим карты
+    current_frame: int = 0  # текущий просматриваемый кадр видео
+    type_of_graph: int = 0  # 0 - 2D, 1 - 3D
 
     # Алгоритмы постобработки изображений: 0 - off, 1 - on
     bs_alg: int = 0     # Background Subtraction
