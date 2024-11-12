@@ -33,6 +33,8 @@ class SerialCommunicator:
                 write_timeout=self.timeout  # Таймаут для записи
             )
             logging.info(f"Открыт последовательный порт {self.port} со скоростью {self.baudrate} бод")
+            time.sleep(2.0) # Задержка после открытия порта
+            logging.info(f"{self.port} готов к работе")
         except serial.SerialException as e:
             logging.error(f"Не удалось открыть порт {self.port}: {e}")
             self.ser = None
@@ -149,9 +151,9 @@ class SerialCommunicator:
             command: str = "i",
             expected_response: str = "i",
             baudrate: int = 115200,
-            timeout: float = 0.5,
+            timeout: float = 1.0,   # seconds
             retries: int = 5,
-            delay: float = 1,
+            delay: float = 1.0,
             delay_between_ports: float = 1
         ) -> Optional[str]:
         """
@@ -199,7 +201,6 @@ class SerialCommunicator:
 
 # Примеры использования
 if __name__ == "__main__":
-    
     baudrate = 115200
     # Если порт заранее известен
     port = 'COM3'
@@ -229,4 +230,3 @@ if __name__ == "__main__":
     # Пример использования контекстного менеджера с блоком with
     with SerialCommunicator(port=port, baudrate=115200) as communicator:
         communicator.send_command('s')
-
