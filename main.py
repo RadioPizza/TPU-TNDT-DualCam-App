@@ -24,6 +24,7 @@ from SettingsWindow import Ui_SettingsWindow
 from StartDialog import Ui_StartDialog
 from TrajectoryDialog import Ui_TrajectoryDialog
 from utils import Utilities as utils
+from settings import UserData, Settings, PreviewSettings
 
 class FocusWatcher(QObject):
     # Определяем сигналы, которые будем испускать при получении и потере фокуса
@@ -359,8 +360,8 @@ if __name__ == '__main__':
     app.setStyleSheet(Path(stylesheet_path).read_text())
     StartWindow = StartWindow()
     StartWindow.show()
-    user_data = UserData()
-    settings = Settings()
-    preview_settings = PreviewSettings()
+    user_data = UserData.get_instance()
+    settings = Settings.get_instance()
+    preview_settings = PreviewSettings.get_instance()
     heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
     sys.exit(app.exec())
