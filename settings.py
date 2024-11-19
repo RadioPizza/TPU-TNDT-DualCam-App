@@ -2,7 +2,9 @@ import json
 import os
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional
+
 from PySide6.QtCore import QObject, Signal
+
 
 @dataclass
 class UserData(QObject):
@@ -21,7 +23,7 @@ class UserData(QObject):
     @staticmethod
     def get_instance():
         if UserData._instance is None:
-            UserData._instance = UserData.load_data()
+            UserData._instance = UserData()
         return UserData._instance
 
     def set_user_name(self, user_name: str):
@@ -47,14 +49,14 @@ class Settings(QObject):
     heating_duration: int = 10
     language: str = 'EN'
     theme: str = 'Light'
-    thermal_camera_index: int = 0
-    thermal_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
-    thermal_camera_previewFPS: int = 20
-    thermal_camera_recordFPS: int = 5
     camera_index: int = 0
     camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
     camera_previewFPS: int = 30
     camera_recordFPS: int = 5
+    thermal_camera_index: int = 1
+    thermal_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
+    thermal_camera_previewFPS: int = 20
+    thermal_camera_recordFPS: int = 5
     heater_COM_port_number: int = 0
     heater_baud_rate: int = 9600
 

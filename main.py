@@ -1,6 +1,7 @@
 # PTT v0.6.0
 
 # Стандартные библиотеки
+import logging
 import sys
 from pathlib import Path
 
@@ -14,17 +15,19 @@ from PySide6.QtWidgets import (QApplication, QDialog, QFileDialog,
 from serial_communicator import SerialCommunicator as com
 
 # Локальные модули
+from cameras import CameraWidget, ThermalCameraWidget, VisibleCameraWidget
 from FinishDialog import Ui_FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow
 from osk import OnScreenKeyboard as osk
 from PreviewWindow import Ui_PreviewWindow
 from RetestDialog import Ui_RetestDialog
+from settings import PreviewSettings, Settings, UserData
 from SettingsWindow import Ui_SettingsWindow
 from StartDialog import Ui_StartDialog
 from TrajectoryDialog import Ui_TrajectoryDialog
 from utils import Utilities as utils
-from settings import UserData, Settings, PreviewSettings
+
 
 class FocusWatcher(QObject):
     # Определяем сигналы, которые будем испускать при получении и потере фокуса
@@ -200,11 +203,9 @@ class MainWindow(QMainWindow):
         self.ui.MainStopButton.clicked.connect(self.stop_testing)
         self.ui.MainSettingsButton.clicked.connect(self.open_settings_window)
 
-        # Инициализируем основную камеру
-        self.camera_widget = CameraWidget(self.ui.MainCameraView)
-
-        # Инициализируем ИК камеру
-        self.thermal_camera_widget = ThermalCameraWidget(self.ui.MainTCameraView)
+        # Инициализируем камеры
+        self.camera_widget = VisibleCameraWidget(settings, self.ui.MainCameraView)
+        self.thermal_camera_widget = ThermalCameraWidget(settings, self.ui.MainTCameraView)
         
     def keyPressEvent(self, event) -> None:
         """Обрабатывает нажатия клавиш, игнорируя Esc."""
@@ -236,20 +237,6 @@ class MainWindow(QMainWindow):
         """Удаляет данные о текущей зоне контроля и последнем перемещении."""
         # здесь будет delete last video
         self.current_position -= self.last_moving
-    
-    def update_frame(self):
-        """Захватывает и обновляет кадры с камеры."""
-        ret, frame = self.camera.read()  # Читаем кадр с камеры
-        if ret:
-            # Преобразуем изображение из формата BGR (OpenCV) в RGB (для отображения в PySide6)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = frame.shape
-            bytes_per_line = ch * w
-            q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
-
-            # Преобразуем QImage в QPixmap и обновляем QGraphicsPixmapItem
-            pixmap = QPixmap.fromImage(q_image)
-            self.pixmap_item.setPixmap(pixmap)
 
     def closeEvent(self, event):
         """Закрывает камеры и таймеры при закрытии окна."""
@@ -355,6 +342,18 @@ class FinishDialog(QDialog):
         self.ui.setupUi(self)
 
 if __name__ == '__main__':
+    # Настройка базового конфигуратора логирования
+    logging.basicConfig(
+        level=logging.INFO,  # Уровень логирования можно изменить при необходимости
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            #FileHandler("app.log"),    # Запись логов в файл
+            logging.StreamHandler()     # Также вывод логов в консоль
+        ]
+    )
+
+    logger = logging.getLogger(__name__)
+    
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
     
