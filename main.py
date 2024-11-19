@@ -355,13 +355,30 @@ class FinishDialog(QDialog):
         self.ui.setupUi(self)
 
 if __name__ == '__main__':
+    # Инициализация приложения Qt
     app = QApplication(sys.argv)
+    
+    # Установка пути к файлу стилей
     stylesheet_path = "LightStyle.qss"
+    
+    # Установка стиля приложения из файла QSS
     app.setStyleSheet(Path(stylesheet_path).read_text())
+    
+    # Создание и отображение главного окна приложения
     StartWindow = StartWindow()
     StartWindow.show()
+    
+    # Получение экземпляра объекта UserData
     user_data = UserData.get_instance()
-    settings = Settings.get_instance()
+    
+    # Загрузка настроек из файла
+    settings = Settings.load_from_file()
+    
+    # Получение экземпляра объекта PreviewSettings
     preview_settings = PreviewSettings.get_instance()
+    
+    # Инициализация обогревателя с параметрами из настроек
     heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
+    
+    # Запуск главного цикла приложения и выход при завершении
     sys.exit(app.exec())
