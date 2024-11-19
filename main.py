@@ -439,6 +439,15 @@ class UserData:
     object_of_testing: Optional[str] = None
     save_path: Optional[str] = None
 
+    _instance = None  # для хранения синглтона
+
+    @staticmethod
+    def get_instance():
+        """Возвращает единственный экземпляр данных пользователя."""
+        if UserData._instance is None:
+            UserData._instance = UserData.load_data()
+        return UserData._instance
+
 @dataclass
 class Settings:
     duration_of_testing: int = 30
@@ -456,20 +465,31 @@ class Settings:
     heater_COM_port_number: int = 0
     heater_baud_rate: int = 9600
 
-    def save_settings(self, filename: str = 'settings.json') -> None:
-        """Сохраняет настройки в файл"""
-        settings_dict = asdict(self)
-        with open(filename, 'w') as f:
-            json.dump(settings_dict, f, indent=4)
-        print(f"Настройки сохранены в файл {filename}.")
+    _instance = None  # для хранения синглтона
 
-    def load_settings(self, path: str) -> None:
-        """Устанавливает настройки из файла"""
-        with open(path, 'r') as f:
-            settings_dict = json.load(f)
-        for key, value in settings_dict.items():
-            setattr(self, key, value)
-        print(f"Настройки загружены из файла {path}.")
+    @staticmethod
+    def get_instance():
+        """Возвращает единственный экземпляр настроек."""
+        if Settings._instance is None:
+            Settings._instance = Settings.load_settings()
+        return Settings._instance
+
+    @staticmethod
+    def load_from_file():
+        """Загружает настройки из файла или создает новые по умолчанию."""
+        settings_file = 'settings.json'
+        if os.path.exists(settings_file):
+            with open(settings_file, 'r') as f:
+                data = json.load(f)
+                return Settings(**data)
+        else:
+            return Settings()
+
+    def save_to_file(self):
+        """Сохраняет текущие настройки в файл."""
+        settings_file = 'settings.json'
+        with open(settings_file, 'w') as f:
+            json.dump(self.__dict__, f, indent=4)
 
 @dataclass
 class PreviewSettings:
@@ -482,6 +502,15 @@ class PreviewSettings:
     bs_alg: int = 0     # Background Subtraction
     fft_alg: int = 0    # Fast Fourier Transform
     pca_alg: int = 0    # Principal Component Analysis
+
+    _instance = None  # Класс-переменная для хранения синглтона
+
+    @staticmethod
+    def get_instance():
+        """Возвращает единственный экземпляр настроек предпросмотра."""
+        if PreviewSettings._instance is None:
+            PreviewSettings._instance = PreviewSettings()
+        return PreviewSettings._instance
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
