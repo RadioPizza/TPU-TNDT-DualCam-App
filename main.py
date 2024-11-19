@@ -1,42 +1,55 @@
 # PTT v0.6.0
 
-import sys
-from pathlib import Path
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QLineEdit, QGraphicsScene, QGraphicsPixmapItem
-from PySide6.QtCore import Qt, QObject, Signal, QEvent, QTimer
-from PySide6.QtGui import QPixmap, QImage
-
-from StartDialog import Ui_StartDialog
-from utils import Utilities as utils
-from osk import OnScreenKeyboard as osk
-
-from MainWindow import Ui_MainWindow
-from heater_interface import Heater
-import numpy as np
-import cv2
-
-from SettingsWindow import Ui_SettingsWindow
+# Стандартные библиотеки
 import json
-from dataclasses import dataclass, field, asdict
+import sys
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import List, Optional
 
-from TrajectoryDialog import Ui_TrajectoryDialog
-from RetestDialog import Ui_RetestDialog
-from PreviewWindow import Ui_PreviewWindow
+# Библиотеки третьих сторон
+import cv2
+import numpy as np
+import PySpin
+from PySide6.QtCore import QEvent, QObject, Qt, QTimer, Signal
+from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtWidgets import (QApplication, QDialog, QFileDialog,
+                               QGraphicsPixmapItem, QGraphicsScene, QLineEdit,
+                               QMainWindow, QMessageBox)
+from serial_communicator import SerialCommunicator as com
+
+# Локальные модули
 from FinishDialog import Ui_FinishDialog
+from heater_interface import Heater
+from MainWindow import Ui_MainWindow
+from osk import OnScreenKeyboard as osk
+from PreviewWindow import Ui_PreviewWindow
+from RetestDialog import Ui_RetestDialog
+from SettingsWindow import Ui_SettingsWindow
+from StartDialog import Ui_StartDialog
+from TrajectoryDialog import Ui_TrajectoryDialog
+from utils import Utilities as utils
 
 class FocusWatcher(QObject):
+    # Определяем сигналы, которые будем испускать при получении и потере фокуса
     focus_in = Signal()
     focus_out = Signal()
 
+    # Переопределяем метод eventFilter для фильтрации событий
     def eventFilter(self, obj, event: QEvent) -> bool:
+        # Проверяем тип события
         if event.type() == QEvent.FocusIn:
+            # Если объект получил фокус, испускаем сигнал focus_in
             self.focus_in.emit()
         elif event.type() == QEvent.FocusOut:
+            # Если объект потерял фокус
             # Используем QTimer.singleShot, чтобы убедиться, что фокус уже обновился
+            # Это откладывает вызов emit_focus_out до следующего цикла обработки событий
             QTimer.singleShot(0, self.emit_focus_out)
+        # Вызываем базовый метод для продолжения стандартной обработки события
         return super(FocusWatcher, self).eventFilter(obj, event)
 
+    # Метод для испускания сигнала focus_out
     def emit_focus_out(self):
         self.focus_out.emit()
 
@@ -179,29 +192,31 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         # Поля
-        self.current_position = np.zeros(2)  # вектор, хранящий координаты текущей зоны [x, y]
-        self.last_moving = np.zeros(2)    # вектор, хранящий последнее перемещение [x, y]
+        self.current_position = np.zeros(2) # вектор, хранящий координаты текущей зоны [x, y]
+        self.last_moving = np.zeros(2)      # вектор, хранящий последнее перемещение [dx, dy]
         self.progress = 0
-
+        
+        # Выставляем 0 на полосе прогресса
+        self.ui.MainProgressBar.setValue(0)
+        
         # Подключаем сигналы кнопок
         self.ui.MainPlayButton.clicked.connect(self.start_testing)
         self.ui.MainStopButton.clicked.connect(self.stop_testing)
         self.ui.MainSettingsButton.clicked.connect(self.open_settings_window)
 
-        # Настройка камеры
-        self.camera = cv2.VideoCapture(0)   # 0 - это индекс камеры
-        self.timer = QTimer(self)           # Таймер для обновления кадров с камеры
-        self.timer.timeout.connect(self.update_frame)
-        
+        # Настройка основной камеры
+        self.camera = cv2.VideoCapture(settings.camera_index)  # Создаем объект для захвата видео с камеры
+        self.camera_timer = QTimer(self)                       # Создаем таймер Qt, который будет использоваться для периодического обновления кадра с камеры
+        self.camera_timer.timeout.connect(self.update_frame)   # Подключаем сигнал таймера к слоту (методу) update_frame
+        self.tcamera_timer.start(1000//settings.camera_previewFPS) # Период между кадрами в мс
+
         # Настройка QGraphicsView для отображения видео
         self.scene = QGraphicsScene(self)
         self.ui.MainCameraView.setScene(self.scene)
         self.pixmap_item = QGraphicsPixmapItem()
         self.scene.addItem(self.pixmap_item)
 
-        # Выставляем 0 на полосе прогресса
-        self.ui.MainProgressBar.setValue(0)
-    
+        
     def keyPressEvent(self, event) -> None:
         """Обрабатывает нажатия клавиш, игнорируя Esc."""
         if event.key() != Qt.Key_Escape:
@@ -364,7 +379,7 @@ class Settings:
     heating_duration: int = 10
     language: str = 'EN'
     theme: str = 'Light'
-    thermal_camera_index: int = 1
+    thermal_camera_index: int = 0
     thermal_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
     thermal_camera_previewFPS: int = 20
     thermal_camera_recordFPS: int = 5
