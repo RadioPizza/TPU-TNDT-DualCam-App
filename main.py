@@ -185,6 +185,80 @@ class StartWindow(QDialog):
         for field in fields:
             field.setStyleSheet("")
 
+class CameraWidget:
+    """Базовый класс для виджета камеры."""
+
+    def __init__(self, camera_index, preview_fps, graphics_view):
+        """
+        Инициализация камеры и связанных компонентов.
+
+        :param camera_index: Индекс устройства камеры для cv2.VideoCapture.
+        :param preview_fps: Частота обновления кадров.
+        :param graphics_view: QGraphicsView для отображения видео.
+        """
+        self.camera = cv2.VideoCapture(camera_index)
+        if not self.camera.isOpened():
+            print(f"Ошибка: Не удалось открыть камеру с индексом {camera_index}")
+            # Можно вызвать исключение или обработать ошибку соответствующим образом.
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(1000 // preview_fps)
+
+        self.scene = QGraphicsScene()
+        graphics_view.setScene(self.scene)
+        self.pixmap_item = QGraphicsPixmapItem()
+        self.scene.addItem(self.pixmap_item)
+        self.graphics_view = graphics_view
+
+    def update_frame(self):
+        """Захватывает и обновляет кадры с камеры."""
+        ret, frame = self.camera.read()
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            pixmap = QPixmap.fromImage(q_image)
+            self.pixmap_item.setPixmap(pixmap)
+            self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
+        else:
+            print("Ошибка: Не удалось получить кадр с камеры")
+
+    def release(self):
+        """Освобождает ресурсы камеры."""
+        if self.camera.isOpened():
+            self.camera.release()
+        self.timer.stop()
+
+class MainCameraWidget(CameraWidget):
+    """Класс для основной камеры."""
+    def __init__(self, graphics_view):
+        super().__init__(settings.camera_index, settings.camera_previewFPS, graphics_view)
+
+class ThermalCameraWidget(CameraWidget):
+    """Класс для ИК камеры."""
+    def __init__(self, graphics_view):
+        super().__init__(settings.thermal_camera_index, settings.thermal_camera_previewFPS, graphics_view)
+
+    def update_frame(self):
+        """Переопределяем метод для обработки кадров с ИК камеры."""
+        ret, frame = self.camera.read()
+        if ret:
+            # Предположим, что ИК камера выдает одноканальное изображение
+            # Дополнительная обработка для ИК камеры
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # Например, применим цветовую карту к ИК изображению
+            # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            pixmap = QPixmap.fromImage(q_image)
+            self.pixmap_item.setPixmap(pixmap)
+            self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
+        else:
+            print("Ошибка: Не удалось получить кадр с ИК камеры")
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -204,18 +278,11 @@ class MainWindow(QMainWindow):
         self.ui.MainStopButton.clicked.connect(self.stop_testing)
         self.ui.MainSettingsButton.clicked.connect(self.open_settings_window)
 
-        # Настройка основной камеры
-        self.camera = cv2.VideoCapture(settings.camera_index)  # Создаем объект для захвата видео с камеры
-        self.camera_timer = QTimer(self)                       # Создаем таймер Qt, который будет использоваться для периодического обновления кадра с камеры
-        self.camera_timer.timeout.connect(self.update_frame)   # Подключаем сигнал таймера к слоту (методу) update_frame
-        self.tcamera_timer.start(1000//settings.camera_previewFPS) # Период между кадрами в мс
+        # Инициализируем основную камеру
+        self.camera_widget = CameraWidget(self.ui.MainCameraView)
 
-        # Настройка QGraphicsView для отображения видео
-        self.scene = QGraphicsScene(self)
-        self.ui.MainCameraView.setScene(self.scene)
-        self.pixmap_item = QGraphicsPixmapItem()
-        self.scene.addItem(self.pixmap_item)
-
+        # Инициализируем ИК камеру
+        self.thermal_camera_widget = ThermalCameraWidget(self.ui.MainTCameraView)
         
     def keyPressEvent(self, event) -> None:
         """Обрабатывает нажатия клавиш, игнорируя Esc."""
@@ -225,13 +292,11 @@ class MainWindow(QMainWindow):
     def start_testing(self) -> None:
         """Запускает/продолжает контроль."""
         heater.turn_on()
-        self.timer.start(30)  # Обновляем изображение каждые 30 мс
         # здесь будет код самой логики контроля
 
     def stop_testing(self) -> None:
         """Останавливает контроль."""
         heater.turn_off()
-        self.timer.stop()  # Останавливаем таймер и поток с камеры
         # здесь будет код остановки самой логики контроля
         self.delete_current_zone_data()
 
@@ -265,9 +330,10 @@ class MainWindow(QMainWindow):
             self.pixmap_item.setPixmap(pixmap)
 
     def closeEvent(self, event):
-        """Закрываем камеру при закрытии окна."""
-        self.camera.release()
-        event.accept()      
+        """Закрывает камеры и таймеры при закрытии окна."""
+        self.camera_widget.release()
+        self.thermal_camera_widget.release()
+        event.accept()     
     
 class SettingsWindow(QDialog):
     def __init__(self):
