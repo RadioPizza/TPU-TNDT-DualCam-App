@@ -1,10 +1,13 @@
 import cv2
-import PySpin
+from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
+from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.Qt import Qt
 
 class CameraWidget:
     """Базовый класс для виджета камеры."""
 
-    def __init__(self, camera_index, preview_fps, graphics_view):
+    def __init__(self, camera_index: int, preview_fps: int, graphics_view: QGraphicsView):
         """
         Инициализация камеры и связанных компонентов.
 
@@ -14,8 +17,7 @@ class CameraWidget:
         """
         self.camera = cv2.VideoCapture(camera_index)
         if not self.camera.isOpened():
-            print(f"Ошибка: Не удалось открыть камеру с индексом {camera_index}")
-            # Можно вызвать исключение или обработать ошибку соответствующим образом.
+            raise RuntimeError(f"Ошибка: Не удалось открыть камеру с индексом {camera_index}")
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
@@ -30,16 +32,17 @@ class CameraWidget:
     def update_frame(self):
         """Захватывает и обновляет кадры с камеры."""
         ret, frame = self.camera.read()
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = frame.shape
-            bytes_per_line = ch * w
-            q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            pixmap = QPixmap.fromImage(q_image)
-            self.pixmap_item.setPixmap(pixmap)
-            self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
-        else:
+        if not ret:
             print("Ошибка: Не удалось получить кадр с камеры")
+            return
+        
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = frame.shape
+        bytes_per_line = ch * w
+        q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(q_image)
+        self.pixmap_item.setPixmap(pixmap)
+        self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
 
     def release(self):
         """Освобождает ресурсы камеры."""
@@ -47,30 +50,31 @@ class CameraWidget:
             self.camera.release()
         self.timer.stop()
 
+
 class MainCameraWidget(CameraWidget):
     """Класс для основной камеры."""
-    def __init__(self, graphics_view):
+    def __init__(self, graphics_view: QGraphicsView):
         super().__init__(settings.camera_index, settings.camera_previewFPS, graphics_view)
+
 
 class ThermalCameraWidget(CameraWidget):
     """Класс для ИК камеры."""
-    def __init__(self, graphics_view):
+    def __init__(self, graphics_view: QGraphicsView):
         super().__init__(settings.thermal_camera_index, settings.thermal_camera_previewFPS, graphics_view)
 
     def update_frame(self):
         """Переопределяем метод для обработки кадров с ИК камеры."""
         ret, frame = self.camera.read()
-        if ret:
-            # Предположим, что ИК камера выдает одноканальное изображение
-            # Дополнительная обработка для ИК камеры
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # Например, применим цветовую карту к ИК изображению
-            # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-            h, w, ch = frame.shape
-            bytes_per_line = ch * w
-            q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            pixmap = QPixmap.fromImage(q_image)
-            self.pixmap_item.setPixmap(pixmap)
-            self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
-        else:
+        if not ret:
             print("Ошибка: Не удалось получить кадр с ИК камеры")
+            return
+        
+        # Дополнительная обработка для ИК камер
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)  # Применение цветовой карты
+        h, w, ch = frame.shape
+        bytes_per_line = ch * w
+        q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(q_image)
+        self.pixmap_item.setPixmap(pixmap)
+        self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
