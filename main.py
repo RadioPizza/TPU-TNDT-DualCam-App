@@ -191,58 +191,103 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         # Поля
-        self.current_position = np.zeros(2) # вектор, хранящий координаты текущей зоны [x, y]
-        self.last_moving = np.zeros(2)      # вектор, хранящий последнее перемещение [dx, dy]
+        self.current_position = np.zeros(2, dtype=int)  # Текущая зона контроля [x, y]
+        self.last_moving = np.zeros(2, dtype=int)       # Последнее перемещение [dx, dy]
         self.progress = 0
-        
-        # Выставляем 0 на полосе прогресса
-        self.ui.MainProgressBar.setValue(0)
-        
-        # Подключаем сигналы кнопок
+
+        # Камеры
+        self.camera_widget = VisibleCameraWidget(settings, self.ui.MainCameraView)
+        self.thermal_camera_widget = ThermalCameraWidget(settings, self.ui.MainTCameraView)
+
+        # Таймеры
+        self.heating_timer = QTimer()
+        self.heating_timer.timeout.connect(self.start_cooling)
+
+        self.cooling_timer = QTimer()
+        self.cooling_timer.timeout.connect(self.finish_recording)
+
+        # Подключение кнопок
         self.ui.MainPlayButton.clicked.connect(self.start_testing)
         self.ui.MainStopButton.clicked.connect(self.stop_testing)
         self.ui.MainSettingsButton.clicked.connect(self.open_settings_window)
 
-        # Инициализируем камеры
-        self.camera_widget = VisibleCameraWidget(settings, self.ui.MainCameraView)
-        self.thermal_camera_widget = ThermalCameraWidget(settings, self.ui.MainTCameraView)
-        
-    def keyPressEvent(self, event) -> None:
-        """Обрабатывает нажатия клавиш, игнорируя Esc."""
-        if event.key() != Qt.Key_Escape:
-            super().keyPressEvent(event)
+        # Путь для сохранения файлов
+        self.save_path = user_data.save_path
 
-    def start_testing(self) -> None:
-        """Запускает/продолжает контроль."""
+    def start_testing(self):
+        """Начинает процесс контроля: нагрев + охлаждение."""
+        logger.info(f"Начало тестирования зоны {tuple(self.current_position)}")
+
+        # Формируем имена файлов
+        object_name = user_data.object_of_testing.replace(" ", "_")
+        position = f"zone({self.current_position[0]},{self.current_position[1]})"
+        visible_file = f"{self.save_path}/{object_name}_{position}_visible.avi"
+        thermal_file = f"{self.save_path}/{object_name}_{position}_thermal.avi"
+
+        # Начинаем запись видео
+        self.camera_widget.start_recording(visible_file)
+        self.thermal_camera_widget.start_recording(thermal_file)
+
+        # Включаем нагрев
         heater.turn_on()
-        # здесь будет код самой логики контроля
+        self.ui.MainProcessLabel.setText("Heating...")
 
-    def stop_testing(self) -> None:
-        """Останавливает контроль."""
+        # Запускаем таймер нагрева
+        heating_duration = settings.heating_duration * 1000  # В миллисекундах
+        self.heating_timer.start(heating_duration)
+
+    def start_cooling(self):
+        """Переходит к процессу охлаждения."""
         heater.turn_off()
-        # здесь будет код остановки самой логики контроля
-        self.delete_current_zone_data()
+        self.ui.MainProcessLabel.setText("Cooling...")
 
-    def open_settings_window(self) -> None:
+        # Запускаем таймер охлаждения
+        cooling_duration = (settings.duration_of_testing - settings.heating_duration) * 1000  # В миллисекундах
+        self.cooling_timer.start(cooling_duration)
+
+    def finish_recording(self):
+        """Завершает процесс контроля и запись видео."""
+        self.heating_timer.stop()
+        self.cooling_timer.stop()
+
+        # Останавливаем запись
+        self.camera_widget.stop_recording()
+        self.thermal_camera_widget.stop_recording()
+
+        self.ui.MainProcessLabel.setText("Zone completed.")
+        logger.info(f"Тестирование зоны {tuple(self.current_position)} завершено.")
+
+        # Переход к следующему действию
+        self.open_trajectory_dialog()
+
+    def stop_testing(self):
+        """Прерывает процесс контроля."""
+        self.heating_timer.stop()
+        self.cooling_timer.stop()
+        heater.turn_off()
+
+        # Останавливаем запись
+        self.camera_widget.stop_recording()
+        self.thermal_camera_widget.stop_recording()
+
+        self.ui.MainProcessLabel.setText("Testing stopped.")
+        logger.warning("Тестирование было прервано пользователем.")
+
+    def open_trajectory_dialog(self):
+        """Открывает диалог выбора следующей зоны."""
+        self.trajectory_dialog = TrajectoryDialog()
+        self.trajectory_dialog.show()
+
+    def open_settings_window(self):
         """Открывает окно настроек."""
         self.settingsWindow = SettingsWindow()
         self.settingsWindow.show()
-    
-    def open_trajectory_dialog(self) -> None:
-        """Открывает диалоговое окно выбора следующего положения."""
-        self.TrajectoryDialog = TrajectoryDialog()
-        self.TrajectoryDialog.show()
-
-    def delete_current_zone_data(self) -> None:
-        """Удаляет данные о текущей зоне контроля и последнем перемещении."""
-        # здесь будет delete last video
-        self.current_position -= self.last_moving
 
     def closeEvent(self, event):
-        """Закрывает камеры и таймеры при закрытии окна."""
+        """Закрывает камеры при завершении работы приложения."""
         self.camera_widget.release()
         self.thermal_camera_widget.release()
-        event.accept()     
+        event.accept()
     
 class SettingsWindow(QDialog):
     def __init__(self):

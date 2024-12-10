@@ -1,12 +1,9 @@
-import logging
-from typing import List
-
 import cv2
-from PySide6.QtCore import QObject, Qt, QTimer, Signal
+from typing import List
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtWidgets import (QGraphicsPixmapItem, QGraphicsScene,
-                               QGraphicsView)
-
+import logging
 from settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -14,21 +11,17 @@ logger = logging.getLogger(__name__)
 class CameraWidget:
     """Базовый класс для виджета камеры."""
 
-    def __init__(self, settings: Settings, graphics_view: QGraphicsView):
-        """
-        Инициализация камеры и связанных компонентов.
-
-        :param settings: Объект настроек.
-        :param graphics_view: QGraphicsView для отображения видео.
-        """
+    def __init__(self, settings, graphics_view: QGraphicsView):
         self.settings = settings
         self.graphics_view = graphics_view
+        self.camera = None
+        self.video_writer = None
+        self.is_recording = False
 
-        # Инициализируем камеру
-        self.camera = None  # Инициализируем как None
+        # Инициализация камеры
         self.camera = cv2.VideoCapture(self.get_camera_index())
         self.setup_camera()
-        if self.camera:
+        if self.camera and self.camera.isOpened():
             self.apply_camera_settings()
 
             # Настраиваем таймер для обновления кадров
@@ -44,39 +37,27 @@ class CameraWidget:
         else:
             logger.warning("Камера не инициализирована. Видео не будет отображаться.")
 
-    def setup_camera(self):
-        """Попытка инициализировать камеру."""
-        camera_index = self.get_camera_index()
-        logger.info(f"Попытка открыть камеру с индексом {camera_index}")
-        self.camera = cv2.VideoCapture(camera_index)
-        if not self.camera.isOpened():
-            logger.error(f"Не удалось открыть камеру с индексом {camera_index}")
-            self.camera = None  # Устанавливаем в None для явного указания отсутствия камеры
-    
-    def get_camera_index(self) -> int:
-        """Получение индекса камеры. Переопределяется в подклассах."""
-        return self.settings.camera_index
+    def start_recording(self, file_path: str):
+        """Начинает запись видео."""
+        if not self.camera or not self.camera.isOpened():
+            logger.error("Запись видео невозможна: камера не инициализирована.")
+            return
 
-    def get_preview_fps(self) -> int:
-        """Получение FPS для предпросмотра. Переопределяется в подклассах."""
-        return self.settings.camera_previewFPS
-    
-    def get_record_fps(self) -> int:
-        """Получение FPS для записи. Переопределяется в подклассах."""
-        return self.settings.camera_recordFPS
-
-    def get_resolution(self) -> List[int]:
-        """Получение разрешения камеры. Переопределяется в подклассах."""
-        return self.settings.camera_resolution
-
-    def apply_camera_settings(self):
-        """Применение настроек к камере."""
         width, height = self.get_resolution()
-        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        self.camera.set(cv2.CAP_PROP_FPS, self.get_preview_fps())
-        logger.info(f"Настройки камеры применены: Разрешение={width}x{height}, preFPS={self.get_preview_fps()}, recFPS={self.get_record_fps}")
-        
+        fps = self.get_record_fps()
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Формат кодека
+        self.video_writer = cv2.VideoWriter(file_path, fourcc, fps, (width, height))
+        self.is_recording = True
+        logger.info(f"Начата запись видео: {file_path}")
+
+    def stop_recording(self):
+        """Останавливает запись видео."""
+        if self.is_recording and self.video_writer:
+            self.video_writer.release()
+            self.video_writer = None
+            self.is_recording = False
+            logger.info("Запись видео остановлена.")
+
     def update_frame(self):
         """Захватывает и обновляет кадры с камеры."""
         if not self.camera:
@@ -87,8 +68,12 @@ class CameraWidget:
         if not ret:
             logger.error("Не удалось получить кадр с камеры.")
             return
-        
-        # Конвертируем цветовую схему для отображения
+
+        # Если запись активна, записываем кадр
+        if self.is_recording and self.video_writer:
+            self.video_writer.write(frame)
+
+        # Отображение видео в графической области
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         h, w, ch = frame.shape
         bytes_per_line = ch * w
@@ -101,10 +86,10 @@ class CameraWidget:
         """Освобождает ресурсы камеры."""
         if self.camera and self.camera.isOpened():
             self.camera.release()
-            logger.info("Камера освобождена.")
+        if self.video_writer:
+            self.video_writer.release()
         if hasattr(self, 'timer'):
             self.timer.stop()
-            logger.info("Таймер обновления кадров остановлен.")
 
 class VisibleCameraWidget(CameraWidget):
     """Класс для основной (видимой) камеры."""
