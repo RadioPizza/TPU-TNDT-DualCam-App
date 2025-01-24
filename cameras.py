@@ -1,5 +1,5 @@
 import cv2
-from typing import List
+from typing import List, Tuple
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 from PySide6.QtGui import QImage, QPixmap
@@ -7,6 +7,26 @@ import logging
 from settings import Settings
 
 logger = logging.getLogger(__name__)
+
+
+def get_available_cameras() -> List[Tuple[int, str]]:
+    """
+    Определяет доступные камеры и возвращает их индексы и имена.
+    Имена камер получить, к сожалению, нельзя.
+    Returns:
+        List[Tuple[int, str]]: Список кортежей, где первый элемент - индекс камеры,
+                              а второй - строка "Camera {index}".
+    """
+    available_cameras = []
+    for index in range(10):  # Проверяем первые 10 камер
+        cap = cv2.VideoCapture(index)
+        if cap.isOpened():
+            available_cameras.append((index, f"Camera {index}"))
+            cap.release()  # Освобождаем ресурс камеры сразу после проверки
+        else:
+            cap.release()
+    return available_cameras
+
 
 class CameraWidget:
     """Базовый класс для виджета камеры."""
@@ -116,6 +136,7 @@ class CameraWidget:
         """Применение настроек камеры (яркость, контрастность и т.д.)."""
         pass  # Здесь можно добавить настройки для конкретной камеры
 
+
 class VisibleCameraWidget(CameraWidget):
     """Класс для основной (видимой) камеры."""
 
@@ -130,6 +151,7 @@ class VisibleCameraWidget(CameraWidget):
 
     def get_resolution(self) -> List[int]:
         return self.settings.visible_camera_resolution
+
 
 class ThermalCameraWidget(CameraWidget):
     """Класс для ИК камеры."""
