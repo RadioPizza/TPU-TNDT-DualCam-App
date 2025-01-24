@@ -1,6 +1,6 @@
 import cv2
 from typing import List
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 from PySide6.QtGui import QImage, QPixmap
 import logging
@@ -91,9 +91,45 @@ class CameraWidget:
         if hasattr(self, 'timer'):
             self.timer.stop()
 
+    def get_camera_index(self) -> int:
+        raise NotImplementedError("Метод get_camera_index должен быть реализован в подклассе.")
+
+    def get_preview_fps(self) -> int:
+        raise NotImplementedError("Метод get_preview_fps должен быть реализован в подклассе.")
+
+    def get_record_fps(self) -> int:
+        raise NotImplementedError("Метод get_record_fps должен быть реализован в подклассе.")
+
+    def get_resolution(self) -> List[int]:
+        raise NotImplementedError("Метод get_resolution должен быть реализован в подклассе.")
+
+    def setup_camera(self):
+        """Настройка параметров камеры (разрешение, FPS и т.д.)."""
+        # Разрешение
+        width, height = self.get_resolution()
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        # FPS
+        self.camera.set(cv2.CAP_PROP_FPS, self.get_preview_fps())
+
+    def apply_camera_settings(self):
+        """Применение настроек камеры (яркость, контрастность и т.д.)."""
+        pass  # Здесь можно добавить настройки для конкретной камеры
+
 class VisibleCameraWidget(CameraWidget):
     """Класс для основной (видимой) камеры."""
-    pass
+
+    def get_camera_index(self) -> int:
+        return self.settings.visible_camera_index
+
+    def get_preview_fps(self) -> int:
+        return self.settings.visible_camera_previewFPS
+
+    def get_record_fps(self) -> int:
+        return self.settings.visible_camera_recordFPS
+
+    def get_resolution(self) -> List[int]:
+        return self.settings.visible_camera_resolution
 
 class ThermalCameraWidget(CameraWidget):
     """Класс для ИК камеры."""
@@ -103,7 +139,7 @@ class ThermalCameraWidget(CameraWidget):
 
     def get_preview_fps(self) -> int:
         return self.settings.thermal_camera_previewFPS
-    
+
     def get_record_fps(self) -> int:
         return self.settings.thermal_camera_recordFPS
 

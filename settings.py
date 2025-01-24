@@ -49,14 +49,20 @@ class Settings(QObject):
     heating_duration: int = 10
     language: str = 'EN'
     theme: str = 'Light'
-    camera_index: int = 0
-    camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
-    camera_previewFPS: int = 30
-    camera_recordFPS: int = 5
+    
+    # Общие настройки камеры (видимой)
+    visible_camera_index: int = 0  # Индекс камеры видимого диапазона
+    visible_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
+    visible_camera_previewFPS: int = 30
+    visible_camera_recordFPS: int = 5
+
+    # Общие настройки камеры (тепловизора)
     thermal_camera_index: int = 1
     thermal_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
     thermal_camera_previewFPS: int = 20
     thermal_camera_recordFPS: int = 5
+
+    # Настройки нагревателя
     heater_COM_port_number: int = 0
     heater_baud_rate: int = 9600
 
@@ -89,6 +95,22 @@ class Settings(QObject):
         self.theme = theme
         self.data_changed.emit()
 
+    def set_visible_camera_index(self, index: int):
+        self.visible_camera_index = index
+        self.data_changed.emit()
+
+    def set_visible_camera_resolution(self, resolution: List[int]):
+        self.visible_camera_resolution = resolution
+        self.data_changed.emit()
+
+    def set_visible_camera_previewFPS(self, fps: int):
+        self.visible_camera_previewFPS = fps
+        self.data_changed.emit()
+
+    def set_visible_camera_recordFPS(self, fps: int):
+        self.visible_camera_recordFPS = fps
+        self.data_changed.emit()
+
     def set_thermal_camera_index(self, index: int):
         self.thermal_camera_index = index
         self.data_changed.emit()
@@ -103,22 +125,6 @@ class Settings(QObject):
 
     def set_thermal_camera_recordFPS(self, fps: int):
         self.thermal_camera_recordFPS = fps
-        self.data_changed.emit()
-
-    def set_camera_index(self, index: int):
-        self.camera_index = index
-        self.data_changed.emit()
-
-    def set_camera_resolution(self, resolution: List[int]):
-        self.camera_resolution = resolution
-        self.data_changed.emit()
-
-    def set_camera_previewFPS(self, fps: int):
-        self.camera_previewFPS = fps
-        self.data_changed.emit()
-
-    def set_camera_recordFPS(self, fps: int):
-        self.camera_recordFPS = fps
         self.data_changed.emit()
 
     def set_heater_COM_port_number(self, number: int):
@@ -148,7 +154,7 @@ class Settings(QObject):
 @dataclass
 class PreviewSettings(QObject):
     # выбранная для просмотра зона контроля
-    number_of_zone: List[int] = field(default_factory=lambda: [0, 0])  
+    number_of_zone: List[int] = field(default_factory=lambda: [0, 0])
     map_flag:      int = 1  # показывает, активен ли режим карты
     current_frame: int = 0  # текущий просматриваемый кадр видео
     type_of_graph: int = 0  # 0 - 2D, 1 - 3D
