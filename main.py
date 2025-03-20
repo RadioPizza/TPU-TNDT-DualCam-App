@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QFileDialog,
 from serial_communicator import SerialCommunicator as com
 
 # Локальные модули
-import cameras
+from cameras import get_available_cameras, VisibleCameraWidget, ThermalCameraWidget
 from FinishDialog import Ui_FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow

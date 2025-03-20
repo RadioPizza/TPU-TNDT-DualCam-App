@@ -1,7 +1,7 @@
 import cv2
 from typing import List, Tuple
-from PySide6.QtCore import QTimer, Qt
-from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
+from PySide6.QtCore import QTimer, Qt, Slot
+from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
 from PySide6.QtGui import QImage, QPixmap
 import logging
 from settings import Settings
@@ -38,6 +38,15 @@ class CameraWidget:
         self.video_writer = None
         self.is_recording = False
 
+        # Флаги для управления попытками подключения
+        self.is_disconnected = False
+
+        # Параметры повторного подключения
+        self.reconnect_interval = 5000  # миллисекунды между попытками
+        self.reconnect_timer = QTimer()
+        self.reconnect_timer.setInterval(self.reconnect_interval)
+        self.reconnect_timer.timeout.connect(self.attempt_reconnect)
+
         # Инициализация камеры
         self.camera = cv2.VideoCapture(self.get_camera_index())
         self.setup_camera()
@@ -55,12 +64,15 @@ class CameraWidget:
             self.pixmap_item = QGraphicsPixmapItem()
             self.scene.addItem(self.pixmap_item)
         else:
-            logger.warning("Камера не инициализирована. Видео не будет отображаться.")
+            logger.warning(f"Камера {self.get_camera_index()} не инициализирована. Видео не будет отображаться.")
+            self.notify_camera_error(f"Камера {self.get_camera_index()} не обнаружена.")
+            self.start_reconnect_timer()
 
     def start_recording(self, file_path: str):
         """Начинает запись видео."""
         if not self.camera or not self.camera.isOpened():
             logger.error("Запись видео невозможна: камера не инициализирована.")
+            QMessageBox.critical(None, "Ошибка", "Камера не инициализирована. Запись видео невозможна.")
             return
 
         width, height = self.get_resolution()
@@ -86,8 +98,23 @@ class CameraWidget:
 
         ret, frame = self.camera.read()
         if not ret:
-            logger.error("Не удалось получить кадр с камеры.")
+            logger.error(f"Не удалось получить кадр с камеры {self.get_camera_index()}.")
+            if not self.is_disconnected:
+                self.is_disconnected = True
+                self.notify_camera_error(f"Камера {self.get_camera_index()} была отключена.")
+                self.stop_recording_if_needed()
+                self.timer.stop()
+                self.camera.release()
+                self.start_reconnect_timer()
             return
+
+        # Если ранее была отключена, но теперь удалось получить кадр
+        if self.is_disconnected:
+            self.is_disconnected = False
+            self.notify_camera_reconnected(f"Камера {self.get_camera_index()} восстановлена.")
+            self.stop_reconnect_timer()
+            self.setup_camera()
+            self.timer.start(1000 // self.get_preview_fps())
 
         # Если запись активна, записываем кадр
         if self.is_recording and self.video_writer:
@@ -110,6 +137,8 @@ class CameraWidget:
             self.video_writer.release()
         if hasattr(self, 'timer'):
             self.timer.stop()
+        if self.reconnect_timer.isActive():
+            self.reconnect_timer.stop()
 
     def get_camera_index(self) -> int:
         raise NotImplementedError("Метод get_camera_index должен быть реализован в подклассе.")
@@ -135,6 +164,49 @@ class CameraWidget:
     def apply_camera_settings(self):
         """Применение настроек камеры (яркость, контрастность и т.д.)."""
         pass  # Здесь можно добавить настройки для конкретной камеры
+
+    def start_reconnect_timer(self):
+        """Запускает таймер повторного подключения."""
+        if not self.reconnect_timer.isActive():
+            logger.info(f"Запуск таймера повторного подключения для камеры {self.get_camera_index()}.")
+            self.reconnect_timer.start()
+
+    def stop_reconnect_timer(self):
+        """Останавливает таймер повторного подключения."""
+        if self.reconnect_timer.isActive():
+            logger.info(f"Остановка таймера повторного подключения для камеры {self.get_camera_index()}.")
+            self.reconnect_timer.stop()
+
+    @Slot()
+    def attempt_reconnect(self):
+        """Пытается повторно подключиться к камере."""
+        logger.info(f"Попытка повторного подключения к камере {self.get_camera_index()}...")
+        self.camera = cv2.VideoCapture(self.get_camera_index())
+        if self.camera and self.camera.isOpened():
+            logger.info(f"Повторное подключение к камере {self.get_camera_index()} успешно.")
+            self.setup_camera()
+            self.apply_camera_settings()
+
+            # Настраиваем таймер для обновления кадров
+            self.timer.start(1000 // self.get_preview_fps())
+
+            # Останавливаем таймер повторного подключения
+            self.stop_reconnect_timer()
+        else:
+            logger.warning(f"Повторное подключение к камере {self.get_camera_index()} неудачно.")
+
+    def notify_camera_error(self, message: str):
+        """Уведомляет пользователя об ошибке камеры."""
+        QMessageBox.critical(None, "Ошибка камеры", message)
+
+    def notify_camera_reconnected(self, message: str):
+        """Уведомляет пользователя о восстановлении камеры."""
+        QMessageBox.information(None, "Камера восстановлена", message)
+
+    def stop_recording_if_needed(self):
+        """Останавливает запись видео, если она активна."""
+        if self.is_recording:
+            self.stop_recording()
 
 
 class VisibleCameraWidget(CameraWidget):
