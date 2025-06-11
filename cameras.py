@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 from PySide6.QtGui import QImage, QPixmap
 import logging
 from settings import Settings
+import PySpin
 
 logger = logging.getLogger(__name__)
 
@@ -223,6 +224,127 @@ class VisibleCameraWidget(CameraWidget):
 
     def get_resolution(self) -> List[int]:
         return self.settings.visible_camera_resolution
+
+
+class FLIRCameraWidget:
+    def __init__(self, settings, graphics_view: QGraphicsView):
+        self.settings = settings
+        self.graphics_view = graphics_view
+        self.is_recording = False
+        self.video_writer = None
+        
+        self.system = PySpin.System.GetInstance()
+        self.cam_list = self.system.GetCameras()
+        num_cameras = self.cam_list.GetSize()
+        
+        if num_cameras == 0:
+            raise Exception("No FLIR cameras found.")
+        
+        try:
+            self.camera = self.cam_list.GetByIndex(0)
+            self.camera.Init()
+            self.set_camera_settings()
+            self.camera.BeginAcquisition()
+            
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.update_frame)
+            self.timer.start(1000 // settings.visible_camera_previewFPS)
+            
+            self.scene = QGraphicsScene()
+            graphics_view.setScene(self.scene)
+            self.pixmap_item = QGraphicsPixmapItem()
+            self.scene.addItem(self.pixmap_item)
+            
+            logger.info("FLIR camera initialized successfully")
+        except PySpin.SpinnakerException as ex:
+            self.release_resources()
+            logger.error(f"FLIR camera initialization failed: {ex}")
+            raise Exception(f"FLIR camera error: {ex}")
+    
+    def set_camera_settings(self):
+        """Настройка параметров камеры FLIR"""
+        nodemap = self.camera.GetNodeMap()
+        
+        # Установка разрешения
+        node_width = PySpin.CIntegerPtr(nodemap.GetNode("Width"))
+        if PySpin.IsAvailable(node_width) and PySpin.IsWritable(node_width):
+            node_width.SetValue(self.settings.visible_camera_resolution[0])
+        
+        node_height = PySpin.CIntegerPtr(nodemap.GetNode("Height"))
+        if PySpin.IsAvailable(node_height) and PySpin.IsWritable(node_height):
+            node_height.SetValue(self.settings.visible_camera_resolution[1])
+        
+        # Установка FPS
+        node_fps = PySpin.CFloatPtr(nodemap.GetNode("AcquisitionFrameRate"))
+        if PySpin.IsAvailable(node_fps) and PySpin.IsWritable(node_fps):
+            node_fps.SetValue(self.settings.visible_camera_previewFPS)
+    
+    def start_recording(self, file_path: str):
+        """Начинает запись видео."""
+        width, height = self.settings.visible_camera_resolution
+        fps = self.settings.visible_camera_recordFPS
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.video_writer = cv2.VideoWriter(file_path, fourcc, fps, (width, height))
+        self.is_recording = True
+        logger.info(f"Начата запись видео: {file_path}")
+    
+    def stop_recording(self):
+        """Останавливает запись видео."""
+        if self.is_recording and self.video_writer:
+            self.video_writer.release()
+            self.video_writer = None
+            self.is_recording = False
+            logger.info("Запись видео остановлена.")
+    
+    def update_frame(self):
+        try:
+            image_result = self.camera.GetNextImage(1000)
+            if image_result.IsIncomplete():
+                logger.warning("FLIR image incomplete with status: %d", image_result.GetImageStatus())
+            else:
+                # Конвертация в RGB для отображения и BGR для записи
+                image_data = image_result.GetNDArray()
+                rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BayerBG2RGB)
+                
+                # Запись видео
+                if self.is_recording and self.video_writer:
+                    bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+                    self.video_writer.write(bgr_image)
+                
+                # Отображение в интерфейсе
+                height, width, _ = rgb_image.shape
+                bytes_per_line = 3 * width
+                q_image = QImage(rgb_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
+                pixmap = QPixmap.fromImage(q_image)
+                self.pixmap_item.setPixmap(pixmap)
+                self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
+            
+            image_result.Release()
+        except PySpin.SpinnakerException as ex:
+            logger.error("FLIR camera error: %s", ex)
+    
+    def release_resources(self):
+        """Освобождает ресурсы камеры."""
+        if hasattr(self, 'camera') and self.camera.IsInitialized():
+            if self.camera.IsStreaming():
+                self.camera.EndAcquisition()
+            self.camera.DeInit()
+            del self.camera
+        
+        if hasattr(self, 'cam_list'):
+            self.cam_list.Clear()
+            del self.cam_list
+        
+        if hasattr(self, 'system'):
+            self.system.ReleaseInstance()
+            del self.system
+    
+    def release(self):
+        """Публичный метод для освобождения ресурсов."""
+        if hasattr(self, 'timer') and self.timer.isActive():
+            self.timer.stop()
+        self.stop_recording()
+        self.release_resources()
 
 
 class ThermalCameraWidget(CameraWidget):

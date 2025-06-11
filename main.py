@@ -1,11 +1,9 @@
-# PTT v0.6.0
-
 # Стандартные библиотеки
 import logging
 import sys
 from pathlib import Path
 
-# Библиотеки третьих сторон
+# Сторонние библиотеки
 import numpy as np
 from PySide6.QtCore import QEvent, QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
@@ -15,7 +13,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QFileDialog,
 from serial_communicator import SerialCommunicator as com
 
 # Локальные модули
-from cameras import get_available_cameras, VisibleCameraWidget, ThermalCameraWidget
+from cameras import get_available_cameras, VisibleCameraWidget, FLIRCameraWidget, ThermalCameraWidget
 from FinishDialog import Ui_FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow
@@ -195,8 +193,18 @@ class MainWindow(QMainWindow):
         self.last_moving = np.zeros(2, dtype=int)       # Последнее перемещение [dx, dy]
         self.progress = 0
 
-        # Камеры
-        self.camera_widget = VisibleCameraWidget(settings, self.ui.MainCameraView)
+        # Инициализация камер
+        try:
+            # Сначала пробуем FLIR камеру
+            self.camera_widget = FLIRCameraWidget(settings, self.ui.MainCameraView)
+            logger.info("FLIR camera initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize FLIR camera: {e}")
+            # Fallback to regular camera
+            self.camera_widget = VisibleCameraWidget(settings, self.ui.MainCameraView)
+            logger.info("Using fallback visible camera")
+        
+        # Тепловизор всегда инициализируем отдельно
         self.thermal_camera_widget = ThermalCameraWidget(settings, self.ui.MainTCameraView)
 
         # Таймеры

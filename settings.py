@@ -51,13 +51,13 @@ class Settings(QObject):
     theme: str = 'Light'
     
     # Общие настройки камеры (видимой)
-    visible_camera_index: int = 0  # Индекс камеры видимого диапазона
+    visible_camera_index: int = 1  # Индекс камеры видимого диапазона
     visible_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
     visible_camera_previewFPS: int = 30
     visible_camera_recordFPS: int = 5
 
     # Общие настройки камеры (тепловизора)
-    thermal_camera_index: int = 1
+    thermal_camera_index: int = 0
     thermal_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
     thermal_camera_previewFPS: int = 20
     thermal_camera_recordFPS: int = 5
