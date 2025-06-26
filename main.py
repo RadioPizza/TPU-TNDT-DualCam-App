@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Сторонние библиотеки
 import numpy as np
-from PySide6.QtCore import QEvent, QObject, Qt, QTimer, Signal
+from PySide6.QtCore import QEvent, QObject, Qt, QTimer, Signal, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (QApplication, QDialog, QFileDialog,
                                QGraphicsPixmapItem, QGraphicsScene, QLineEdit,
@@ -213,6 +213,11 @@ class MainWindow(QMainWindow):
 
         self.cooling_timer = QTimer()
         self.cooling_timer.timeout.connect(self.finish_recording)
+        
+        # Инициализация прогресс-бара
+        self.ui.MainProgressBar.setValue(0)
+        self.progress_animation = QPropertyAnimation(self.ui.MainProgressBar, b"value")
+        self.progress_animation.setEasingCurve(QEasingCurve.Linear)
 
         # Подключение кнопок
         self.ui.MainPlayButton.clicked.connect(self.start_testing)
@@ -238,7 +243,22 @@ class MainWindow(QMainWindow):
 
         # Включаем нагрев
         heater.turn_on()
-        self.ui.MainProcessLabel.setText("Heating...")
+        
+        # Обновляем текст с оставшимся временем
+        self.ui.MainProcessLabel.setText(f"Heating... ({settings.heating_duration}s remaining)")
+        
+        # Запускаем таймер для обновления текста
+        self.status_update_timer = QTimer()
+        self.status_update_timer.setInterval(1000)  # Обновляем каждую секунду
+        self.status_update_timer.timeout.connect(self.update_status_text)
+        self.status_update_timer.start()
+        
+        # Настраиваем и запускаем анимацию прогресс-бара
+        total_time_ms = settings.duration_of_testing * 1000
+        self.progress_animation.setDuration(total_time_ms)
+        self.progress_animation.setStartValue(0)
+        self.progress_animation.setEndValue(100)
+        self.progress_animation.start()
 
         # Запускаем таймер нагрева
         heating_duration = settings.heating_duration * 1000  # В миллисекундах
@@ -247,7 +267,10 @@ class MainWindow(QMainWindow):
     def start_cooling(self):
         """Переходит к процессу охлаждения."""
         heater.turn_off()
-        self.ui.MainProcessLabel.setText("Cooling...")
+        
+        # Обновляем текст процесса
+        cooling_duration = (settings.duration_of_testing - settings.heating_duration)
+        self.ui.MainProcessLabel.setText(f"Cooling... ({cooling_duration}s remaining)")
 
         # Запускаем таймер охлаждения
         cooling_duration = (settings.duration_of_testing - settings.heating_duration) * 1000  # В миллисекундах
@@ -255,14 +278,24 @@ class MainWindow(QMainWindow):
 
     def finish_recording(self):
         """Завершает процесс контроля и запись видео."""
+        # Останавливаем таймеры
         self.heating_timer.stop()
         self.cooling_timer.stop()
 
         # Останавливаем запись
         self.camera_widget.stop_recording()
         self.thermal_camera_widget.stop_recording()
+        
+        # Останавливаем анимацию прогресс-бара
+        self.progress_animation.stop()
+        
+        # Останавливаем таймер обновления текста
+        if hasattr(self, 'status_update_timer'):
+            self.status_update_timer.stop()
 
-        self.ui.MainProcessLabel.setText("Zone completed.")
+        # Устанавливаем завершающие значения
+        self.ui.MainProgressBar.setValue(100)
+        self.ui.MainProcessLabel.setText("Zone testing completed successfully!")
         logger.info(f"Тестирование зоны {tuple(self.current_position)} завершено.")
 
         # Переход к следующему действию
@@ -277,9 +310,16 @@ class MainWindow(QMainWindow):
         # Останавливаем запись
         self.camera_widget.stop_recording()
         self.thermal_camera_widget.stop_recording()
-
-        self.ui.MainProcessLabel.setText("Testing stopped.")
-        logger.warning("Тестирование было прервано пользователем.")
+        
+        # Останавливаем анимацию прогресс-бара
+        self.progress_animation.stop()
+        
+        # Останавливаем таймер обновления текста
+        if hasattr(self, 'status_update_timer'):
+            self.status_update_timer.stop()
+        
+        self.ui.MainProcessLabel.setText("Testing stopped")
+        logger.warning("Тестирование было прервано пользователем")
 
     def open_trajectory_dialog(self):
         """Открывает диалог выбора следующей зоны."""
@@ -296,6 +336,35 @@ class MainWindow(QMainWindow):
         self.camera_widget.release()
         self.thermal_camera_widget.release()
         event.accept()
+    
+    def update_progress(self):
+        """Обновляет прогресс-бар на основе прошедшего времени."""
+        self.elapsed_time += 1
+        total_time = settings.duration_of_testing
+        
+        # Рассчитываем процент выполнения
+        progress = min(100, int((self.elapsed_time / total_time) * 100))
+        self.ui.MainProgressBar.setValue(progress)
+        
+        # Если тестирование завершено, останавливаем таймер
+        if self.elapsed_time >= total_time:
+            self.progress_timer.stop()
+    
+    def update_status_text(self):
+        """Обновляет текст статуса с оставшимся временем."""
+        elapsed = self.progress_animation.currentTime() / 1000  # В секундах
+        remaining = settings.duration_of_testing - elapsed
+        
+        if elapsed < settings.heating_duration:
+            phase = "Heating"
+            phase_remaining = settings.heating_duration - elapsed
+        else:
+            phase = "Cooling"
+            phase_remaining = remaining
+        
+        self.ui.MainProcessLabel.setText(
+            f"{phase}... ({phase_remaining:.0f}s remaining)"
+        )
     
 class SettingsWindow(QDialog):
     def __init__(self):
