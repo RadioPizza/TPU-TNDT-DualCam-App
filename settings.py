@@ -45,6 +45,11 @@ class UserData(QObject):
 
 @dataclass
 class Settings(QObject):
+    
+    # Флаги режима разработчика (только для тестирования)
+    auto_fill_forms: bool = True    # Автоматиеческое заполнение форм
+    mock_heater: bool = True        # Заглшука для тестирования без реального нагревателя
+    
     duration_of_testing: int = 30
     heating_duration: int = 10
     language: str = 'EN'

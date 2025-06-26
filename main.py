@@ -1,6 +1,6 @@
 # Стандартные библиотеки
 import logging
-import sys
+import sys, os
 from pathlib import Path
 
 # Сторонние библиотеки
@@ -62,6 +62,10 @@ class StartWindow(QDialog):
             self.ui.StartSurnameLineEdit,
             self.ui.StartObjectLineEdit
         ]
+        
+        # Автозаполнение формы для разработки
+        if Settings.auto_fill_forms:
+            self._auto_fill_form()
 
         # Создаем экземпляр наблюдателя за фокусом и устанавливаем на поля
         self.focus_watcher = FocusWatcher()
@@ -181,6 +185,13 @@ class StartWindow(QDialog):
         ]
         for field in fields:
             field.setStyleSheet("")
+    
+    def _auto_fill_form(self):
+        """Автозаполнение формы для тестирования."""
+        self.ui.StartNameLineEdit.setText("Oleg")
+        self.ui.StartSurnameLineEdit.setText("Kravtsov")
+        self.ui.StartObjectLineEdit.setText("Test object name")
+        self.ui.StartPathLineEdit.setText(os.getcwd())
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -494,12 +505,22 @@ if __name__ == '__main__':
     
     # Загрузка настроек из файла
     settings = Settings.load_from_file()
+        
+    # Инициализация нагревателя
+    if settings.mock_heater:
+        class MockHeater:
+            def turn_on(self):
+                logger.info("SIMULATION: Heater turned ON")
+            
+            def turn_off(self):
+                logger.info("SIMULATION: Heater turned OFF")
+        
+        heater = MockHeater()
+    else:
+        heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
     
     # Получение экземпляра объекта PreviewSettings
     preview_settings = PreviewSettings.get_instance()
-    
-    # Инициализация обогревателя с параметрами из настроек
-    heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
     
     # Запуск главного цикла приложения и выход при завершении
     sys.exit(app.exec())
