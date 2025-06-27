@@ -234,6 +234,7 @@ class MainWindow(QMainWindow):
 
         # Подключение кнопок
         self.ui.MainPlayButton.clicked.connect(self.start_testing)
+        self.ui.MainStopButton.setEnabled(False)  # Изначально неактивна
         self.ui.MainStopButton.clicked.connect(self.stop_testing)
         self.ui.MainSettingsButton.clicked.connect(self.open_settings_window)
 
@@ -249,6 +250,13 @@ class MainWindow(QMainWindow):
         position = f"zone({self.current_position[0]},{self.current_position[1]})"
         visible_file = f"{self.save_path}/{object_name}_{position}_visible.avi"
         thermal_file = f"{self.save_path}/{object_name}_{position}_thermal.avi"
+        
+        # Сохраняем пути к файлам для возможного удаления
+        self.current_visible_file = visible_file
+        self.current_thermal_file = thermal_file
+        
+        # Активируем кнопку Stop
+        self.ui.MainStopButton.setEnabled(True)
 
         # Начинаем запись видео
         self.camera_widget.start_recording(visible_file)
@@ -300,6 +308,9 @@ class MainWindow(QMainWindow):
         self.camera_widget.stop_recording()
         self.thermal_camera_widget.stop_recording()
         
+        # Деактивируем кнопку Stop после успешного завершения
+        self.ui.MainStopButton.setEnabled(False)
+        
         # Останавливаем анимацию прогресс-бара
         self.progress_animation.stop()
         
@@ -335,8 +346,27 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'status_update_timer'):
             self.status_update_timer.stop()
         
-        self.ui.MainProcessLabel.setText("Testing stopped")
+        # Обновляем статус
+        self.ui.MainProcessLabel.setText("Testing was interrupted")
         logger.warning("Тестирование было прервано пользователем")
+        
+        # Удаляем записанные файлы текущей зоны
+        self.delete_current_zone_files()
+        
+        # Деактивируем кнопку Stop
+        self.ui.MainStopButton.setEnabled(False)
+    
+    def delete_current_zone_files(self):
+        """Удаляет файлы текущей зоны при прерывании тестирования."""
+        try:
+            if hasattr(self, 'current_visible_file') and os.path.exists(self.current_visible_file):
+                os.remove(self.current_visible_file)
+                logger.info(f"Удален файл: {self.current_visible_file}")
+            if hasattr(self, 'current_thermal_file') and os.path.exists(self.current_thermal_file):
+                os.remove(self.current_thermal_file)
+                logger.info(f"Удален файл: {self.current_thermal_file}")
+        except Exception as e:
+            logger.error(f"Ошибка при удалении файлов: {e}")
 
     def open_trajectory_dialog(self):
         """Открывает диалоговое окно выбора следующей зоны."""
