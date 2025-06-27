@@ -441,6 +441,16 @@ class TrajectoryDialog(QDialog):
         self.ui.TrajectoryRepeatButton.clicked.connect(self.open_retest_dialog)
         self.ui.TrajectoryPreviewButton.clicked.connect(self.open_preview_window)
         self.ui.TrajectoryFinishButton.clicked.connect(self.open_finish_dialog)
+        
+        # Флаг разрешения на закрытие
+        self.allow_close = False
+
+    def closeEvent(self, event):
+        """Переопределяем событие закрытия окна"""
+        if self.allow_close:
+            event.accept()
+        else:
+            event.ignore()
 
     def trajectory_handler(self, direction: str) -> None:
         """Здесь нужно написать описание."""
@@ -456,18 +466,21 @@ class TrajectoryDialog(QDialog):
         """Открывает диалоговое окно Retest, закрывая себя."""
         self.RetestDialog = RetestDialog()
         self.RetestDialog.show()
+        self.allow_close = True
         self.close()
     
     def open_preview_window(self) -> None:
         """Открывает окно предпросмотра, закрывая себя."""
         self.PreviewWindow = PreviewWindow()
         self.PreviewWindow.show()
+        self.allow_close = True
         self.close()
     
     def open_finish_dialog(self) -> None:
         """Открывает финальное окно, закрывая себя."""
         self.FinishDialog = FinishDialog()
         self.FinishDialog.show()
+        self.allow_close = True
         self.close()
 
 class RetestDialog(QDialog):
