@@ -257,6 +257,9 @@ class MainWindow(QMainWindow):
         
         # Активируем кнопку Stop
         self.ui.MainStopButton.setEnabled(True)
+        
+        # Деактивируем кнопку Start
+        self.ui.MainPlayButton.setEnabled(False)
 
         # Начинаем запись видео
         self.camera_widget.start_recording(visible_file)
@@ -355,6 +358,9 @@ class MainWindow(QMainWindow):
         
         # Деактивируем кнопку Stop
         self.ui.MainStopButton.setEnabled(False)
+        
+        # Активируем кнопку Start
+        self.ui.MainPlayButton.setEnabled(True)
     
     def delete_current_zone_files(self):
         """Удаляет файлы текущей зоны при прерывании тестирования."""
