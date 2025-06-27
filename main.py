@@ -220,10 +220,12 @@ class MainWindow(QMainWindow):
 
         # Таймеры
         self.heating_timer = QTimer()
+        self.heating_timer.setSingleShot(True)
         self.heating_timer.timeout.connect(self.start_cooling)
-
+        
         self.cooling_timer = QTimer()
-        self.cooling_timer.timeout.connect(self.finish_recording)
+        self.heating_timer.setSingleShot(True)
+        self.cooling_timer.timeout.connect(self.finish_testing)
         
         # Инициализация прогресс-бара
         self.ui.MainProgressBar.setValue(0)
@@ -277,6 +279,7 @@ class MainWindow(QMainWindow):
 
     def start_cooling(self):
         """Переходит к процессу охлаждения."""
+        # Выключаем нагреватель
         heater.turn_off()
         
         # Обновляем текст процесса
@@ -287,7 +290,7 @@ class MainWindow(QMainWindow):
         cooling_duration = (settings.duration_of_testing - settings.heating_duration) * 1000  # В миллисекундах
         self.cooling_timer.start(cooling_duration)
 
-    def finish_recording(self):
+    def finish_testing(self):
         """Завершает процесс контроля и запись видео."""
         # Останавливаем таймеры
         self.heating_timer.stop()
@@ -314,8 +317,11 @@ class MainWindow(QMainWindow):
 
     def stop_testing(self):
         """Прерывает процесс контроля."""
+        # Останавливаем таймеры
         self.heating_timer.stop()
         self.cooling_timer.stop()
+        
+        # Выключаем нагреватель
         heater.turn_off()
 
         # Останавливаем запись
@@ -333,9 +339,9 @@ class MainWindow(QMainWindow):
         logger.warning("Тестирование было прервано пользователем")
 
     def open_trajectory_dialog(self):
-        """Открывает диалог выбора следующей зоны."""
+        """Открывает диалоговое окно выбора следующей зоны."""
         self.trajectory_dialog = TrajectoryDialog()
-        self.trajectory_dialog.show()
+        self.trajectory_dialog.exec()
 
     def open_settings_window(self):
         """Открывает окно настроек."""

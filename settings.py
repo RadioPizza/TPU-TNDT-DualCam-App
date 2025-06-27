@@ -50,8 +50,8 @@ class Settings(QObject):
     auto_fill_forms: bool = True    # Автоматиеческое заполнение форм
     mock_heater: bool = True        # Заглшука для тестирования без реального нагревателя
     
-    duration_of_testing: int = 30
-    heating_duration: int = 10
+    duration_of_testing: int = 10
+    heating_duration: int = 3
     language: str = 'EN'
     theme: str = 'Light'
     
