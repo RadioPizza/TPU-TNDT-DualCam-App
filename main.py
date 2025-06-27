@@ -490,8 +490,8 @@ class RetestDialog(QDialog):
         self.ui.setupUi(self)
         
         # Подключаем сигналы кнопок
-        self.ui.RetestNoButton.clicked.connect(self.openTrajectoryDialog)
-        self.ui.RetestYesButton.clicked.connect(self.close())
+        self.ui.RetestNoButton.clicked.connect(self.open_trajectory_dialog)
+        self.ui.RetestYesButton.clicked.connect(self.close)
 
     def open_trajectory_dialog(self) -> None:
         """Открывает диалоговое окно выбора следующего положения."""
