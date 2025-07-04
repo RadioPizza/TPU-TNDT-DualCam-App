@@ -470,11 +470,19 @@ class TrajectoryDialog(QDialog):
         self.close()
     
     def open_preview_window(self) -> None:
+        """Показывает сообщение о том, что функция в разработке."""
+        QMessageBox.information(
+            self, 
+            "Preview", 
+            "Функция предпросмотра ещё в разработке"
+        )
+        '''
         """Открывает окно предпросмотра, закрывая себя."""
         self.PreviewWindow = PreviewWindow()
         self.PreviewWindow.show()
         self.allow_close = True
         self.close()
+        '''
     
     def open_finish_dialog(self) -> None:
         """Открывает финальное окно, закрывая себя."""
