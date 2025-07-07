@@ -419,6 +419,70 @@ class MainWindow(QMainWindow):
             f"{phase}... ({phase_remaining:.0f}s remaining)"
         )
     
+    def open_trajectory_dialog(self):
+        """Открывает диалоговое окно выбора следующей зоны."""
+        self.trajectory_dialog = TrajectoryDialog()
+        
+        # Подключаем сигналы диалога к слотам главного окна
+        self.trajectory_dialog.direction_selected.connect(self.handle_direction_selected)
+        self.trajectory_dialog.retest_requested.connect(self.open_retest_dialog)
+        self.trajectory_dialog.preview_requested.connect(self.handle_preview_request)
+        self.trajectory_dialog.finish_requested.connect(self.open_finish_dialog)
+        
+        self.trajectory_dialog.exec()
+    
+    def handle_direction_selected(self, direction: str):
+        """Обрабатывает выбор направления перемещения."""
+        # Словарь соответствия направления вектору перемещения
+        direction_map = {
+            'right': np.array([1, 0]),
+            'left': np.array([-1, 0]),
+            'up': np.array([0, 1]),
+            'down': np.array([0, -1])
+        }
+        
+        # Обновляем позицию
+        move_vector = direction_map[direction]
+        self.last_moving = move_vector
+        self.current_position += move_vector
+        
+        # Закрываем диалог
+        self.trajectory_dialog.allow_close = True
+        self.trajectory_dialog.close()
+        
+        # Показываем сообщение о перемещении устройства
+        QMessageBox.information(
+            self,
+            "Перемещение устройства",
+            f"Пожалуйста, переместите устройство в направлении {direction}.\n"
+            "После перемещения нажмите ОК, чтобы начать тестирование новой зоны.",
+            QMessageBox.Ok
+        )
+        
+        # Активируем кнопку Start для новой зоны
+        self.ui.MainPlayButton.setEnabled(True)
+    
+    def open_retest_dialog(self):
+        """Открывает диалоговое окно повторного тестирования текущей зоны."""
+        self.retest_dialog = RetestDialog()
+        self.retest_dialog.ui.RetestYesButton.clicked.connect(self.start_testing)
+        self.retest_dialog.ui.RetestNoButton.clicked.connect(self.open_trajectory_dialog)
+        self.retest_dialog.exec()
+    
+    def handle_preview_request(self):
+        """Обрабатывает запрос на предпросмотр результатов."""
+        # Показываем сообщение о том, что функция в разработке
+        QMessageBox.information(
+            self,
+            "Preview",
+            "Функция предпросмотра ещё в разработке"
+        )
+    
+    def open_finish_dialog(self):
+        """Открывает финальное диалоговое окно."""
+        self.finish_dialog = FinishDialog()
+        self.finish_dialog.exec()
+    
 class SettingsWindow(QDialog):
     def __init__(self):
         super(SettingsWindow, self).__init__()
@@ -428,19 +492,25 @@ class SettingsWindow(QDialog):
         self.ui.SettingsHomeButton.clicked.connect(self.close)
 
 class TrajectoryDialog(QDialog):
+    # Сигналы
+    direction_selected = Signal(str)
+    retest_requested = Signal()
+    preview_requested = Signal()
+    finish_requested = Signal()
+    
     def __init__(self):
         super().__init__()
         self.ui = Ui_TrajectoryDialog()
         self.ui.setupUi(self)
 
         # Подключаем сигналы кнопок
-        self.ui.TrajectoryRightButton.clicked.connect(lambda: self.trajectory_handler('right'))
-        self.ui.TrajectoryLeftButton.clicked.connect(lambda: self.trajectory_handler('left'))
-        self.ui.TrajectoryUpButton.clicked.connect(lambda: self.trajectory_handler('up'))
-        self.ui.TrajectoryDownButton.clicked.connect(lambda: self.trajectory_handler('down'))
-        self.ui.TrajectoryRepeatButton.clicked.connect(self.open_retest_dialog)
-        self.ui.TrajectoryPreviewButton.clicked.connect(self.open_preview_window)
-        self.ui.TrajectoryFinishButton.clicked.connect(self.open_finish_dialog)
+        self.ui.TrajectoryRightButton.clicked.connect(lambda: self.direction_selected.emit('right'))
+        self.ui.TrajectoryLeftButton.clicked.connect(lambda: self.direction_selected.emit('left'))
+        self.ui.TrajectoryUpButton.clicked.connect(lambda: self.direction_selected.emit('up'))
+        self.ui.TrajectoryDownButton.clicked.connect(lambda: self.direction_selected.emit('down'))
+        self.ui.TrajectoryRepeatButton.clicked.connect(self.retest_requested.emit)
+        self.ui.TrajectoryPreviewButton.clicked.connect(self.preview_requested.emit)
+        self.ui.TrajectoryFinishButton.clicked.connect(self.finish_requested.emit)
         
         # Флаг разрешения на закрытие
         self.allow_close = False
@@ -451,45 +521,6 @@ class TrajectoryDialog(QDialog):
             event.accept()
         else:
             event.ignore()
-
-    def trajectory_handler(self, direction: str) -> None:
-        """Здесь нужно написать описание."""
-        match direction:
-            case 'right':   MainWindow.last_moving = np.array([ 1,  0])
-            case 'left':    MainWindow.last_moving = np.array([-1,  0])
-            case 'up':      MainWindow.last_moving = np.array([ 0,  1])
-            case 'down':    MainWindow.last_moving = np.array([ 0, -1])
-        MainWindow.current_position += MainWindow.last_moving
-        self.close()
-
-    def open_retest_dialog(self) -> None:
-        """Открывает диалоговое окно Retest, закрывая себя."""
-        self.RetestDialog = RetestDialog()
-        self.RetestDialog.show()
-        self.allow_close = True
-        self.close()
-    
-    def open_preview_window(self) -> None:
-        """Показывает сообщение о том, что функция в разработке."""
-        QMessageBox.information(
-            self, 
-            "Preview", 
-            "Функция предпросмотра ещё в разработке"
-        )
-        '''
-        """Открывает окно предпросмотра, закрывая себя."""
-        self.PreviewWindow = PreviewWindow()
-        self.PreviewWindow.show()
-        self.allow_close = True
-        self.close()
-        '''
-    
-    def open_finish_dialog(self) -> None:
-        """Открывает финальное окно, закрывая себя."""
-        self.FinishDialog = FinishDialog()
-        self.FinishDialog.show()
-        self.allow_close = True
-        self.close()
 
 class RetestDialog(QDialog):
     def __init__(self):
