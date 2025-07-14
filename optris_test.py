@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import ctypes as ct
+import time  # Импортируем модуль времени
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QTimer
@@ -28,6 +29,22 @@ class ThermalCameraApp(QMainWindow):
         self.image_label = QLabel(self)
         self.image_label.setGeometry(10, 10, 640, 480)
         self.image_label.setScaledContents(True)
+        
+        # Создаем QLabel для отображения разрешения
+        self.resolution_label = QLabel(self)
+        self.resolution_label.setGeometry(10, 500, 300, 30)
+        self.resolution_label.setText("Resolution: ")
+        
+        # Создаем QLabel для отображения FPS
+        self.fps_label = QLabel(self)
+        self.fps_label.setGeometry(10, 540, 300, 30)
+        self.fps_label.setText("FPS: 0.0")
+        
+        # Переменные для расчета FPS
+        self.frame_count = 0
+        self.fps = 0.0
+        self.last_time = time.time()
+        self.last_update_time = time.time()
         
         # Инициализация камеры
         if not self.init_camera():
@@ -85,6 +102,12 @@ class ThermalCameraApp(QMainWindow):
             self.libir.evo_irimager_get_palette_image_size(ct.byref(self.palette_width), ct.byref(self.palette_height))
             print(f"Palette size: {self.palette_width.value}x{self.palette_height.value}")
             
+            # Обновляем лейбл с разрешением
+            self.resolution_label.setText(
+                f"Resolution: {self.thermal_width.value}x{self.thermal_height.value} "
+                f"(Palette: {self.palette_width.value}x{self.palette_height.value})"
+            )
+            
             # Буферы для данных
             self.np_thermal = np.zeros([self.thermal_width.value * self.thermal_height.value], dtype=np.uint16)
             self.np_img = np.zeros([self.palette_width.value * self.palette_height.value * 3], dtype=np.uint8)
@@ -133,6 +156,19 @@ class ThermalCameraApp(QMainWindow):
             
             # Отображение в интерфейсе
             self.image_label.setPixmap(QPixmap.fromImage(qimg))
+            
+            # Расчет FPS
+            self.frame_count += 1
+            current_time = time.time()
+            elapsed = current_time - self.last_update_time
+            
+            # Обновляем FPS каждые 0.5 секунд для плавности
+            if elapsed > 0.5:
+                self.fps = self.frame_count / (current_time - self.last_time)
+                self.fps_label.setText(f"FPS: {self.fps:.1f}")
+                self.last_update_time = current_time
+                self.frame_count = 0
+                self.last_time = current_time
             
         except Exception as e:
             print(f"Ошибка обновления кадра: {e}")
