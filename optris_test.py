@@ -1,8 +1,9 @@
 import sys
 import numpy as np
 import ctypes as ct
-import time  # Импортируем модуль времени
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
+import time
+from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, 
+                               QComboBox, QVBoxLayout, QWidget)
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QTimer
 
@@ -23,22 +24,50 @@ class ThermalCameraApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
-        self.setGeometry(100, 100, 700, 600)
+        self.setGeometry(100, 100, 700, 650)
+        
+        # Создаем центральный виджет и макет
+        central_widget = QWidget(self)
+        self.setCentralWidget(central_widget)
+        layout = QVBoxLayout(central_widget)
         
         # Создаем виджет для отображения
         self.image_label = QLabel(self)
-        self.image_label.setGeometry(10, 10, 640, 480)
         self.image_label.setScaledContents(True)
+        layout.addWidget(self.image_label)
         
         # Создаем QLabel для отображения разрешения
         self.resolution_label = QLabel(self)
-        self.resolution_label.setGeometry(10, 500, 300, 30)
         self.resolution_label.setText("Resolution: ")
+        layout.addWidget(self.resolution_label)
         
         # Создаем QLabel для отображения FPS
         self.fps_label = QLabel(self)
-        self.fps_label.setGeometry(10, 540, 300, 30)
         self.fps_label.setText("FPS: 0.0")
+        layout.addWidget(self.fps_label)
+        
+        # Создаем выпадающий список для выбора палитры
+        self.palette_label = QLabel("Цветовая палитра:", self)
+        layout.addWidget(self.palette_label)
+        
+        self.palette_combo = QComboBox(self)
+        # Список доступных палитр
+        self.palette_combo.addItems([
+            "Alarm Blue",
+            "Alarm Red",
+            "Alarm Green",
+            "Rainbow",
+            "Iron",
+            "Bone",
+            "Medical", 
+            "Orange",
+            "Rain",
+            "Pinkblue",
+            "Grayblack"
+        ])
+        self.palette_combo.setCurrentText("Iron")  # Установка палитры по умолчанию
+        self.palette_combo.currentTextChanged.connect(self.set_palette)
+        layout.addWidget(self.palette_combo)
         
         # Переменные для расчета FPS
         self.frame_count = 0
@@ -78,6 +107,10 @@ class ThermalCameraApp(QMainWindow):
             ]
             self.libir.evo_irimager_get_thermal_palette_image_metadata.restype = ct.c_int
             
+            # Добавляем функцию для установки палитры
+            self.libir.evo_irimager_set_palette.argtypes = [ct.c_int]
+            self.libir.evo_irimager_set_palette.restype = ct.c_int
+            
             self.libir.evo_irimager_terminate.argtypes = []
             self.libir.evo_irimager_terminate.restype = None
             
@@ -113,11 +146,41 @@ class ThermalCameraApp(QMainWindow):
             self.np_img = np.zeros([self.palette_width.value * self.palette_height.value * 3], dtype=np.uint8)
             self.metadata = EvoIRFrameMetadata()
             
+            # Установка начальной палитры
+            self.set_palette(self.palette_combo.currentText())
+            
             return True
             
         except Exception as e:
             print(f"Ошибка инициализации: {e}")
             return False
+
+    def set_palette(self, palette_name):
+        """Устанавливает цветовую палитру для камеры"""
+        if not hasattr(self, 'libir'):
+            return
+            
+        # Соответствие имен палитр их ID
+        palette_map = {
+            "Alarm Blue": 1,
+            "Pinkblue": 2,
+            "Bone": 3,
+            "Grayblack": 4,
+            "Alarm Green": 5,
+            "Iron": 6, # 0 и больше 11 - тоже Iron
+            "Orange": 7, 
+            "Medical": 8,
+            "Rain": 9,
+            "Rainbow": 10, 
+            "Alarm Red": 11,
+        }
+        
+        palette_id = palette_map.get(palette_name, 6)
+        ret = self.libir.evo_irimager_set_palette(palette_id)
+        if ret != 0:
+            print(f"Ошибка установки палитры '{palette_name}' (ID={palette_id}): {ret}")
+        else:
+            print(f"Установлена палитра: {palette_name} (ID={palette_id})")
 
     def update_frame(self):
         try:
@@ -164,11 +227,10 @@ class ThermalCameraApp(QMainWindow):
             
             # Обновляем FPS каждые 0.5 секунд для плавности
             if elapsed > 0.5:
-                self.fps = self.frame_count / (current_time - self.last_time)
+                self.fps = self.frame_count / elapsed
                 self.fps_label.setText(f"FPS: {self.fps:.1f}")
                 self.last_update_time = current_time
                 self.frame_count = 0
-                self.last_time = current_time
             
         except Exception as e:
             print(f"Ошибка обновления кадра: {e}")
