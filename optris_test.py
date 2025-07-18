@@ -50,6 +50,11 @@ class ThermalCameraApp(QMainWindow):
         self.temp_label = QLabel(self)
         self.temp_label.setText("Центральная точка: -- °C (RAW: --)")
         layout.addWidget(self.temp_label)
+
+        # Добавляем QLabel для средней температуры по кадру
+        self.avg_temp_label = QLabel(self)
+        self.avg_temp_label.setText("Средняя температура кадра: -- °C")
+        layout.addWidget(self.avg_temp_label)
         
         # Создаем выпадающий список для выбора палитры
         self.palette_label = QLabel("Цветовая палитра:", self)
@@ -240,13 +245,16 @@ class ThermalCameraApp(QMainWindow):
             # Получение температуры в центре кадра
             center_index = (self.thermal_height.value // 2) * self.thermal_width.value + (self.thermal_width.value // 2)
             raw_temp = self.np_thermal[center_index]
-            
-            # Преобразование сырого значения в температуру (°C)
-            # Формула для камер Optris PI: температура (°C) = (сырое значение / 10) - 100
             temp_c = (raw_temp / 10.0) - 100.0
-            
-            # Обновление QLabel с температурой
             self.temp_label.setText(f"Центральная точка: {temp_c:.2f} °C (RAW: {raw_temp})")
+            
+            # РАСЧЕТ СРЕДНЕЙ ТЕМПЕРАТУРЫ ПО КАДРУ
+            # Преобразование всего массива в температуры
+            temperatures = (self.np_thermal.astype(np.float32) / 10.0) - 100.0
+            avg_temp = np.mean(temperatures)
+            
+            # Обновление QLabel со средней температурой
+            self.avg_temp_label.setText(f"Средняя температура: {avg_temp:.2f} °C")
             
         except Exception as e:
             print(f"Ошибка обновления кадра: {e}")
