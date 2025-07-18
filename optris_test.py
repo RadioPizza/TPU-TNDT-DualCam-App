@@ -46,6 +46,11 @@ class ThermalCameraApp(QMainWindow):
         self.fps_label.setText("FPS: 0.0")
         layout.addWidget(self.fps_label)
         
+        # Создаем QLabel для отображения температуры в центре
+        self.temp_label = QLabel(self)
+        self.temp_label.setText("Центральная точка: -- °C (RAW: --)")
+        layout.addWidget(self.temp_label)
+        
         # Создаем выпадающий список для выбора палитры
         self.palette_label = QLabel("Цветовая палитра:", self)
         layout.addWidget(self.palette_label)
@@ -231,6 +236,17 @@ class ThermalCameraApp(QMainWindow):
                 self.fps_label.setText(f"FPS: {self.fps:.1f}")
                 self.last_update_time = current_time
                 self.frame_count = 0
+            
+            # Получение температуры в центре кадра
+            center_index = (self.thermal_height.value // 2) * self.thermal_width.value + (self.thermal_width.value // 2)
+            raw_temp = self.np_thermal[center_index]
+            
+            # Преобразование сырого значения в температуру (°C)
+            # Формула для камер Optris PI: температура (°C) = (сырое значение / 10) - 100
+            temp_c = (raw_temp / 10.0) - 100.0
+            
+            # Обновление QLabel с температурой
+            self.temp_label.setText(f"Центральная точка: {temp_c:.2f} °C (RAW: {raw_temp})")
             
         except Exception as e:
             print(f"Ошибка обновления кадра: {e}")
