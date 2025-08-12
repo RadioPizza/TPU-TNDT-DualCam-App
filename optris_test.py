@@ -4,7 +4,8 @@ import ctypes as ct
 import time
 from datetime import datetime
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, 
-                               QComboBox, QVBoxLayout, QWidget, QCheckBox, QPushButton)
+                               QComboBox, QVBoxLayout, QWidget, QCheckBox, 
+                               QPushButton, QHBoxLayout, QGroupBox)
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QTimer
 
@@ -30,57 +31,69 @@ class ThermalCameraApp(QMainWindow):
         # Создаем центральный виджет и макет
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        layout = QVBoxLayout(central_widget)
+        main_layout = QVBoxLayout(central_widget)
         
         # Создаем виджет для отображения
         self.image_label = QLabel(self)
         self.image_label.setScaledContents(True)
-        layout.addWidget(self.image_label)
+        main_layout.addWidget(self.image_label)
         
         # Создаем QLabel для отображения разрешения
         self.resolution_label = QLabel(self)
         self.resolution_label.setText("Resolution: ")
-        layout.addWidget(self.resolution_label)
+        main_layout.addWidget(self.resolution_label)
         
         # Создаем QLabel для отображения FPS
         self.fps_label = QLabel(self)
         self.fps_label.setText("FPS: 0.0")
-        layout.addWidget(self.fps_label)
+        main_layout.addWidget(self.fps_label)
         
         # Создаем QLabel для отображения температуры в центре
         self.temp_label = QLabel(self)
         self.temp_label.setText("Центральная точка: -- °C (RAW: --)")
-        layout.addWidget(self.temp_label)
+        main_layout.addWidget(self.temp_label)
 
         # Добавляем QLabel для средней температуры по кадру
         self.avg_temp_label = QLabel(self)
         self.avg_temp_label.setText("Средняя температура кадра: -- °C")
-        layout.addWidget(self.avg_temp_label)
+        main_layout.addWidget(self.avg_temp_label)
         
         # Создаем QLabel для состояния флага
         self.flag_label = QLabel(self)
         self.flag_label.setText("Состояние флага: --")
-        layout.addWidget(self.flag_label)
+        main_layout.addWidget(self.flag_label)
         
         # Создаем QCheckBox для управления автофлагом
         self.auto_calib_checkbox = QCheckBox("Разрешить автоматическую калибровку", self)
         self.auto_calib_checkbox.setChecked(True)  # По умолчанию включено
         self.auto_calib_checkbox.stateChanged.connect(self.toggle_auto_calib)
-        layout.addWidget(self.auto_calib_checkbox)
+        main_layout.addWidget(self.auto_calib_checkbox)
         
         # Кнопка для ручной калибровки
         self.manual_calib_button = QPushButton("Ручная калибровка", self)
         self.manual_calib_button.clicked.connect(self.trigger_calibration)
-        layout.addWidget(self.manual_calib_button)
+        main_layout.addWidget(self.manual_calib_button)
         
-        # Кнопка для сохранения снимка
-        self.save_button = QPushButton("Сохранить снимок", self)
+        # Группа для сохранения данных
+        save_group = QGroupBox("Сохранение данных")
+        save_layout = QVBoxLayout()
+        save_group.setLayout(save_layout)
+        main_layout.addWidget(save_group)
+        
+        # Чекбокс для выбора типа сохраняемых данных
+        self.save_raw_data_checkbox = QCheckBox("Сохранять температурные данные (вместо изображения)", self)
+        save_layout.addWidget(self.save_raw_data_checkbox)
+        
+        # Кнопка для сохранения данных
+        save_button_layout = QHBoxLayout()
+        self.save_button = QPushButton("Сделать снимок", self)
         self.save_button.clicked.connect(self.save_snapshot)
-        layout.addWidget(self.save_button)
+        save_button_layout.addWidget(self.save_button)
+        save_layout.addLayout(save_button_layout)
         
         # Создаем выпадающий список для выбора палитры
         self.palette_label = QLabel("Цветовая палитра:", self)
-        layout.addWidget(self.palette_label)
+        main_layout.addWidget(self.palette_label)
         
         self.palette_combo = QComboBox(self)
         # Список доступных палитр
@@ -99,7 +112,7 @@ class ThermalCameraApp(QMainWindow):
         ])
         self.palette_combo.setCurrentText("Iron")  # Установка палитры по умолчанию
         self.palette_combo.currentTextChanged.connect(self.set_palette)
-        layout.addWidget(self.palette_combo)
+        main_layout.addWidget(self.palette_combo)
         
         # Переменные для расчета FPS
         self.frame_count = 0
@@ -142,24 +155,42 @@ class ThermalCameraApp(QMainWindow):
             print("Запущена ручная калибровка")
 
     def save_snapshot(self):
-        """Сохраняет текущий снимок в файл"""
+        """Сохраняет текущий снимок или температурные данные"""
         try:
-            # Получаем текущее изображение из QLabel
-            pixmap = self.image_label.pixmap()
-            if pixmap is None:
-                print("Нет изображения для сохранения")
-                return
-                
-            # Генерируем имя файла с текущей датой и временем
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"thermal_snapshot_{timestamp}.png"
             
-            # Сохраняем изображение
-            pixmap.save(filename)
-            print(f"Снимок сохранен как {filename}")
+            if self.save_raw_data_checkbox.isChecked():
+                # Сохраняем температурные данные
+                filename = f"thermal_data_{timestamp}.npy"
+                
+                # Преобразуем данные в 2D массив и сохраняем
+                data_2d = self.np_thermal.reshape(self.thermal_height.value, self.thermal_width.value)
+                np.save(filename, data_2d)
+                print(f"Температурные данные сохранены как {filename}")
+                
+                # Дополнительно: сохраняем метаданные
+                meta_filename = f"thermal_metadata_{timestamp}.txt"
+                with open(meta_filename, 'w') as f:
+                    f.write(f"Timestamp: {timestamp}\n")
+                    f.write(f"Resolution: {self.thermal_width.value}x{self.thermal_height.value}\n")
+                    f.write(f"Flag state: {self.metadata.flagState}\n")
+                    f.write(f"Chip temperature: {self.metadata.tempChip:.2f} °C\n")
+                    f.write(f"Flag temperature: {self.metadata.tempFlag:.2f} °C\n")
+                    f.write(f"Box temperature: {self.metadata.tempBox:.2f} °C\n")
+                print(f"Метаданные сохранены как {meta_filename}")
+            else:
+                # Сохраняем изображение
+                pixmap = self.image_label.pixmap()
+                if pixmap is None:
+                    print("Нет изображения для сохранения")
+                    return
+                
+                filename = f"thermal_snapshot_{timestamp}.png"
+                pixmap.save(filename)
+                print(f"Снимок сохранен как {filename}")
             
         except Exception as e:
-            print(f"Ошибка сохранения снимка: {e}")
+            print(f"Ошибка сохранения данных: {e}")
 
     def init_camera(self):
         try:
