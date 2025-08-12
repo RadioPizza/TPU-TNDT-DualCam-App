@@ -56,6 +56,11 @@ class ThermalCameraApp(QMainWindow):
         self.avg_temp_label.setText("Средняя температура кадра: -- °C")
         layout.addWidget(self.avg_temp_label)
         
+        # Создаем QLabel для состояния флага
+        self.flag_label = QLabel(self)
+        self.flag_label.setText("Состояние флага: --")
+        layout.addWidget(self.flag_label)
+        
         # Создаем выпадающий список для выбора палитры
         self.palette_label = QLabel("Цветовая палитра:", self)
         layout.addWidget(self.palette_label)
@@ -255,6 +260,12 @@ class ThermalCameraApp(QMainWindow):
             
             # Обновление QLabel со средней температурой
             self.avg_temp_label.setText(f"Средняя температура: {avg_temp:.2f} °C")
+            
+            # Получаем состояние флага из метаданных
+            flag_state = self.metadata.flagState
+            
+            # Просто отображаем значение состояния флага без интерпретации
+            self.flag_label.setText(f"Состояние флага: {flag_state}")
             
         except Exception as e:
             print(f"Ошибка обновления кадра: {e}")
