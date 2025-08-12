@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import ctypes as ct
 import time
+from datetime import datetime
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, 
                                QComboBox, QVBoxLayout, QWidget, QCheckBox, QPushButton)
 from PySide6.QtGui import QImage, QPixmap
@@ -72,6 +73,11 @@ class ThermalCameraApp(QMainWindow):
         self.manual_calib_button.clicked.connect(self.trigger_calibration)
         layout.addWidget(self.manual_calib_button)
         
+        # Кнопка для сохранения снимка
+        self.save_button = QPushButton("Сохранить снимок", self)
+        self.save_button.clicked.connect(self.save_snapshot)
+        layout.addWidget(self.save_button)
+        
         # Создаем выпадающий список для выбора палитры
         self.palette_label = QLabel("Цветовая палитра:", self)
         layout.addWidget(self.palette_label)
@@ -134,6 +140,26 @@ class ThermalCameraApp(QMainWindow):
             print(f"Ошибка запуска калибровки: {ret}")
         else:
             print("Запущена ручная калибровка")
+
+    def save_snapshot(self):
+        """Сохраняет текущий снимок в файл"""
+        try:
+            # Получаем текущее изображение из QLabel
+            pixmap = self.image_label.pixmap()
+            if pixmap is None:
+                print("Нет изображения для сохранения")
+                return
+                
+            # Генерируем имя файла с текущей датой и временем
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"thermal_snapshot_{timestamp}.png"
+            
+            # Сохраняем изображение
+            pixmap.save(filename)
+            print(f"Снимок сохранен как {filename}")
+            
+        except Exception as e:
+            print(f"Ошибка сохранения снимка: {e}")
 
     def init_camera(self):
         try:
