@@ -120,27 +120,20 @@ class ThermalCameraApp(QMainWindow):
         # 1 - автоматический режим, 0 - ручной режим
         shutter_mode = 1 if state == 2 else 0  # Qt.Checked == 2
         
-        # Проверяем наличие функции в библиотеке
-        if hasattr(self.libir, 'evo_irimager_set_shutter_mode'):
-            ret = self.libir.evo_irimager_set_shutter_mode(shutter_mode)
-            if ret != 0:
-                print(f"Ошибка установки режима затвора: {ret}")
-            else:
-                mode = "Автоматический" if shutter_mode == 1 else "Ручной"
-                print(f"Установлен режим затвора: {mode}")
+        ret = self.libir.evo_irimager_set_shutter_mode(shutter_mode)
+        if ret != 0:
+            print(f"Ошибка установки режима затвора: {ret}")
         else:
-            print("Функция evo_irimager_set_shutter_mode недоступна")
+            mode = "Автоматический" if shutter_mode == 1 else "Ручной"
+            print(f"Установлен режим затвора: {mode}")
 
     def trigger_calibration(self):
         """Ручной запуск калибровки"""
-        if hasattr(self, 'libir') and hasattr(self.libir, 'evo_irimager_trigger_shutter_flag'):
-            ret = self.libir.evo_irimager_trigger_shutter_flag()
-            if ret != 0:
-                print(f"Ошибка запуска калибровки: {ret}")
-            else:
-                print("Запущена ручная калибровка")
+        ret = self.libir.evo_irimager_trigger_shutter_flag()
+        if ret != 0:
+            print(f"Ошибка запуска калибровки: {ret}")
         else:
-            print("Функция evo_irimager_trigger_shutter_flag недоступна")
+            print("Запущена ручная калибровка")
 
     def init_camera(self):
         try:
@@ -172,18 +165,12 @@ class ThermalCameraApp(QMainWindow):
             self.libir.evo_irimager_terminate.restype = None
             
             # Для управления затвором
-            try:
-                self.libir.evo_irimager_set_shutter_mode.argtypes = [ct.c_int]
-                self.libir.evo_irimager_set_shutter_mode.restype = ct.c_int
-            except AttributeError:
-                print("Функция evo_irimager_set_shutter_mode недоступна")
+            self.libir.evo_irimager_set_shutter_mode.argtypes = [ct.c_int]
+            self.libir.evo_irimager_set_shutter_mode.restype = ct.c_int
             
             # Для ручного запуска калибровки
-            try:
-                self.libir.evo_irimager_trigger_shutter_flag.argtypes = []
-                self.libir.evo_irimager_trigger_shutter_flag.restype = ct.c_int
-            except AttributeError:
-                print("Функция evo_irimager_trigger_shutter_flag недоступна")
+            self.libir.evo_irimager_trigger_shutter_flag.argtypes = []
+            self.libir.evo_irimager_trigger_shutter_flag.restype = ct.c_int
             
             # Инициализация камеры
             pathXml = b'generic.xml'  # Убедитесь что файл в той же директории
@@ -221,10 +208,9 @@ class ThermalCameraApp(QMainWindow):
             self.set_palette(self.palette_combo.currentText())
             
             # Установка начального режима затвора (автоматический)
-            if hasattr(self.libir, 'evo_irimager_set_shutter_mode'):
-                ret = self.libir.evo_irimager_set_shutter_mode(1)
-                if ret != 0:
-                    print(f"Ошибка установки начального режима затвора: {ret}")
+            ret = self.libir.evo_irimager_set_shutter_mode(1)
+            if ret != 0:
+                print(f"Ошибка установки начального режима затвора: {ret}")
             
             return True
             
