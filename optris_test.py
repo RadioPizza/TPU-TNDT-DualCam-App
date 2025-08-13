@@ -3,6 +3,7 @@ import numpy as np
 import ctypes as ct
 import time
 from datetime import datetime
+import cv2  # Импорт OpenCV для работы с видео
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, 
                                QComboBox, QVBoxLayout, QWidget, QCheckBox, 
                                QPushButton, QHBoxLayout, QGroupBox)
@@ -26,7 +27,7 @@ class ThermalCameraApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
-        self.setGeometry(100, 100, 700, 700)  # Увеличили высоту для новых элементов
+        self.setGeometry(100, 100, 700, 750)  # Увеличили высоту для новых элементов
         
         # Создаем центральный виджет и макет
         central_widget = QWidget(self)
@@ -98,6 +99,27 @@ class ThermalCameraApp(QMainWindow):
         self.save_button.clicked.connect(self.save_snapshot)
         save_layout.addWidget(self.save_button)
         
+        # Группа для записи видео
+        video_group = QGroupBox("Запись видео")
+        video_layout = QHBoxLayout()
+        video_group.setLayout(video_layout)
+        main_layout.addWidget(video_group)
+        
+        # Кнопка начала записи видео
+        self.start_record_button = QPushButton("Начать запись видео", self)
+        self.start_record_button.clicked.connect(self.start_video_recording)
+        video_layout.addWidget(self.start_record_button)
+        
+        # Кнопка остановки записи видео
+        self.stop_record_button = QPushButton("Закончить запись видео", self)
+        self.stop_record_button.clicked.connect(self.stop_video_recording)
+        self.stop_record_button.setEnabled(False)  # Изначально неактивна
+        video_layout.addWidget(self.stop_record_button)
+        
+        # Метка для отображения времени записи
+        self.record_time_label = QLabel("Время записи: 0 сек", self)
+        video_layout.addWidget(self.record_time_label)
+        
         # Создаем выпадающий список для выбора палитры
         self.palette_label = QLabel("Цветовая палитра:", self)
         main_layout.addWidget(self.palette_label)
@@ -127,6 +149,17 @@ class ThermalCameraApp(QMainWindow):
         self.last_time = time.time()
         self.last_update_time = time.time()
         
+        # Переменные для записи видео
+        self.recording = False
+        self.record_start_time = 0
+        self.record_duration = 0
+        self.video_writer = None
+        
+        # Таймер для обновления времени записи
+        self.record_timer = QTimer(self)
+        self.record_timer.timeout.connect(self.update_record_time)
+        self.record_timer.setInterval(1000)  # Обновление каждую секунду
+        
         # Инициализация камеры
         if not self.init_camera():
             print("Ошибка инициализации камеры")
@@ -136,6 +169,65 @@ class ThermalCameraApp(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(100)  # 10 FPS
+
+    def start_video_recording(self):
+        """Начинает запись видео в формате AVI"""
+        if self.recording:
+            return
+            
+        # Генерируем имя файла с временной меткой
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"thermal_video_{timestamp}.avi"
+        
+        # Параметры видео
+        fps = max(1, int(self.fps))  # Минимально 1 FPS
+        frame_size = (self.palette_width.value, self.palette_height.value)
+        
+        # Создаем VideoWriter
+        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+        self.video_writer = cv2.VideoWriter(filename, fourcc, fps, frame_size)
+        
+        if not self.video_writer.isOpened():
+            print("Ошибка создания видеофайла")
+            self.video_writer = None
+            return
+        
+        # Устанавливаем флаги и запускаем таймер
+        self.recording = True
+        self.record_start_time = time.time()
+        self.record_duration = 0
+        self.record_time_label.setText("Время записи: 0 сек")
+        self.record_timer.start()
+        
+        # Обновляем состояние кнопок
+        self.start_record_button.setEnabled(False)
+        self.stop_record_button.setEnabled(True)
+        print(f"Начата запись видео: {filename}")
+
+    def stop_video_recording(self):
+        """Останавливает запись видео и сохраняет файл"""
+        if not self.recording:
+            return
+            
+        # Останавливаем запись
+        self.recording = False
+        self.record_timer.stop()
+        
+        # Закрываем видеофайл
+        if self.video_writer:
+            self.video_writer.release()
+            self.video_writer = None
+            print(f"Видео сохранено, длительность: {self.record_duration} сек")
+        
+        # Обновляем состояние кнопок
+        self.start_record_button.setEnabled(True)
+        self.stop_record_button.setEnabled(False)
+
+    def update_record_time(self):
+        """Обновляет время записи видео"""
+        if self.recording:
+            self.record_duration = int(time.time() - self.record_start_time)
+            self.record_time_label.setText(f"Время записи: {self.record_duration} сек")
 
     def toggle_auto_calib(self, state):
         """Включает/выключает автоматическую калибровку"""
@@ -357,6 +449,12 @@ class ThermalCameraApp(QMainWindow):
             # Отображение в интерфейсе
             self.image_label.setPixmap(QPixmap.fromImage(qimg))
             
+            # Запись видео (если активна)
+            if self.recording and self.video_writer is not None:
+                # Конвертируем в BGR для OpenCV
+                frame_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+                self.video_writer.write(frame_bgr)
+            
             # Расчет FPS
             self.frame_count += 1
             current_time = time.time()
@@ -395,6 +493,12 @@ class ThermalCameraApp(QMainWindow):
     def closeEvent(self, event):
         """Очистка ресурсов при закрытии"""
         self.timer.stop()
+        self.record_timer.stop()
+        
+        # Останавливаем запись видео при закрытии
+        if self.recording:
+            self.stop_video_recording()
+            
         if hasattr(self, 'libir'):
             self.libir.evo_irimager_terminate()
         super().closeEvent(event)
