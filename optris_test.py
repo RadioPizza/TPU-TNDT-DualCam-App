@@ -26,7 +26,7 @@ class ThermalCameraApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
-        self.setGeometry(100, 100, 700, 650)
+        self.setGeometry(100, 100, 700, 700)  # Увеличили высоту для новых элементов
         
         # Создаем центральный виджет и макет
         central_widget = QWidget(self)
@@ -80,16 +80,23 @@ class ThermalCameraApp(QMainWindow):
         save_group.setLayout(save_layout)
         main_layout.addWidget(save_group)
         
-        # Чекбокс для выбора типа сохраняемых данных
-        self.save_raw_data_checkbox = QCheckBox("Сохранять температурные данные (вместо изображения)", self)
-        save_layout.addWidget(self.save_raw_data_checkbox)
+        # Чекбоксы для выбора типов сохраняемых данных
+        self.save_metadata_checkbox = QCheckBox("Сохранять метаданные (.txt)", self)
+        self.save_metadata_checkbox.setChecked(True)
+        save_layout.addWidget(self.save_metadata_checkbox)
+        
+        self.save_tempdata_checkbox = QCheckBox("Сохранять температурные данные (.npy)", self)
+        self.save_tempdata_checkbox.setChecked(True)
+        save_layout.addWidget(self.save_tempdata_checkbox)
+        
+        self.save_image_checkbox = QCheckBox("Сохранять снимок в текущей палитре (.png)", self)
+        self.save_image_checkbox.setChecked(True)
+        save_layout.addWidget(self.save_image_checkbox)
         
         # Кнопка для сохранения данных
-        save_button_layout = QHBoxLayout()
         self.save_button = QPushButton("Сделать снимок", self)
         self.save_button.clicked.connect(self.save_snapshot)
-        save_button_layout.addWidget(self.save_button)
-        save_layout.addLayout(save_button_layout)
+        save_layout.addWidget(self.save_button)
         
         # Создаем выпадающий список для выбора палитры
         self.palette_label = QLabel("Цветовая палитра:", self)
@@ -155,21 +162,15 @@ class ThermalCameraApp(QMainWindow):
             print("Запущена ручная калибровка")
 
     def save_snapshot(self):
-        """Сохраняет текущий снимок или температурные данные"""
+        """Сохраняет выбранные типы данных по нажатию кнопки"""
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base_filename = f"thermal_{timestamp}"
+            saved_files = []
             
-            if self.save_raw_data_checkbox.isChecked():
-                # Сохраняем температурные данные
-                filename = f"thermal_data_{timestamp}.npy"
-                
-                # Преобразуем данные в 2D массив и сохраняем
-                data_2d = self.np_thermal.reshape(self.thermal_height.value, self.thermal_width.value)
-                np.save(filename, data_2d)
-                print(f"Температурные данные сохранены как {filename}")
-                
-                # Дополнительно: сохраняем метаданные
-                meta_filename = f"thermal_metadata_{timestamp}.txt"
+            # Сохраняем метаданные, если выбран соответствующий чекбокс
+            if self.save_metadata_checkbox.isChecked():
+                meta_filename = f"{base_filename}_metadata.txt"
                 with open(meta_filename, 'w') as f:
                     f.write(f"Timestamp: {timestamp}\n")
                     f.write(f"Resolution: {self.thermal_width.value}x{self.thermal_height.value}\n")
@@ -177,17 +178,33 @@ class ThermalCameraApp(QMainWindow):
                     f.write(f"Chip temperature: {self.metadata.tempChip:.2f} °C\n")
                     f.write(f"Flag temperature: {self.metadata.tempFlag:.2f} °C\n")
                     f.write(f"Box temperature: {self.metadata.tempBox:.2f} °C\n")
-                print(f"Метаданные сохранены как {meta_filename}")
-            else:
-                # Сохраняем изображение
+                    f.write(f"Central temperature: {self.temp_label.text()}\n")
+                    f.write(f"Average temperature: {self.avg_temp_label.text()}\n")
+                saved_files.append(meta_filename)
+            
+            # Сохраняем температурные данные, если выбран соответствующий чекбокс
+            if self.save_tempdata_checkbox.isChecked():
+                temp_filename = f"{base_filename}_data.npy"
+                data_2d = self.np_thermal.reshape(self.thermal_height.value, self.thermal_width.value)
+                np.save(temp_filename, data_2d)
+                saved_files.append(temp_filename)
+            
+            # Сохраняем изображение, если выбран соответствующий чекбокс
+            if self.save_image_checkbox.isChecked():
                 pixmap = self.image_label.pixmap()
-                if pixmap is None:
+                if pixmap is not None:
+                    img_filename = f"{base_filename}_image.png"
+                    pixmap.save(img_filename)
+                    saved_files.append(img_filename)
+                else:
                     print("Нет изображения для сохранения")
-                    return
-                
-                filename = f"thermal_snapshot_{timestamp}.png"
-                pixmap.save(filename)
-                print(f"Снимок сохранен как {filename}")
+            
+            # Формируем сообщение о сохраненных файлах
+            if saved_files:
+                files_str = "\n".join(saved_files)
+                print(f"Сохраненные файлы:\n{files_str}")
+            else:
+                print("Не выбраны типы данных для сохранения")
             
         except Exception as e:
             print(f"Ошибка сохранения данных: {e}")
