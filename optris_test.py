@@ -3,7 +3,7 @@ import numpy as np
 import ctypes as ct
 import time
 from datetime import datetime
-import cv2  # Импорт OpenCV для работы с видео
+import cv2
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, 
                                QComboBox, QVBoxLayout, QWidget, QCheckBox, 
                                QPushButton, QHBoxLayout, QGroupBox)
@@ -27,7 +27,7 @@ class ThermalCameraApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
-        self.setGeometry(100, 100, 700, 750)  # Увеличили высоту для новых элементов
+        self.setGeometry(100, 100, 700, 750)
         
         # Создаем центральный виджет и макет
         central_widget = QWidget(self)
@@ -66,7 +66,7 @@ class ThermalCameraApp(QMainWindow):
         
         # Создаем QCheckBox для управления автофлагом
         self.auto_calib_checkbox = QCheckBox("Разрешить автоматическую калибровку", self)
-        self.auto_calib_checkbox.setChecked(True)  # По умолчанию включено
+        self.auto_calib_checkbox.setChecked(True)
         self.auto_calib_checkbox.stateChanged.connect(self.toggle_auto_calib)
         main_layout.addWidget(self.auto_calib_checkbox)
         
@@ -94,6 +94,16 @@ class ThermalCameraApp(QMainWindow):
         self.save_image_checkbox.setChecked(True)
         save_layout.addWidget(self.save_image_checkbox)
         
+        # Выбор метода сохранения PNG
+        save_layout.addWidget(QLabel("Метод сохранения PNG:"))
+        self.png_method_combo = QComboBox()
+        self.png_method_combo.addItems([
+            "Оптимальный (через SDK)",
+            "Высокоточный (через SDK)",
+            "Исходный (через QPixmap)"
+        ])
+        save_layout.addWidget(self.png_method_combo)
+        
         # Кнопка для сохранения данных
         self.save_button = QPushButton("Сделать снимок", self)
         self.save_button.clicked.connect(self.save_snapshot)
@@ -113,7 +123,7 @@ class ThermalCameraApp(QMainWindow):
         # Кнопка остановки записи видео
         self.stop_record_button = QPushButton("Закончить запись видео", self)
         self.stop_record_button.clicked.connect(self.stop_video_recording)
-        self.stop_record_button.setEnabled(False)  # Изначально неактивна
+        self.stop_record_button.setEnabled(False)
         video_layout.addWidget(self.stop_record_button)
         
         # Метка для отображения времени записи
@@ -128,18 +138,18 @@ class ThermalCameraApp(QMainWindow):
         # Список доступных палитр
         self.palette_combo.addItems([
             "Alarm Blue",
-            "Alarm Red",
-            "Alarm Green",
-            "Rainbow",
-            "Iron",
-            "Bone",
-            "Medical", 
-            "Orange",
-            "Rain",
             "Pinkblue",
-            "Grayblack"
+            "Bone",
+            "Grayblack",
+            "Alarm Green",
+            "Iron",
+            "Orange", 
+            "Medical",
+            "Rain",
+            "Rainbow",
+            "Alarm Red"
         ])
-        self.palette_combo.setCurrentText("Iron")  # Установка палитры по умолчанию
+        self.palette_combo.setCurrentText("Iron")
         self.palette_combo.currentTextChanged.connect(self.set_palette)
         main_layout.addWidget(self.palette_combo)
         
@@ -158,7 +168,7 @@ class ThermalCameraApp(QMainWindow):
         # Таймер для обновления времени записи
         self.record_timer = QTimer(self)
         self.record_timer.timeout.connect(self.update_record_time)
-        self.record_timer.setInterval(1000)  # Обновление каждую секунду
+        self.record_timer.setInterval(1000)
         
         # Инициализация камеры
         if not self.init_camera():
@@ -180,7 +190,7 @@ class ThermalCameraApp(QMainWindow):
         filename = f"thermal_video_{timestamp}.avi"
         
         # Параметры видео
-        fps = max(1, int(self.fps))  # Минимально 1 FPS
+        fps = max(1, int(self.fps))
         frame_size = (self.palette_width.value, self.palette_height.value)
         
         # Создаем VideoWriter
@@ -234,8 +244,6 @@ class ThermalCameraApp(QMainWindow):
         if not hasattr(self, 'libir'):
             return
             
-        # Определяем режим затвора
-        # 1 - автоматический режим, 0 - ручной режим
         shutter_mode = 1 if state == 2 else 0  # Qt.Checked == 2
         
         ret = self.libir.evo_irimager_set_shutter_mode(shutter_mode)
@@ -260,7 +268,7 @@ class ThermalCameraApp(QMainWindow):
             base_filename = f"thermal_{timestamp}"
             saved_files = []
             
-            # Сохраняем метаданные, если выбран соответствующий чекбокс
+            # Сохраняем метаданные
             if self.save_metadata_checkbox.isChecked():
                 meta_filename = f"{base_filename}_metadata.txt"
                 with open(meta_filename, 'w') as f:
@@ -274,22 +282,118 @@ class ThermalCameraApp(QMainWindow):
                     f.write(f"Average temperature: {self.avg_temp_label.text()}\n")
                 saved_files.append(meta_filename)
             
-            # Сохраняем температурные данные, если выбран соответствующий чекбокс
+            # Сохраняем температурные данные
             if self.save_tempdata_checkbox.isChecked():
                 temp_filename = f"{base_filename}_data.npy"
                 data_2d = self.np_thermal.reshape(self.thermal_height.value, self.thermal_width.value)
                 np.save(temp_filename, data_2d)
                 saved_files.append(temp_filename)
             
-            # Сохраняем изображение, если выбран соответствующий чекбокс
+            # Сохраняем изображение
             if self.save_image_checkbox.isChecked():
-                pixmap = self.image_label.pixmap()
-                if pixmap is not None:
-                    img_filename = f"{base_filename}_image.png"
-                    pixmap.save(img_filename)
-                    saved_files.append(img_filename)
-                else:
-                    print("Нет изображения для сохранения")
+                img_filename = f"{base_filename}_image.png"
+                
+                method = self.png_method_combo.currentIndex()
+                
+                if method == 0:  # Оптимальный (через SDK)
+                    filename_bytes = img_filename.encode('utf-8')
+                    
+                    # Получаем текущую палитру
+                    palette_name = self.palette_combo.currentText()
+                    palette_map = {
+                        "Alarm Blue": 1,
+                        "Pinkblue": 2,
+                        "Bone": 3,
+                        "Grayblack": 4,
+                        "Alarm Green": 5,
+                        "Iron": 6,
+                        "Orange": 7, 
+                        "Medical": 8,
+                        "Rain": 9,
+                        "Rainbow": 10,
+                        "Alarm Red": 11,
+                    }
+                    # Для неизвестных значений используем Iron (6)
+                    palette_id = palette_map.get(palette_name, 6)
+                    
+                    # Вызываем функцию SDK
+                    ret = self.libir.evo_irimager_to_palette_save_png(
+                        self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
+                        self.thermal_width.value,
+                        self.thermal_height.value,
+                        filename_bytes,
+                        palette_id,
+                        2  # MinMax scaling
+                    )
+                    
+                    if ret == 0:
+                        # Исправление цветовых каналов
+                        img = cv2.imread(img_filename)
+                        if img is not None:
+                            # Конвертируем BGR в RGB
+                            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                            cv2.imwrite(img_filename, img_rgb)
+                            saved_files.append(img_filename)
+                            print(f"Сохранено PNG через SDK: {img_filename}")
+                        else:
+                            print(f"Ошибка загрузки изображения для конвертации: {img_filename}")
+                    else:
+                        print(f"Ошибка сохранения PNG через SDK: {ret}")
+                
+                elif method == 1:  # Высокоточный (через SDK)
+                    filename_bytes = img_filename.encode('utf-8')
+                    
+                    # Получаем текущую палитру
+                    palette_name = self.palette_combo.currentText()
+                    palette_map = {
+                        "Alarm Blue": 1,
+                        "Pinkblue": 2,
+                        "Bone": 3,
+                        "Grayblack": 4,
+                        "Alarm Green": 5,
+                        "Iron": 6,
+                        "Orange": 7, 
+                        "Medical": 8,
+                        "Rain": 9,
+                        "Rainbow": 10,
+                        "Alarm Red": 11,
+                    }
+                    # Для неизвестных значений используем Iron (6)
+                    palette_id = palette_map.get(palette_name, 6)
+                    
+                    # Вызываем функцию SDK
+                    ret = self.libir.evo_irimager_to_palette_save_png_high_precision(
+                        self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
+                        self.thermal_width.value,
+                        self.thermal_height.value,
+                        filename_bytes,
+                        palette_id,
+                        2,  # MinMax scaling
+                        1   # 1 decimal place
+                    )
+                    
+                    if ret == 0:
+                        # Исправление цветовых каналов
+                        img = cv2.imread(img_filename)
+                        if img is not None:
+                            # Конвертируем BGR в RGB
+                            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                            cv2.imwrite(img_filename, img_rgb)
+                            saved_files.append(img_filename)
+                            print(f"Сохранено высокоточное PNG через SDK: {img_filename}")
+                        else:
+                            print(f"Ошибка загрузки изображения для конвертации: {img_filename}")
+                    else:
+                        print(f"Ошибка сохранения высокоточного PNG через SDK: {ret}")
+                
+                else:  # Исходный метод (через QPixmap)
+                    pixmap = self.image_label.pixmap()
+                    if pixmap is not None:
+                        pixmap.save(img_filename)
+                        saved_files.append(img_filename)
+                        print(f"Сохранено PNG через QPixmap: {img_filename}")
+                    else:
+                        print("Нет изображения для сохранения")
             
             # Формируем сообщение о сохраненных файлах
             if saved_files:
@@ -306,7 +410,7 @@ class ThermalCameraApp(QMainWindow):
             # Загрузка библиотеки
             self.libir = ct.CDLL('.\libirimager.dll')
             
-            # Определение типов аргументов и возвращаемых значений
+            # Определение типов аргументов
             self.libir.evo_irimager_usb_init.argtypes = [ct.c_char_p, ct.c_char_p, ct.c_char_p]
             self.libir.evo_irimager_usb_init.restype = ct.c_int
             
@@ -323,23 +427,34 @@ class ThermalCameraApp(QMainWindow):
             ]
             self.libir.evo_irimager_get_thermal_palette_image_metadata.restype = ct.c_int
             
-            # Добавляем функцию для установки палитры
+            # Функции палитры и калибровки
             self.libir.evo_irimager_set_palette.argtypes = [ct.c_int]
             self.libir.evo_irimager_set_palette.restype = ct.c_int
+            
+            self.libir.evo_irimager_set_shutter_mode.argtypes = [ct.c_int]
+            self.libir.evo_irimager_set_shutter_mode.restype = ct.c_int
+            
+            self.libir.evo_irimager_trigger_shutter_flag.argtypes = []
+            self.libir.evo_irimager_trigger_shutter_flag.restype = ct.c_int
+            
+            # Функции сохранения PNG
+            self.libir.evo_irimager_to_palette_save_png.argtypes = [
+                ct.POINTER(ct.c_ushort), ct.c_int, ct.c_int,
+                ct.c_char_p, ct.c_int, ct.c_int
+            ]
+            self.libir.evo_irimager_to_palette_save_png.restype = ct.c_int
+            
+            self.libir.evo_irimager_to_palette_save_png_high_precision.argtypes = [
+                ct.POINTER(ct.c_ushort), ct.c_int, ct.c_int,
+                ct.c_char_p, ct.c_int, ct.c_int, ct.c_short
+            ]
+            self.libir.evo_irimager_to_palette_save_png_high_precision.restype = ct.c_int
             
             self.libir.evo_irimager_terminate.argtypes = []
             self.libir.evo_irimager_terminate.restype = None
             
-            # Для управления затвором
-            self.libir.evo_irimager_set_shutter_mode.argtypes = [ct.c_int]
-            self.libir.evo_irimager_set_shutter_mode.restype = ct.c_int
-            
-            # Для ручного запуска калибровки
-            self.libir.evo_irimager_trigger_shutter_flag.argtypes = []
-            self.libir.evo_irimager_trigger_shutter_flag.restype = ct.c_int
-            
             # Инициализация камеры
-            pathXml = b'generic.xml'  # Убедитесь что файл в той же директории
+            pathXml = b'generic.xml'
             pathFormat = b''
             pathLog = b''
             
@@ -373,7 +488,7 @@ class ThermalCameraApp(QMainWindow):
             # Установка начальной палитры
             self.set_palette(self.palette_combo.currentText())
             
-            # Установка начального режима затвора (автоматический)
+            # Установка начального режима затвора
             ret = self.libir.evo_irimager_set_shutter_mode(1)
             if ret != 0:
                 print(f"Ошибка установки начального режима затвора: {ret}")
@@ -389,7 +504,7 @@ class ThermalCameraApp(QMainWindow):
         if not hasattr(self, 'libir'):
             return
             
-        # Соответствие имен палитр их ID
+        # КОРРЕКТНАЯ КАРТА ПАЛИТР
         palette_map = {
             "Alarm Blue": 1,
             "Pinkblue": 2,
@@ -400,10 +515,11 @@ class ThermalCameraApp(QMainWindow):
             "Orange": 7, 
             "Medical": 8,
             "Rain": 9,
-            "Rainbow": 10, 
+            "Rainbow": 10,
             "Alarm Red": 11,
         }
         
+        # Для неизвестных значений используем Iron (6)
         palette_id = palette_map.get(palette_name, 6)
         ret = self.libir.evo_irimager_set_palette(palette_id)
         if ret != 0:
@@ -415,11 +531,9 @@ class ThermalCameraApp(QMainWindow):
         try:
             # Получение изображения
             ret = self.libir.evo_irimager_get_thermal_palette_image_metadata(
-                self.thermal_width, 
-                self.thermal_height, 
+                self.thermal_width, self.thermal_height, 
                 self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)), 
-                self.palette_width, 
-                self.palette_height, 
+                self.palette_width, self.palette_height, 
                 self.np_img.ctypes.data_as(ct.POINTER(ct.c_ubyte)), 
                 ct.byref(self.metadata)
             )
@@ -438,20 +552,13 @@ class ThermalCameraApp(QMainWindow):
             # Конвертация в QImage
             height, width, _ = img_rgb.shape
             bytes_per_line = 3 * width
-            qimg = QImage(
-                img_rgb.data, 
-                width, 
-                height, 
-                bytes_per_line, 
-                QImage.Format_RGB888
-            )
+            qimg = QImage(img_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888)
             
             # Отображение в интерфейсе
             self.image_label.setPixmap(QPixmap.fromImage(qimg))
             
-            # Запись видео (если активна)
+            # Запись видео
             if self.recording and self.video_writer is not None:
-                # Конвертируем в BGR для OpenCV
                 frame_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
                 self.video_writer.write(frame_bgr)
             
@@ -460,32 +567,25 @@ class ThermalCameraApp(QMainWindow):
             current_time = time.time()
             elapsed = current_time - self.last_update_time
             
-            # Обновляем FPS каждые 0.5 секунд для плавности
             if elapsed > 0.5:
                 self.fps = self.frame_count / elapsed
                 self.fps_label.setText(f"FPS: {self.fps:.1f}")
                 self.last_update_time = current_time
                 self.frame_count = 0
             
-            # Получение температуры в центре кадра
+            # Температура в центре кадра
             center_index = (self.thermal_height.value // 2) * self.thermal_width.value + (self.thermal_width.value // 2)
             raw_temp = self.np_thermal[center_index]
             temp_c = (raw_temp / 10.0) - 100.0
             self.temp_label.setText(f"Центральная точка: {temp_c:.2f} °C (RAW: {raw_temp})")
             
-            # РАСЧЕТ СРЕДНЕЙ ТЕМПЕРАТУРЫ ПО КАДРУ
-            # Преобразование всего массива в температуры
+            # Средняя температура кадра
             temperatures = (self.np_thermal.astype(np.float32) / 10.0) - 100.0
             avg_temp = np.mean(temperatures)
-            
-            # Обновление QLabel со средней температурой
             self.avg_temp_label.setText(f"Средняя температура: {avg_temp:.2f} °C")
             
-            # Получаем состояние флага из метаданных
-            flag_state = self.metadata.flagState
-            
-            # Просто отображаем значение состояния флага без интерпретации
-            self.flag_label.setText(f"Состояние флага: {flag_state}")
+            # Состояние флага
+            self.flag_label.setText(f"Состояние флага: {self.metadata.flagState}")
             
         except Exception as e:
             print(f"Ошибка обновления кадра: {e}")
@@ -495,7 +595,6 @@ class ThermalCameraApp(QMainWindow):
         self.timer.stop()
         self.record_timer.stop()
         
-        # Останавливаем запись видео при закрытии
         if self.recording:
             self.stop_video_recording()
             
