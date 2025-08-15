@@ -6,9 +6,9 @@ from datetime import datetime
 import cv2
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, 
                                QComboBox, QVBoxLayout, QWidget, QCheckBox, 
-                               QPushButton, QHBoxLayout, QGroupBox)
+                               QPushButton, QHBoxLayout, QGroupBox, QSplitter, QSizePolicy)
 from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Qt
 
 # Define EvoIRFrameMetadata structure
 class EvoIRFrameMetadata(ct.Structure):
@@ -27,59 +27,122 @@ class ThermalCameraApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
-        self.setGeometry(100, 100, 700, 750)
+        self.setGeometry(100, 100, 1200, 700)
         
-        # Создаем центральный виджет и макет
+        # Создаем центральный виджет и главный горизонтальный макет
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
+        main_layout = QHBoxLayout(central_widget)
         
-        # Создаем виджет для отображения
+        # Левая панель: только изображение
+        left_panel = QWidget()
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Виджет для отображения изображения
         self.image_label = QLabel(self)
+        self.image_label.setAlignment(Qt.AlignCenter)
         self.image_label.setScaledContents(True)
-        main_layout.addWidget(self.image_label)
+        left_layout.addWidget(self.image_label, 1)  # Растягиваем изображение
         
-        # Создаем QLabel для отображения разрешения
-        self.resolution_label = QLabel(self)
-        self.resolution_label.setText("Resolution: ")
-        main_layout.addWidget(self.resolution_label)
+        # Правая панель: элементы управления и информация
+        right_panel = QWidget()
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setAlignment(Qt.AlignTop)
         
-        # Создаем QLabel для отображения FPS
-        self.fps_label = QLabel(self)
-        self.fps_label.setText("FPS: 0.0")
-        main_layout.addWidget(self.fps_label)
+        # Группа для управления камерой
+        camera_group = QGroupBox("Управление камерой")
+        camera_layout = QVBoxLayout()
+        camera_group.setLayout(camera_layout)
+        right_layout.addWidget(camera_group)
         
-        # Создаем QLabel для отображения температуры в центре
-        self.temp_label = QLabel(self)
-        self.temp_label.setText("Центральная точка: -- °C (RAW: --)")
-        main_layout.addWidget(self.temp_label)
-
-        # Добавляем QLabel для средней температуры по кадру
-        self.avg_temp_label = QLabel(self)
-        self.avg_temp_label.setText("Средняя температура кадра: -- °C")
-        main_layout.addWidget(self.avg_temp_label)
-        
-        # Создаем QLabel для состояния флага
-        self.flag_label = QLabel(self)
-        self.flag_label.setText("Состояние флага: --")
-        main_layout.addWidget(self.flag_label)
-        
-        # Создаем QCheckBox для управления автофлагом
+        # QCheckBox для управления автофлагом
         self.auto_calib_checkbox = QCheckBox("Разрешить автоматическую калибровку", self)
         self.auto_calib_checkbox.setChecked(True)
         self.auto_calib_checkbox.stateChanged.connect(self.toggle_auto_calib)
-        main_layout.addWidget(self.auto_calib_checkbox)
+        camera_layout.addWidget(self.auto_calib_checkbox)
         
         # Кнопка для ручной калибровки
         self.manual_calib_button = QPushButton("Ручная калибровка", self)
         self.manual_calib_button.clicked.connect(self.trigger_calibration)
-        main_layout.addWidget(self.manual_calib_button)
+        camera_layout.addWidget(self.manual_calib_button)
+        
+        # Создаем выпадающий список для выбора палитры
+        camera_layout.addWidget(QLabel("Цветовая палитра:", self))
+        self.palette_combo = QComboBox(self)
+        # Список доступных палитр
+        self.palette_combo.addItems([
+            "Alarm Blue",
+            "Pinkblue",
+            "Bone",
+            "Grayblack",
+            "Alarm Green",
+            "Iron",
+            "Orange", 
+            "Medical",
+            "Rain",
+            "Rainbow",
+            "Alarm Red"
+        ])
+        self.palette_combo.setCurrentText("Iron")
+        self.palette_combo.currentTextChanged.connect(self.set_palette)
+        camera_layout.addWidget(self.palette_combo)
+        
+        # Состояние флага внутри группы управления камерой
+        self.flag_label = QLabel("Состояние флага: --")
+        camera_layout.addWidget(self.flag_label)
+        
+        # Группа для метаданных
+        meta_group = QGroupBox("Метаданные")
+        meta_layout = QVBoxLayout()
+        meta_group.setLayout(meta_layout)
+        right_layout.addWidget(meta_group)
+        
+        # QLabel для отображения разрешения
+        self.resolution_label = QLabel(self)
+        self.resolution_label.setText("Разрешение: ")
+        meta_layout.addWidget(self.resolution_label)
+        
+        # QLabel для отображения FPS
+        self.fps_label = QLabel(self)
+        self.fps_label.setText("FPS: 0.0")
+        meta_layout.addWidget(self.fps_label)
+        
+        # QLabel для отображения температуры в центре
+        self.temp_label = QLabel(self)
+        self.temp_label.setText("Центральная точка: -- °C (RAW: --)")
+        meta_layout.addWidget(self.temp_label)
+
+        # QLabel для средней температуры по кадру
+        self.avg_temp_label = QLabel(self)
+        self.avg_temp_label.setText("Средняя температура кадра: -- °C")
+        meta_layout.addWidget(self.avg_temp_label)
+        
+        # Температура чипа
+        self.chip_temp_label = QLabel("Температура чипа: -- °C")
+        meta_layout.addWidget(self.chip_temp_label)
+        
+        # Температура флага
+        self.flag_temp_label = QLabel("Температура флага: -- °C")
+        meta_layout.addWidget(self.flag_temp_label)
+        
+        # Температура корпуса
+        self.box_temp_label = QLabel("Температура корпуса: -- °C")
+        meta_layout.addWidget(self.box_temp_label)
+        
+        # Счетчик кадров
+        self.frame_counter_label = QLabel("Счетчик кадров: --")
+        meta_layout.addWidget(self.frame_counter_label)
+        
+        # Временная метка
+        self.timestamp_label = QLabel("Временная метка: --")
+        meta_layout.addWidget(self.timestamp_label)
         
         # Группа для сохранения данных
         save_group = QGroupBox("Сохранение данных")
         save_layout = QVBoxLayout()
         save_group.setLayout(save_layout)
-        main_layout.addWidget(save_group)
+        right_layout.addWidget(save_group)
         
         # Чекбоксы для выбора типов сохраняемых данных
         self.save_metadata_checkbox = QCheckBox("Сохранять метаданные (.txt)", self)
@@ -111,47 +174,36 @@ class ThermalCameraApp(QMainWindow):
         
         # Группа для записи видео
         video_group = QGroupBox("Запись видео")
-        video_layout = QHBoxLayout()
+        video_layout = QVBoxLayout()
         video_group.setLayout(video_layout)
-        main_layout.addWidget(video_group)
+        right_layout.addWidget(video_group)
+        
+        # Кнопки записи видео
+        button_layout = QHBoxLayout()
+        video_layout.addLayout(button_layout)
         
         # Кнопка начала записи видео
-        self.start_record_button = QPushButton("Начать запись видео", self)
+        self.start_record_button = QPushButton("Начать запись", self)
         self.start_record_button.clicked.connect(self.start_video_recording)
-        video_layout.addWidget(self.start_record_button)
+        button_layout.addWidget(self.start_record_button)
         
         # Кнопка остановки записи видео
-        self.stop_record_button = QPushButton("Закончить запись видео", self)
+        self.stop_record_button = QPushButton("Остановить", self)
         self.stop_record_button.clicked.connect(self.stop_video_recording)
         self.stop_record_button.setEnabled(False)
-        video_layout.addWidget(self.stop_record_button)
+        button_layout.addWidget(self.stop_record_button)
         
         # Метка для отображения времени записи
         self.record_time_label = QLabel("Время записи: 0 сек", self)
         video_layout.addWidget(self.record_time_label)
         
-        # Создаем выпадающий список для выбора палитры
-        self.palette_label = QLabel("Цветовая палитра:", self)
-        main_layout.addWidget(self.palette_label)
+        # Добавляем разделитель между левой и правой панелями
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.addWidget(left_panel)
+        splitter.addWidget(right_panel)
+        splitter.setSizes([800, 400])  # Начальное соотношение размеров
         
-        self.palette_combo = QComboBox(self)
-        # Список доступных палитр
-        self.palette_combo.addItems([
-            "Alarm Blue",
-            "Pinkblue",
-            "Bone",
-            "Grayblack",
-            "Alarm Green",
-            "Iron",
-            "Orange", 
-            "Medical",
-            "Rain",
-            "Rainbow",
-            "Alarm Red"
-        ])
-        self.palette_combo.setCurrentText("Iron")
-        self.palette_combo.currentTextChanged.connect(self.set_palette)
-        main_layout.addWidget(self.palette_combo)
+        main_layout.addWidget(splitter)
         
         # Переменные для расчета FPS
         self.frame_count = 0
@@ -476,8 +528,8 @@ class ThermalCameraApp(QMainWindow):
             
             # Обновляем лейбл с разрешением
             self.resolution_label.setText(
-                f"Resolution: {self.thermal_width.value}x{self.thermal_height.value} "
-                f"(Palette: {self.palette_width.value}x{self.palette_height.value})"
+                f"Разрешение: {self.thermal_width.value}x{self.thermal_height.value} (Thermal)\n"
+                f"Палитра: {self.palette_width.value}x{self.palette_height.value} (RGB)"
             )
             
             # Буферы для данных
@@ -584,11 +636,29 @@ class ThermalCameraApp(QMainWindow):
             avg_temp = np.mean(temperatures)
             self.avg_temp_label.setText(f"Средняя температура: {avg_temp:.2f} °C")
             
-            # Состояние флага
+            # Состояние флага - как число
             self.flag_label.setText(f"Состояние флага: {self.metadata.flagState}")
             
+            # Температура чипа
+            self.chip_temp_label.setText(f"Температура чипа: {self.metadata.tempChip:.2f} °C")
+            
+            # Температура флага
+            self.flag_temp_label.setText(f"Температура флага: {self.metadata.tempFlag:.2f} °C")
+            
+            # Температура корпуса
+            self.box_temp_label.setText(f"Температура корпуса: {self.metadata.tempBox:.2f} °C")
+            
+            # Счетчик кадров
+            self.frame_counter_label.setText(f"Счетчик кадров: {self.metadata.counter}")
+            
+            # Временная метка
+            self.timestamp_label.setText(f"Временная метка: {self.metadata.timestamp}")
+            
         except Exception as e:
+            # Выводим более подробную информацию об ошибке
+            import traceback
             print(f"Ошибка обновления кадра: {e}")
+            print(traceback.format_exc())
 
     def closeEvent(self, event):
         """Очистка ресурсов при закрытии"""
