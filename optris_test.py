@@ -48,8 +48,9 @@ class ThermalCameraApp(QMainWindow):
         # Виджет для отображения изображения
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setScaledContents(True)
-        left_layout.addWidget(self.image_label, 1)  # Растягиваем изображение
+        self.image_label.setScaledContents(False)  # Изменено на False
+        self.image_label.setMinimumSize(100, 100)  # Минимальный размер
+        left_layout.addWidget(self.image_label, 1)
         
         # Правая панель: элементы управления и информация
         right_panel = QWidget()
@@ -918,8 +919,21 @@ class ThermalCameraApp(QMainWindow):
             bytes_per_line = 3 * width
             qimg = QImage(img_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888)
             
+            # Масштабирование с сохранением пропорций
+            pixmap = QPixmap.fromImage(qimg)
+            
+            # Получаем размер доступной области для изображения
+            label_size = self.image_label.size()
+            
+            # Масштабируем с сохранением пропорций
+            scaled_pixmap = pixmap.scaled(
+                label_size, 
+                Qt.KeepAspectRatio, 
+                Qt.SmoothTransformation
+            )
+            
             # Отображение в интерфейсе
-            self.image_label.setPixmap(QPixmap.fromImage(qimg))
+            self.image_label.setPixmap(scaled_pixmap)
             
             # Запись видео
             if self.recording and self.video_writer is not None:
