@@ -3,6 +3,7 @@ import numpy as np
 import ctypes as ct
 import time
 import os
+import re
 from datetime import datetime
 import cv2
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, 
@@ -31,6 +32,9 @@ class ThermalCameraApp(QMainWindow):
         self.setWindowTitle("Optris PI 640 Viewer")
         self.setGeometry(100, 100, 1200, 700)
         
+        # Загружаем шаблон XML при инициализации
+        self.xml_template = self.load_xml_template()
+        
         # Создаем центральный виджет и главный горизонтальный макет
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
@@ -57,6 +61,16 @@ class ThermalCameraApp(QMainWindow):
         camera_layout = QVBoxLayout()
         camera_group.setLayout(camera_layout)
         right_layout.addWidget(camera_group)
+        
+        # Добавляем выбор разрешения видеопотока
+        camera_layout.addWidget(QLabel("Разрешение видеопотока:", self))
+        self.resolution_combo = QComboBox(self)
+        self.resolution_combo.addItems([
+            "640x480 @ 32Hz (полный кадр)",
+            "640x120 @ 125Hz (высокая частота)"
+        ])
+        self.resolution_combo.currentIndexChanged.connect(self.change_video_format)
+        camera_layout.addWidget(self.resolution_combo)
         
         # QCheckBox для управления автофлагом
         self.auto_calib_checkbox = QCheckBox("Разрешить автоматическую калибровку", self)
@@ -238,6 +252,93 @@ class ThermalCameraApp(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(100)  # 10 FPS
+
+    def load_xml_template(self):
+        """Загружает шаблон XML-файла для камеры"""
+        try:
+            with open('generic.xml', 'r') as f:
+                return f.read()
+        except Exception as e:
+            print(f"Ошибка загрузки generic.xml: {e}")
+            # Возвращаем стандартный шаблон как fallback
+            return '''<?xml version="1.0" encoding="UTF-8"?>
+<imager xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <serial>0</serial>
+  <videoformatindex>0</videoformatindex>
+  <formatspath>.</formatspath>
+  <framerate>32.0</framerate>
+  <bispectral>0</bispectral>
+  <autoflag>
+    <enable>1</enable>
+    <mininterval>15.0</mininterval>
+    <maxinterval>0.0</maxinterval>
+  </autoflag>
+  <tchipmode>0</tchipmode>
+  <tchipfixedvalue>40.0</tchipfixedvalue>
+  <focus>-1</focus>
+  <enable_extended_temp_range>0</enable_extended_temp_range>
+  <buffer_queue_size>5</buffer_queue_size>
+  <enable_high_precision>0</enable_high_precision>
+  <radial_distortion_correction>0</radial_distortion_correction>
+  <use_external_probe>0</use_external_probe>
+</imager>'''
+
+    def change_video_format(self, index):
+        """Изменяет формат видео потока"""
+        # Останавливаем таймеры
+        self.timer.stop()
+        self.record_timer.stop()
+        
+        # Останавливаем запись видео, если она активна
+        if self.recording:
+            self.stop_video_recording()
+        
+        # Определяем параметры для выбранного формата
+        if index == 0:  # 640x480 @ 32Hz
+            videoformatindex = 0
+            framerate = 32.0
+        else:  # 640x120 @ 125Hz
+            videoformatindex = 1
+            framerate = 125.0
+        
+        # Создаем временный XML-файл с новыми параметрами
+        new_xml = re.sub(
+            r'<videoformatindex>\d+</videoformatindex>',
+            f'<videoformatindex>{videoformatindex}</videoformatindex>',
+            self.xml_template
+        )
+        new_xml = re.sub(
+            r'<framerate>[\d.]+</framerate>',
+            f'<framerate>{framerate}</framerate>',
+            new_xml
+        )
+        
+        # Сохраняем временный XML-файл
+        temp_xml_path = 'temp_generic.xml'
+        try:
+            with open(temp_xml_path, 'w') as f:
+                f.write(new_xml)
+        except Exception as e:
+            print(f"Ошибка создания временного XML-файла: {e}")
+            return
+        
+        # Переинициализируем камеру с новыми параметрами
+        self.deinit_camera()
+        if not self.init_camera(xml_path=temp_xml_path):
+            print("Ошибка переинициализации камеры")
+            # Пытаемся вернуться к предыдущей конфигурации
+            self.deinit_camera()
+            self.init_camera()
+        
+        # Запускаем таймеры снова
+        self.timer.start(100)
+        self.record_timer.start()
+        
+        # Удаляем временный файл
+        try:
+            os.remove(temp_xml_path)
+        except:
+            pass
 
     def run_save_speed_test(self):
         """Запускает тест скорости сохранения разными методами"""
@@ -662,7 +763,8 @@ class ThermalCameraApp(QMainWindow):
         except Exception as e:
             print(f"Ошибка сохранения данных: {e}")
     
-    def init_camera(self):
+    def init_camera(self, xml_path='generic.xml'):
+        """Инициализирует камеру с указанным XML-файлом"""
         try:
             # Загрузка библиотеки
             self.libir = ct.CDLL('.\libirimager.dll')
@@ -711,7 +813,7 @@ class ThermalCameraApp(QMainWindow):
             self.libir.evo_irimager_terminate.restype = None
             
             # Инициализация камеры
-            pathXml = b'generic.xml'
+            pathXml = xml_path.encode('utf-8')
             pathFormat = b''
             pathLog = b''
             
@@ -755,6 +857,11 @@ class ThermalCameraApp(QMainWindow):
         except Exception as e:
             print(f"Ошибка инициализации: {e}")
             return False
+
+    def deinit_camera(self):
+        """Освобождает ресурсы камеры"""
+        if hasattr(self, 'libir'):
+            self.libir.evo_irimager_terminate()
 
     def set_palette(self, palette_name):
         """Устанавливает цветовую палитру для камеры"""
