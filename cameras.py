@@ -265,6 +265,24 @@ class FLIRCameraWidget:
         """Настройка параметров камеры FLIR"""
         nodemap = self.camera.GetNodeMap()
         
+        # Попробуем установить цветной формат, если доступен
+        node_pixel_format = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
+        if PySpin.IsAvailable(node_pixel_format) and PySpin.IsWritable(node_pixel_format):
+            # Попробуем установить RGB8 формат сначала
+            pixel_format_rgb8 = PySpin.CEnumEntryPtr(node_pixel_format.GetEntryByName("RGB8"))
+            if PySpin.IsAvailable(pixel_format_rgb8) and PySpin.IsReadable(pixel_format_rgb8):
+                node_pixel_format.SetIntValue(pixel_format_rgb8.GetValue())
+                logger.info("Set pixel format to RGB8")
+            else:
+                # Если RGB8 недоступен, попробуем BGR8
+                pixel_format_bgr8 = PySpin.CEnumEntryPtr(node_pixel_format.GetEntryByName("BGR8"))
+                if PySpin.IsAvailable(pixel_format_bgr8) and PySpin.IsReadable(pixel_format_bgr8):
+                    node_pixel_format.SetIntValue(pixel_format_bgr8.GetValue())
+                    logger.info("Set pixel format to BGR8")
+                else:
+                    # Если цветные форматы недоступны, оставляем монохромный
+                    logger.warning("Color formats not available, using monochrome")
+        
         # Установка разрешения
         node_width = PySpin.CIntegerPtr(nodemap.GetNode("Width"))
         if PySpin.IsAvailable(node_width) and PySpin.IsWritable(node_width):
@@ -302,9 +320,37 @@ class FLIRCameraWidget:
             if image_result.IsIncomplete():
                 logger.warning("FLIR image incomplete with status: %d", image_result.GetImageStatus())
             else:
-                # Конвертация в RGB для отображения и BGR для записи
+                # Получаем изображение в виде numpy массива
                 image_data = image_result.GetNDArray()
-                rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BayerBG2RGB)
+                
+                # Получаем формат пикселя для правильной конвертации
+                pixel_format = image_result.GetPixelFormat()
+                
+                # Логируем формат для отладки
+                if not hasattr(self, 'pixel_format_logged'):
+                    logger.info(f"FLIR Pixel Format: {pixel_format}")
+                    self.pixel_format_logged = True
+                
+                # Конвертируем в RGB в зависимости от формата
+                if pixel_format == PySpin.PixelFormat_Mono8:
+                    # Монохромное изображение - конвертируем в псевдоцвет
+                    rgb_image = cv2.applyColorMap(image_data, cv2.COLORMAP_JET)
+                elif pixel_format == PySpin.PixelFormat_BayerBG8:
+                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_BG2RGB)
+                elif pixel_format == PySpin.PixelFormat_BayerGB8:
+                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_GB2RGB)
+                elif pixel_format == PySpin.PixelFormat_BayerGR8:
+                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_GR2RGB)
+                elif pixel_format == PySpin.PixelFormat_BayerRG8:
+                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_RG2RGB)
+                elif pixel_format == PySpin.PixelFormat_BGR8:
+                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
+                elif pixel_format == PySpin.PixelFormat_RGB8:
+                    rgb_image = image_data  # Уже в RGB
+                else:
+                    # Для неизвестного формата попробуем конвертировать как BGR
+                    logger.warning(f"Unsupported pixel format: {pixel_format}. Trying BGR to RGB conversion.")
+                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
                 
                 # Запись видео
                 if self.is_recording and self.video_writer:
