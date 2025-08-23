@@ -42,6 +42,11 @@ class ThermalCameraApp(QMainWindow):
         "Alarm Red": 11,
     }
     
+    DEFAULT_PALETTE_ID = 6
+    SCALING_MODE_MINMAX = 2
+    SHUTTER_MODE_AUTO = 1
+    SHUTTER_MODE_MANUAL = 0
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
@@ -258,8 +263,8 @@ class ThermalCameraApp(QMainWindow):
         self.timer.start(100)  # 10 FPS
 
     def get_palette_id(self, palette_name):
-        """Возвращает ID палитры по имени, по умолчанию Iron (6)"""
-        return self.PALETTE_MAP.get(palette_name, 6)
+        """Возвращает ID палитры по имени"""
+        return self.PALETTE_MAP.get(palette_name, self.DEFAULT_PALETTE_ID)
 
     def load_xml_template(self):
         """Загружает шаблон XML-файла для камеры"""
@@ -391,12 +396,12 @@ class ThermalCameraApp(QMainWindow):
                 start_time = time.time()
                 filename_bytes = test_filename.encode('utf-8')
                 ret = self.libir.evo_irimager_to_palette_save_png(
-                    thermal_data.ctypes.data_as(ct.POINTER(ct.c_ushort)),
+                    self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                     self.thermal_width.value,
                     self.thermal_height.value,
                     filename_bytes,
                     palette_id,
-                    2  # MinMax scaling
+                    self.SCALING_MODE_MINMAX  # Было: 2
                 )
                 
                 if ret == 0:
@@ -566,7 +571,7 @@ class ThermalCameraApp(QMainWindow):
         if not hasattr(self, 'libir'):
             return
             
-        shutter_mode = 1 if state == 2 else 0  # Qt.Checked == 2
+        shutter_mode = self.SHUTTER_MODE_AUTO if state == 2 else self.SHUTTER_MODE_MANUAL  # Qt.Checked == 2
         
         ret = self.libir.evo_irimager_set_shutter_mode(shutter_mode)
         if ret != 0:
@@ -841,13 +846,12 @@ class ThermalCameraApp(QMainWindow):
         if not hasattr(self, 'libir'):
             return
             
-        # Получаем ID палитры с помощью единого метода
         palette_id = self.get_palette_id(palette_name)
         ret = self.libir.evo_irimager_set_palette(palette_id)
         if ret != 0:
             print(f"Ошибка установки палитры '{palette_name}' (ID={palette_id}): {ret}")
         else:
-            print(f"Установлена палитра: {palette_name} (ID={palette_id})")
+            print(f"Установлена палитра: {palette_name}")
 
     def update_frame(self):
         try:
