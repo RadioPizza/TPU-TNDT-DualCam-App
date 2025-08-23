@@ -265,6 +265,43 @@ class FLIRCameraWidget:
         """Настройка параметров камеры FLIR"""
         nodemap = self.camera.GetNodeMap()
         
+        # Отключаем биннинг и декimation
+        for node_name in ['BinningHorizontal', 'BinningVertical', 
+                        'DecimationHorizontal', 'DecimationVertical']:
+            node = PySpin.CIntegerPtr(nodemap.GetNode(node_name))
+            if PySpin.IsAvailable(node) and PySpin.IsWritable(node):
+                node.SetValue(1)
+                logger.info(f"Set {node_name} to 1")
+        
+        # Устанавливаем смещение в 0
+        node_offset_x = PySpin.CIntegerPtr(nodemap.GetNode("OffsetX"))
+        if PySpin.IsAvailable(node_offset_x) and PySpin.IsWritable(node_offset_x):
+            node_offset_x.SetValue(0)
+            logger.info("Set OffsetX to 0")
+        
+        node_offset_y = PySpin.CIntegerPtr(nodemap.GetNode("OffsetY"))
+        if PySpin.IsAvailable(node_offset_y) and PySpin.IsWritable(node_offset_y):
+            node_offset_y.SetValue(0)
+            logger.info("Set OffsetY to 0")
+        
+        # Устанавливаем максимальное разрешение
+        node_width_max = PySpin.CIntegerPtr(nodemap.GetNode("WidthMax"))
+        node_height_max = PySpin.CIntegerPtr(nodemap.GetNode("HeightMax"))
+        
+        if PySpin.IsAvailable(node_width_max) and PySpin.IsAvailable(node_height_max):
+            width_max = node_width_max.GetValue()
+            height_max = node_height_max.GetValue()
+            
+            node_width = PySpin.CIntegerPtr(nodemap.GetNode("Width"))
+            node_height = PySpin.CIntegerPtr(nodemap.GetNode("Height"))
+            
+            if (PySpin.IsAvailable(node_width) and PySpin.IsWritable(node_width) and
+                PySpin.IsAvailable(node_height) and PySpin.IsWritable(node_height)):
+                
+                node_width.SetValue(width_max)
+                node_height.SetValue(height_max)
+                logger.info(f"Set resolution to maximum: {width_max}x{height_max}")
+        
         # Попробуем установить цветной формат, если доступен
         node_pixel_format = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
         if PySpin.IsAvailable(node_pixel_format) and PySpin.IsWritable(node_pixel_format):
@@ -282,15 +319,6 @@ class FLIRCameraWidget:
                 else:
                     # Если цветные форматы недоступны, оставляем монохромный
                     logger.warning("Color formats not available, using monochrome")
-        
-        # Установка разрешения
-        node_width = PySpin.CIntegerPtr(nodemap.GetNode("Width"))
-        if PySpin.IsAvailable(node_width) and PySpin.IsWritable(node_width):
-            node_width.SetValue(self.settings.visible_camera_resolution[0])
-        
-        node_height = PySpin.CIntegerPtr(nodemap.GetNode("Height"))
-        if PySpin.IsAvailable(node_height) and PySpin.IsWritable(node_height):
-            node_height.SetValue(self.settings.visible_camera_resolution[1])
         
         # Установка FPS
         node_fps = PySpin.CFloatPtr(nodemap.GetNode("AcquisitionFrameRate"))
@@ -329,6 +357,7 @@ class FLIRCameraWidget:
                 # Логируем формат для отладки
                 if not hasattr(self, 'pixel_format_logged'):
                     logger.info(f"FLIR Pixel Format: {pixel_format}")
+                    logger.info(f"FLIR Image shape: {image_data.shape}")
                     self.pixel_format_logged = True
                 
                 # Конвертируем в RGB в зависимости от формата
