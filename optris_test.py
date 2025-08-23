@@ -27,6 +27,21 @@ class EvoIRFrameMetadata(ct.Structure):
     ]
 
 class ThermalCameraApp(QMainWindow):
+    # Единая карта палитр для всего класса
+    PALETTE_MAP = {
+        "Alarm Blue": 1,
+        "Pinkblue": 2,
+        "Bone": 3,
+        "Grayblack": 4,
+        "Alarm Green": 5,
+        "Iron": 6,  # 0 и больше 11 - тоже Iron
+        "Orange": 7, 
+        "Medical": 8,
+        "Rain": 9,
+        "Rainbow": 10,
+        "Alarm Red": 11,
+    }
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
@@ -87,20 +102,8 @@ class ThermalCameraApp(QMainWindow):
         # Создаем выпадающий список для выбора палитры
         camera_layout.addWidget(QLabel("Цветовая палитра:", self))
         self.palette_combo = QComboBox(self)
-        # Список доступных палитр
-        self.palette_combo.addItems([
-            "Alarm Blue",
-            "Pinkblue",
-            "Bone",
-            "Grayblack",
-            "Alarm Green",
-            "Iron",
-            "Orange", 
-            "Medical",
-            "Rain",
-            "Rainbow",
-            "Alarm Red"
-        ])
+        # Используем ключи из PALETTE_MAP для гарантии соответствия
+        self.palette_combo.addItems(list(self.PALETTE_MAP.keys()))
         self.palette_combo.setCurrentText("Iron")
         self.palette_combo.currentTextChanged.connect(self.set_palette)
         camera_layout.addWidget(self.palette_combo)
@@ -254,6 +257,10 @@ class ThermalCameraApp(QMainWindow):
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(100)  # 10 FPS
 
+    def get_palette_id(self, palette_name):
+        """Возвращает ID палитры по имени, по умолчанию Iron (6)"""
+        return self.PALETTE_MAP.get(palette_name, 6)
+
     def load_xml_template(self):
         """Загружает шаблон XML-файла для камеры"""
         try:
@@ -367,20 +374,9 @@ class ThermalCameraApp(QMainWindow):
         # Подготавливаем данные для теста
         thermal_data = self.np_thermal.copy()
         palette_name = self.palette_combo.currentText()
-        palette_map = {
-            "Alarm Blue": 1,
-            "Pinkblue": 2,
-            "Bone": 3,
-            "Grayblack": 4,
-            "Alarm Green": 5,
-            "Iron": 6,
-            "Orange": 7, 
-            "Medical": 8,
-            "Rain": 9,
-            "Rainbow": 10,
-            "Alarm Red": 11,
-        }
-        palette_id = palette_map.get(palette_name, 6)
+        
+        # Получаем ID палитры с помощью единого метода
+        palette_id = self.get_palette_id(palette_name)
         
         # Создаем временный файл
         test_filename = "speed_test_temp.png"
@@ -636,21 +632,9 @@ class ThermalCameraApp(QMainWindow):
                     
                     # Получаем текущую палитру
                     palette_name = self.palette_combo.currentText()
-                    palette_map = {
-                        "Alarm Blue": 1,
-                        "Pinkblue": 2,
-                        "Bone": 3,
-                        "Grayblack": 4,
-                        "Alarm Green": 5,
-                        "Iron": 6,
-                        "Orange": 7, 
-                        "Medical": 8,
-                        "Rain": 9,
-                        "Rainbow": 10,
-                        "Alarm Red": 11,
-                    }
-                    # Для неизвестных значений используем Iron (6)
-                    palette_id = palette_map.get(palette_name, 6)
+                    
+                    # Получаем ID палитры с помощью единого метода
+                    palette_id = self.get_palette_id(palette_name)
                     
                     # Вызываем функцию SDK
                     ret = self.libir.evo_irimager_to_palette_save_png(
@@ -691,21 +675,9 @@ class ThermalCameraApp(QMainWindow):
                     
                     # Получаем текущую палитру
                     palette_name = self.palette_combo.currentText()
-                    palette_map = {
-                        "Alarm Blue": 1,
-                        "Pinkblue": 2,
-                        "Bone": 3,
-                        "Grayblack": 4,
-                        "Alarm Green": 5,
-                        "Iron": 6,
-                        "Orange": 7, 
-                        "Medical": 8,
-                        "Rain": 9,
-                        "Rainbow": 10,
-                        "Alarm Red": 11,
-                    }
-                    # Для неизвестных значений используем Iron (6)
-                    palette_id = palette_map.get(palette_name, 6)
+                    
+                    # Получаем ID палитры с помощью единого метода
+                    palette_id = self.get_palette_id(palette_name)
                     
                     # Вызываем функцию SDK
                     ret = self.libir.evo_irimager_to_palette_save_png_high_precision(
@@ -869,23 +841,8 @@ class ThermalCameraApp(QMainWindow):
         if not hasattr(self, 'libir'):
             return
             
-        # КОРРЕКТНАЯ КАРТА ПАЛИТР
-        palette_map = {
-            "Alarm Blue": 1,
-            "Pinkblue": 2,
-            "Bone": 3,
-            "Grayblack": 4,
-            "Alarm Green": 5,
-            "Iron": 6, # 0 и больше 11 - тоже Iron
-            "Orange": 7, 
-            "Medical": 8,
-            "Rain": 9,
-            "Rainbow": 10,
-            "Alarm Red": 11,
-        }
-        
-        # Для неизвестных значений используем Iron (6)
-        palette_id = palette_map.get(palette_name, 6)
+        # Получаем ID палитры с помощью единого метода
+        palette_id = self.get_palette_id(palette_name)
         ret = self.libir.evo_irimager_set_palette(palette_id)
         if ret != 0:
             print(f"Ошибка установки палитры '{palette_name}' (ID={palette_id}): {ret}")
