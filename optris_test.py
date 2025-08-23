@@ -26,15 +26,16 @@ class EvoIRFrameMetadata(ct.Structure):
         ("tempBox", ct.c_float),    
     ]
 
-class ThermalCameraApp(QMainWindow):
-    # Единая карта палитр для всего класса
+class PaletteManager:
+    """Управление цветовыми палитрами камеры"""
+    
     PALETTE_MAP = {
         "Alarm Blue": 1,
         "Pinkblue": 2,
         "Bone": 3,
         "Grayblack": 4,
         "Alarm Green": 5,
-        "Iron": 6,  # 0 и больше 11 - тоже Iron
+        "Iron": 6, # если 0 и больше 11 - тоже будет Ironй
         "Orange": 7, 
         "Medical": 8,
         "Rain": 9,
@@ -44,6 +45,28 @@ class ThermalCameraApp(QMainWindow):
     
     DEFAULT_PALETTE_ID = 6
     SCALING_MODE_MINMAX = 2
+    
+    def __init__(self, libir=None):
+        self.libir = libir
+    
+    def get_palette_id(self, palette_name):
+        """Возвращает ID палитры по имени"""
+        return self.PALETTE_MAP.get(palette_name, self.DEFAULT_PALETTE_ID)
+    
+    def get_available_palettes(self):
+        """Возвращает список доступных палитр"""
+        return list(self.PALETTE_MAP.keys())
+    
+    def set_palette(self, palette_name):
+        """Устанавливает цветовую палитру для камеры"""
+        if not self.libir:
+            return False
+            
+        palette_id = self.get_palette_id(palette_name)
+        ret = self.libir.evo_irimager_set_palette(palette_id)
+        return ret == 0
+
+class ThermalCameraApp(QMainWindow):
     SHUTTER_MODE_AUTO = 1
     SHUTTER_MODE_MANUAL = 0
     
@@ -51,6 +74,9 @@ class ThermalCameraApp(QMainWindow):
         super().__init__()
         self.setWindowTitle("Optris PI 640 Viewer")
         self.setGeometry(100, 100, 1200, 700)
+        
+        # Инициализируем менеджер палитр
+        self.palette_manager = PaletteManager()
         
         # Загружаем шаблон XML при инициализации
         self.xml_template = self.load_xml_template()
@@ -68,8 +94,8 @@ class ThermalCameraApp(QMainWindow):
         # Виджет для отображения изображения
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setScaledContents(False)  # Изменено на False
-        self.image_label.setMinimumSize(100, 100)  # Минимальный размер
+        self.image_label.setScaledContents(False)
+        self.image_label.setMinimumSize(100, 100)
         left_layout.addWidget(self.image_label, 1)
         
         # Правая панель: элементы управления и информация
@@ -107,8 +133,8 @@ class ThermalCameraApp(QMainWindow):
         # Создаем выпадающий список для выбора палитры
         camera_layout.addWidget(QLabel("Цветовая палитра:", self))
         self.palette_combo = QComboBox(self)
-        # Используем ключи из PALETTE_MAP для гарантии соответствия
-        self.palette_combo.addItems(list(self.PALETTE_MAP.keys()))
+        # Используем менеджер палитр для получения списка доступных палитр
+        self.palette_combo.addItems(self.palette_manager.get_available_palettes())
         self.palette_combo.setCurrentText("Iron")
         self.palette_combo.currentTextChanged.connect(self.set_palette)
         camera_layout.addWidget(self.palette_combo)
@@ -117,7 +143,7 @@ class ThermalCameraApp(QMainWindow):
         self.flag_label = QLabel("Состояние флага: --")
         camera_layout.addWidget(self.flag_label)
         
-        # Группа для метаданных
+        # Групка для метаданных
         meta_group = QGroupBox("Метаданные")
         meta_layout = QVBoxLayout()
         meta_group.setLayout(meta_layout)
@@ -231,7 +257,7 @@ class ThermalCameraApp(QMainWindow):
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(left_panel)
         splitter.addWidget(right_panel)
-        splitter.setSizes([800, 400])  # Начальное соотношение размеров
+        splitter.setSizes([800, 400])
         
         main_layout.addWidget(splitter)
         
@@ -260,11 +286,7 @@ class ThermalCameraApp(QMainWindow):
         # Таймер для обновления кадров
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(100)  # 10 FPS
-
-    def get_palette_id(self, palette_name):
-        """Возвращает ID палитры по имени"""
-        return self.PALETTE_MAP.get(palette_name, self.DEFAULT_PALETTE_ID)
+        self.timer.start(100)
 
     def load_xml_template(self):
         """Загружает шаблон XML-файла для камеры"""
@@ -273,7 +295,6 @@ class ThermalCameraApp(QMainWindow):
                 return f.read()
         except Exception as e:
             print(f"Ошибка загрузки generic.xml: {e}")
-            # Возвращаем стандартный шаблон как fallback
             return '''<?xml version="1.0" encoding="UTF-8"?>
 <imager xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <serial>0</serial>
@@ -298,23 +319,19 @@ class ThermalCameraApp(QMainWindow):
 
     def change_video_format(self, index):
         """Изменяет формат видео потока"""
-        # Останавливаем таймеры
         self.timer.stop()
         self.record_timer.stop()
         
-        # Останавливаем запись видео, если она активна
         if self.recording:
             self.stop_video_recording()
         
-        # Определяем параметры для выбранного формата
-        if index == 0:  # 640x480 @ 32Hz
+        if index == 0:
             videoformatindex = 0
             framerate = 32.0
-        else:  # 640x120 @ 125Hz
+        else:
             videoformatindex = 1
             framerate = 125.0
         
-        # Создаем временный XML-файл с новыми параметрами
         new_xml = re.sub(
             r'<videoformatindex>\d+</videoformatindex>',
             f'<videoformatindex>{videoformatindex}</videoformatindex>',
@@ -326,7 +343,6 @@ class ThermalCameraApp(QMainWindow):
             new_xml
         )
         
-        # Сохраняем временный XML-файл
         temp_xml_path = 'temp_generic.xml'
         try:
             with open(temp_xml_path, 'w') as f:
@@ -335,19 +351,15 @@ class ThermalCameraApp(QMainWindow):
             print(f"Ошибка создания временного XML-файла: {e}")
             return
         
-        # Переинициализируем камеру с новыми параметрами
         self.deinit_camera()
         if not self.init_camera(xml_path=temp_xml_path):
             print("Ошибка переинициализации камеры")
-            # Пытаемся вернуться к предыдущей конфигурации
             self.deinit_camera()
             self.init_camera()
         
-        # Запускаем таймеры снова
         self.timer.start(100)
         self.record_timer.start()
         
-        # Удаляем временный файл
         try:
             os.remove(temp_xml_path)
         except:
@@ -359,7 +371,6 @@ class ThermalCameraApp(QMainWindow):
             QMessageBox.warning(self, "Ошибка", "Камера не инициализирована")
             return
         
-        # Получаем текущий кадр
         try:
             ret = self.libir.evo_irimager_get_thermal_palette_image_metadata(
                 self.thermal_width, self.thermal_height, 
@@ -370,23 +381,19 @@ class ThermalCameraApp(QMainWindow):
             )
             
             if ret != 0:
-                QMessageBox.warning(self, "Ошибка", "Не удалось получить кадр от камеры")
+                QMessageBox.warning(self, "Ошибка", "Не удалось получить кадр от камеря")
                 return
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка получения кадра: {e}")
             return
         
-        # Подготавливаем данные для теста
         thermal_data = self.np_thermal.copy()
         palette_name = self.palette_combo.currentText()
         
-        # Получаем ID палитры с помощью единого метода
-        palette_id = self.get_palette_id(palette_name)
+        # Используем менеджер палитр для получения ID
+        palette_id = self.palette_manager.get_palette_id(palette_name)
         
-        # Создаем временный файл
         test_filename = "speed_test_temp.png"
-        
-        # Тестируем три метода
         results = []
         
         # Метод 1: Оптимальный (через SDK)
@@ -396,16 +403,15 @@ class ThermalCameraApp(QMainWindow):
                 start_time = time.time()
                 filename_bytes = test_filename.encode('utf-8')
                 ret = self.libir.evo_irimager_to_palette_save_png(
-                    self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
+                    thermal_data.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                     self.thermal_width.value,
                     self.thermal_height.value,
                     filename_bytes,
                     palette_id,
-                    self.SCALING_MODE_MINMAX  # Было: 2
+                    self.palette_manager.SCALING_MODE_MINMAX
                 )
                 
                 if ret == 0:
-                    # Исправление цветовых каналов
                     img = cv2.imread(test_filename)
                     if img is not None:
                         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -439,12 +445,11 @@ class ThermalCameraApp(QMainWindow):
                     self.thermal_height.value,
                     filename_bytes,
                     palette_id,
-                    2,  # MinMax scaling
-                    1   # 1 decimal place
+                    2,
+                    1
                 )
                 
                 if ret == 0:
-                    # Исправление цветовых каналов
                     img = cv2.imread(test_filename)
                     if img is not None:
                         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -470,7 +475,6 @@ class ThermalCameraApp(QMainWindow):
         times = []
         for _ in range(10):
             try:
-                # Создаем изображение для отображения
                 img_rgb = self.np_img.reshape(
                     self.palette_height.value, 
                     self.palette_width.value, 
@@ -498,13 +502,11 @@ class ThermalCameraApp(QMainWindow):
             avg_time = sum(times) / len(times)
             results.append(f"Исходный (через QPixmap): {avg_time:.4f} сек")
         
-        # Форматируем результаты
         if not results:
             result_text = "Все методы завершились с ошибкой"
         else:
             result_text = "Результаты теста скорости (среднее за 10 попыток):\n\n" + "\n".join(results)
         
-        # Показываем результаты
         QMessageBox.information(self, "Результаты теста", result_text)
 
     def start_video_recording(self):
@@ -512,15 +514,12 @@ class ThermalCameraApp(QMainWindow):
         if self.recording:
             return
             
-        # Генерируем имя файла с временной меткой
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"thermal_video_{timestamp}.avi"
         
-        # Параметры видео
         fps = max(1, int(self.fps))
         frame_size = (self.palette_width.value, self.palette_height.value)
         
-        # Создаем VideoWriter
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         self.video_writer = cv2.VideoWriter(filename, fourcc, fps, frame_size)
         
@@ -529,14 +528,12 @@ class ThermalCameraApp(QMainWindow):
             self.video_writer = None
             return
         
-        # Устанавливаем флаги и запускаем таймер
         self.recording = True
         self.record_start_time = time.time()
         self.record_duration = 0
         self.record_time_label.setText("Время записи: 0 сек")
         self.record_timer.start()
         
-        # Обновляем состояние кнопок
         self.start_record_button.setEnabled(False)
         self.stop_record_button.setEnabled(True)
         print(f"Начата запись видео: {filename}")
@@ -546,17 +543,14 @@ class ThermalCameraApp(QMainWindow):
         if not self.recording:
             return
             
-        # Останавливаем запись
         self.recording = False
         self.record_timer.stop()
         
-        # Закрываем видеофайл
         if self.video_writer:
             self.video_writer.release()
             self.video_writer = None
             print(f"Видео сохранено, длительность: {self.record_duration} сек")
         
-        # Обновляем состояние кнопок
         self.start_record_button.setEnabled(True)
         self.stop_record_button.setEnabled(False)
 
@@ -571,7 +565,7 @@ class ThermalCameraApp(QMainWindow):
         if not hasattr(self, 'libir'):
             return
             
-        shutter_mode = self.SHUTTER_MODE_AUTO if state == 2 else self.SHUTTER_MODE_MANUAL  # Qt.Checked == 2
+        shutter_mode = self.SHUTTER_MODE_AUTO if state == 2 else self.SHUTTER_MODE_MANUAL
         
         ret = self.libir.evo_irimager_set_shutter_mode(shutter_mode)
         if ret != 0:
@@ -595,7 +589,6 @@ class ThermalCameraApp(QMainWindow):
             base_filename = f"thermal_{timestamp}"
             saved_files = []
             
-            # Сохраняем метаданные
             if self.save_metadata_checkbox.isChecked():
                 meta_filename = f"{base_filename}_metadata.txt"
                 with open(meta_filename, 'w') as f:
@@ -609,53 +602,35 @@ class ThermalCameraApp(QMainWindow):
                     f.write(f"Average temperature: {self.avg_temp_label.text()}\n")
                 saved_files.append(meta_filename)
             
-            # Сохраняем температурные данные
             if self.save_tempdata_checkbox.isChecked():
                 temp_filename = f"{base_filename}_data.npy"
                 data_2d = self.np_thermal.reshape(self.thermal_height.value, self.thermal_width.value)
                 np.save(temp_filename, data_2d)
                 saved_files.append(temp_filename)
             
-            # Сохраняем изображение
             if self.save_image_checkbox.isChecked():
                 img_filename = f"{base_filename}_image.png"
-                
                 method = self.png_method_combo.currentIndex()
                 
                 if method == 0:
-                    """
-                    Метод: Оптимальный (через SDK)
-                    - Среднее время сохранения: ~1.4 сек
-                    * Сохраняет изображение с точной температурной шкалой
-                    * Медленнее других методов в 5-15 раз
-                    * Нестабильная производительность (может занимать до 4 сек)
-                    - Рекомендации:
-                    * Использовать только когда критична точность температурной шкалы
-                    * Не подходит для серийной съемки или работы в реальном времени
-                    """
                     filename_bytes = img_filename.encode('utf-8')
-                    
-                    # Получаем текущую палитру
                     palette_name = self.palette_combo.currentText()
                     
-                    # Получаем ID палитры с помощью единого метода
-                    palette_id = self.get_palette_id(palette_name)
+                    # Используем менеджер палитр для получения ID
+                    palette_id = self.palette_manager.get_palette_id(palette_name)
                     
-                    # Вызываем функцию SDK
                     ret = self.libir.evo_irimager_to_palette_save_png(
                         self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                         self.thermal_width.value,
                         self.thermal_height.value,
                         filename_bytes,
                         palette_id,
-                        2  # MinMax scaling
+                        2
                     )
                     
                     if ret == 0:
-                        # Исправление цветовых каналов
                         img = cv2.imread(img_filename)
                         if img is not None:
-                            # Конвертируем BGR в RGB
                             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                             cv2.imwrite(img_filename, img_rgb)
                             saved_files.append(img_filename)
@@ -666,40 +641,25 @@ class ThermalCameraApp(QMainWindow):
                         print(f"Ошибка сохранения PNG через SDK: {ret}")
                 
                 elif method == 1:
-                    """
-                    Метод: Высокоточный (через SDK)
-                    - Среднее время сохранения: ~2.5 сек
-                    * Сохраняет изображение с максимальной температурной точностью
-                    * Самый медленный метод (в 10-15 раз медленнее QPixmap)
-                    * Наибольший разброс времени выполнения (от 1.3 до 4+ сек)
-                    - Рекомендации:
-                    * Использовать только там, где критична точность
-                    * Не подходит для рабочих задач из-за низкой производительности
-                    """
                     filename_bytes = img_filename.encode('utf-8')
-                    
-                    # Получаем текущую палитру
                     palette_name = self.palette_combo.currentText()
                     
-                    # Получаем ID палитры с помощью единого метода
-                    palette_id = self.get_palette_id(palette_name)
+                    # Используем менеджер палитр для получения ID
+                    palette_id = self.palette_manager.get_palette_id(palette_name)
                     
-                    # Вызываем функцию SDK
                     ret = self.libir.evo_irimager_to_palette_save_png_high_precision(
                         self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                         self.thermal_width.value,
                         self.thermal_height.value,
                         filename_bytes,
                         palette_id,
-                        2,  # MinMax scaling
-                        1   # 1 decimal place
+                        2,
+                        1
                     )
                     
                     if ret == 0:
-                        # Исправление цветовых каналов
                         img = cv2.imread(img_filename)
                         if img is not None:
-                            # Конвертируем BGR в RGB
                             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                             cv2.imwrite(img_filename, img_rgb)
                             saved_files.append(img_filename)
@@ -710,19 +670,6 @@ class ThermalCameraApp(QMainWindow):
                         print(f"Ошибка сохранения высокоточного PNG через SDK: {ret}")
                 
                 else:
-                    """
-                    Метод: Исходный (через QPixmap)
-                    - Среднее время сохранения: ~0.2 сек
-                    * Самый быстрый метод (в 5-15 раз быстрее SDK методов)
-                    * Стабильная производительность (время всегда около 0.2 сек)
-                    * Простая реализация
-                    * Сохраняет только визуальное представление
-                    * Точность ограничена разрешением экранного представления
-                    - Рекомендации:
-                    * Основной метод для продакшена
-                    * Идеален для серийной съемки и работы в реальном времени
-                    * Для точных температурных измерений дополнять сохранением .npy
-                    """
                     pixmap = self.image_label.pixmap()
                     if pixmap is not None:
                         pixmap.save(img_filename)
@@ -731,7 +678,6 @@ class ThermalCameraApp(QMainWindow):
                     else:
                         print("Нет изображения для сохранения")
             
-            # Формируем сообщение о сохраненных файлах
             if saved_files:
                 files_str = "\n".join(saved_files)
                 print(f"Сохраненные файлы:\n{files_str}")
@@ -744,10 +690,8 @@ class ThermalCameraApp(QMainWindow):
     def init_camera(self, xml_path='generic.xml'):
         """Инициализирует камеру с указанным XML-файлом"""
         try:
-            # Загрузка библиотеки
             self.libir = ct.CDLL('.\libirimager.dll')
             
-            # Определение типов аргументов
             self.libir.evo_irimager_usb_init.argtypes = [ct.c_char_p, ct.c_char_p, ct.c_char_p]
             self.libir.evo_irimager_usb_init.restype = ct.c_int
             
@@ -764,7 +708,6 @@ class ThermalCameraApp(QMainWindow):
             ]
             self.libir.evo_irimager_get_thermal_palette_image_metadata.restype = ct.c_int
             
-            # Функции палитры и калибровки
             self.libir.evo_irimager_set_palette.argtypes = [ct.c_int]
             self.libir.evo_irimager_set_palette.restype = ct.c_int
             
@@ -774,7 +717,6 @@ class ThermalCameraApp(QMainWindow):
             self.libir.evo_irimager_trigger_shutter_flag.argtypes = []
             self.libir.evo_irimager_trigger_shutter_flag.restype = ct.c_int
             
-            # Функции сохранения PNG
             self.libir.evo_irimager_to_palette_save_png.argtypes = [
                 ct.POINTER(ct.c_ushort), ct.c_int, ct.c_int,
                 ct.c_char_p, ct.c_int, ct.c_int
@@ -790,7 +732,6 @@ class ThermalCameraApp(QMainWindow):
             self.libir.evo_irimager_terminate.argtypes = []
             self.libir.evo_irimager_terminate.restype = None
             
-            # Инициализация камеры
             pathXml = xml_path.encode('utf-8')
             pathFormat = b''
             pathLog = b''
@@ -800,7 +741,6 @@ class ThermalCameraApp(QMainWindow):
                 print(f"Ошибка инициализации: {ret}")
                 return False
             
-            # Получение размеров изображения
             self.thermal_width = ct.c_int()
             self.thermal_height = ct.c_int()
             self.libir.evo_irimager_get_thermal_image_size(ct.byref(self.thermal_width), ct.byref(self.thermal_height))
@@ -808,6 +748,7 @@ class ThermalCameraApp(QMainWindow):
             
             self.palette_width = ct.c_int()
             self.palette_height = ct.c_int()
+            self.libir.evo_irimager_get_palette_image
             self.libir.evo_irimager_get_palette_image_size(ct.byref(self.palette_width), ct.byref(self.palette_height))
             print(f"Palette size: {self.palette_width.value}x{self.palette_height.value}")
             
@@ -821,6 +762,9 @@ class ThermalCameraApp(QMainWindow):
             self.np_thermal = np.zeros([self.thermal_width.value * self.thermal_height.value], dtype=np.uint16)
             self.np_img = np.zeros([self.palette_width.value * self.palette_height.value * 3], dtype=np.uint8)
             self.metadata = EvoIRFrameMetadata()
+            
+            # Передаем библиотеку в менеджер палитр
+            self.palette_manager.libir = self.libir
             
             # Установка начальной палитры
             self.set_palette(self.palette_combo.currentText())
@@ -843,13 +787,10 @@ class ThermalCameraApp(QMainWindow):
 
     def set_palette(self, palette_name):
         """Устанавливает цветовую палитру для камеры"""
-        if not hasattr(self, 'libir'):
-            return
-            
-        palette_id = self.get_palette_id(palette_name)
-        ret = self.libir.evo_irimager_set_palette(palette_id)
-        if ret != 0:
-            print(f"Ошибка установки палитры '{palette_name}' (ID={palette_id}): {ret}")
+        # Используем менеджер палитр для установки
+        success = self.palette_manager.set_palette(palette_name)
+        if not success:
+            print(f"Ошибка установки палитры '{palette_name}'")
         else:
             print(f"Установлена палитра: {palette_name}")
 
