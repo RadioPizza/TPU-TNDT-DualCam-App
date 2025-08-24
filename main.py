@@ -573,6 +573,26 @@ class FinishDialog(QDialog):
         super(FinishDialog, self).__init__()
         self.ui = Ui_FinishDialog()
         self.ui.setupUi(self)
+        
+        # Устанавливаем путь сохранения из user_data
+        self.ui.FinishPathLineEdit.setText(user_data.save_path)
+        
+        # Подключаем кнопку смены пути
+        self.ui.FinishChangePathButton.clicked.connect(self.change_save_path)
+        
+        # Подключаем кнопки Yes/No
+        self.ui.FinishYesButton.clicked.connect(self.accept)
+        self.ui.FinishNoButton.clicked.connect(self.reject)
+
+    def change_save_path(self):
+        """Открывает диалоговое окно выбора каталога и устанавливает путь в поле FinishPathLineEdit."""
+        try:
+            path = QFileDialog.getExistingDirectory(self, "Select Directory")
+            if path:
+                self.ui.FinishPathLineEdit.setText(path)
+                user_data.save_path = path
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"An error occurred while selecting the save path: {e}.")
 
 if __name__ == '__main__':
     # Настройка базового конфигуратора логирования

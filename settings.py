@@ -49,8 +49,8 @@ class Settings(QObject):
     # Флаги режима разработчика (только для тестирования)
     auto_fill_forms: bool = True    # Автоматическое заполнение форм
     mock_heater: bool = True        # Заглушка для тестирования без реального нагревателя
-    use_flir_camera: bool = True    # Использовать FLIR камеру вместо OpenCV
-    use_thermal_camera: bool = True  # Использовать тепловизор вместо заглушки
+    use_flir_camera: bool = False    # Использовать FLIR камеру вместо OpenCV
+    use_thermal_camera: bool = False # Использовать тепловизор вместо заглушки
     
     duration_of_testing: int = 10
     heating_duration: int = 3
