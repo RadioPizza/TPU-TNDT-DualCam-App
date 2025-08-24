@@ -6,6 +6,7 @@ from PySide6.QtCore import QTimer, Qt, Slot
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
 from PySide6.QtGui import QImage, QPixmap
 import numpy as np
+import ctypes as ct
 
 try:
     import PySpin
@@ -538,6 +539,178 @@ class ThermalCamera(BaseCamera):
         return self.settings.thermal_camera_recordFPS
 
 
+# ==================== OPTRIS CAMERA ====================
+class OptrisCamera(BaseCamera):
+    """Реализация для тепловизоров Optris"""
+    
+    def __init__(self, settings: Settings, graphics_view: QGraphicsView):
+        super().__init__(settings, graphics_view)
+        self.libir = None
+        self.thermal_width = ct.c_int()
+        self.thermal_height = ct.c_int()
+        self.palette_width = ct.c_int()
+        self.palette_height = ct.c_int()
+        self.np_thermal = None
+        self.np_img = None
+        self.metadata = EvoIRFrameMetadata()
+        self.pixel_format_logged = False
+    
+    def initialize(self) -> bool:
+        try:
+            # Загрузка библиотеки
+            self.libir = ct.CDLL('.\libirimager.dll')
+            
+            # Определение прототипов функций
+            self._define_prototypes()
+            
+            # Инициализация камеры
+            xml_path = self.settings.thermal_camera_xml_path
+            pathXml = xml_path.encode('utf-8')
+            pathFormat = b''
+            pathLog = b''
+            
+            ret = self.libir.evo_irimager_usb_init(pathXml, pathFormat, pathLog)
+            if ret != 0:
+                logger.error(f"Ошибка инициализации Optris камеры: {ret}")
+                self.notify_camera_error(f"Ошибка инициализации тепловизора: {ret}")
+                self.start_reconnect_timer()
+                return False
+            
+            # Получение размеров изображения
+            self.libir.evo_irimager_get_thermal_image_size(
+                ct.byref(self.thermal_width), 
+                ct.byref(self.thermal_height)
+            )
+            self.libir.evo_irimager_get_palette_image_size(
+                ct.byref(self.palette_width), 
+                ct.byref(self.palette_height)
+            )
+            
+            logger.info(f"Optris thermal size: {self.thermal_width.value}x{self.thermal_height.value}")
+            logger.info(f"Optris palette size: {self.palette_width.value}x{self.palette_height.value}")
+            
+            # Инициализация буферов
+            self.np_thermal = np.zeros(
+                [self.thermal_width.value * self.thermal_height.value], 
+                dtype=np.uint16
+            )
+            self.np_img = np.zeros(
+                [self.palette_width.value * self.palette_height.value * 3], 
+                dtype=np.uint8
+            )
+            
+            # Установка палитры по умолчанию
+            palette_id = 6  # Iron
+            self.libir.evo_irimager_set_palette(palette_id)
+            
+            self._initialized = True
+            self.timer.start(1000 // self.get_preview_fps())
+            return True
+            
+        except Exception as e:
+            logger.error(f"Ошибка инициализации Optris камеры: {e}")
+            self.notify_camera_error(f"Ошибка инициализации тепловизора: {e}")
+            self.start_reconnect_timer()
+            return False
+    
+    def _define_prototypes(self):
+        """Определение прототипов функций библиотеки"""
+        self.libir.evo_irimager_usb_init.argtypes = [ct.c_char_p, ct.c_char_p, ct.c_char_p]
+        self.libir.evo_irimager_usb_init.restype = ct.c_int
+        
+        self.libir.evo_irimager_get_thermal_image_size.argtypes = [
+            ct.POINTER(ct.c_int), 
+            ct.POINTER(ct.c_int)
+        ]
+        self.libir.evo_irimager_get_thermal_image_size.restype = None
+        
+        self.libir.evo_irimager_get_palette_image_size.argtypes = [
+            ct.POINTER(ct.c_int), 
+            ct.POINTER(ct.c_int)
+        ]
+        self.libir.evo_irimager_get_palette_image_size.restype = None
+        
+        self.libir.evo_irimager_get_thermal_palette_image_metadata.argtypes = [
+            ct.c_int, ct.c_int, ct.POINTER(ct.c_ushort),
+            ct.c_int, ct.c_int, ct.POINTER(ct.c_ubyte),
+            ct.POINTER(EvoIRFrameMetadata)
+        ]
+        self.libir.evo_irimager_get_thermal_palette_image_metadata.restype = ct.c_int
+        
+        self.libir.evo_irimager_set_palette.argtypes = [ct.c_int]
+        self.libir.evo_irimager_set_palette.restype = ct.c_int
+        
+        self.libir.evo_irimager_terminate.argtypes = []
+        self.libir.evo_irimager_terminate.restype = None
+    
+    def capture_frame(self):
+        """Захватывает кадр с тепловизора Optris"""
+        if not self.is_initialized():
+            return None
+        
+        try:
+            ret = self.libir.evo_irimager_get_thermal_palette_image_metadata(
+                self.thermal_width, self.thermal_height, 
+                self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)), 
+                self.palette_width, self.palette_height, 
+                self.np_img.ctypes.data_as(ct.POINTER(ct.c_ubyte)), 
+                ct.byref(self.metadata)
+            )
+            
+            if ret != 0:
+                logger.error(f"Ошибка получения кадра от Optris: {ret}")
+                return None
+            
+            # Преобразуем в BGR для совместимости с OpenCV
+            img_bgr = self.np_img.reshape(
+                self.palette_height.value, 
+                self.palette_width.value, 
+                3
+            ).copy()
+            
+            return img_bgr
+            
+        except Exception as e:
+            logger.error(f"Ошибка захвата кадра Optris: {e}")
+            return None
+    
+    def release_resources(self):
+        """Освобождает ресурсы тепловизора"""
+        try:
+            if self.libir:
+                self.libir.evo_irimager_terminate()
+            self.libir = None
+        except Exception as e:
+            logger.error(f"Ошибка освобождения ресурсов Optris: {e}")
+        
+        self._initialized = False
+    
+    def get_camera_name(self) -> str:
+        return "Optris Thermal Camera"
+    
+    def get_resolution(self) -> List[int]:
+        return [self.palette_width.value, self.palette_height.value]
+    
+    def get_preview_fps(self) -> int:
+        return self.settings.thermal_camera_previewFPS
+    
+    def get_record_fps(self) -> int:
+        return self.settings.thermal_camera_recordFPS
+
+# Define EvoIRFrameMetadata structure for Optris camera
+class EvoIRFrameMetadata(ct.Structure):
+    _fields_ = [
+        ("counter", ct.c_uint),
+        ("counterHW", ct.c_uint),
+        ("timestamp", ct.c_longlong),
+        ("timestampMedia", ct.c_longlong),
+        ("flagState", ct.c_int),
+        ("tempChip", ct.c_float),
+        ("tempFlag", ct.c_float),
+        ("tempBox", ct.c_float),    
+    ]
+
+
 # ==================== CAMERA FACTORY ====================
 class CameraFactory:
     """Фабрика для создания экземпляров камер"""
@@ -557,7 +730,6 @@ class CameraFactory:
             
         Raises:
             ValueError: Если передан неизвестный тип камеры
-            ImportError: Если запрошена FLIR камера, но PySpin недоступен
         """
         if camera_type == "visible":
             if getattr(settings, 'use_flir_camera', True) and PYSPIN_AVAILABLE:
@@ -566,7 +738,10 @@ class CameraFactory:
                 camera_index = getattr(settings, 'visible_camera_index', 0)
                 return OpenCVCamera(settings, graphics_view, camera_index)
         elif camera_type == "thermal":
-            return ThermalCamera(settings, graphics_view)
+            if getattr(settings, 'use_thermal_camera', False) and getattr(settings, 'thermal_camera_type', 'mock') == 'optris':
+                return OptrisCamera(settings, graphics_view)
+            else:
+                return ThermalCamera(settings, graphics_view)
         else:
             raise ValueError(f"Неизвестный тип камеры: {camera_type}")
 

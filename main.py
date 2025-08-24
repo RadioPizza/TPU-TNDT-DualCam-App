@@ -605,6 +605,9 @@ if __name__ == '__main__':
         
     except Exception as e:
         logger.error(f"PySpin diagnostic failed: {e}")
+    
+    # Загрузка настроек из файла
+    settings = Settings.load_from_file()
         
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
@@ -621,10 +624,7 @@ if __name__ == '__main__':
     
     # Получение экземпляра объекта UserData
     user_data = UserData.get_instance()
-    
-    # Загрузка настроек из файла
-    settings = Settings.load_from_file()
-        
+      
     # Инициализация нагревателя
     if settings.mock_heater:
         class MockHeater:

@@ -50,6 +50,7 @@ class Settings(QObject):
     auto_fill_forms: bool = True    # Автоматическое заполнение форм
     mock_heater: bool = True        # Заглушка для тестирования без реального нагревателя
     use_flir_camera: bool = True    # Использовать FLIR камеру вместо OpenCV
+    use_thermal_camera: bool = True  # Использовать тепловизор вместо заглушки
     
     duration_of_testing: int = 10
     heating_duration: int = 3
@@ -67,6 +68,8 @@ class Settings(QObject):
     thermal_camera_resolution: List[int] = field(default_factory=lambda: [640, 480])
     thermal_camera_previewFPS: int = 20
     thermal_camera_recordFPS: int = 5
+    thermal_camera_type: str = 'optris'  # Тип тепловизора
+    thermal_camera_xml_path: str = 'generic.xml'  # Путь к XML-конфигурации
 
     # Настройки нагревателя
     heater_COM_port_number: int = 0
@@ -156,8 +159,15 @@ class Settings(QObject):
         if os.path.exists(settings_file):
             with open(settings_file, 'r') as f:
                 data = json.load(f)
-                if 'use_flir_camera' not in data:
-                    data['use_flir_camera'] = True
+                # Добавляем значения по умолчанию для новых настроек
+                defaults = {
+                    'use_thermal_camera': False,
+                    'thermal_camera_type': 'mock',
+                    'thermal_camera_xml_path': 'generic.xml'
+                }
+                for key, value in defaults.items():
+                    if key not in data:
+                        data[key] = value
                 return Settings(**data)
         else:
             return Settings()  # Возвращаем экземпляр с значениями по умолчанию
