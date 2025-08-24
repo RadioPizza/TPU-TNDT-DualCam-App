@@ -1,273 +1,340 @@
 import cv2
-from typing import List, Tuple
+import logging
+from abc import ABC, abstractmethod
+from typing import List, Tuple, Optional
 from PySide6.QtCore import QTimer, Qt, Slot
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
 from PySide6.QtGui import QImage, QPixmap
-import logging
+import numpy as np
+
+try:
+    import PySpin
+    PYSPIN_AVAILABLE = True
+except ImportError:
+    PYSPIN_AVAILABLE = False
+    logging.warning("PySpin not available. FLIR cameras will not work.")
+
 from settings import Settings
-import PySpin
 
 logger = logging.getLogger(__name__)
 
 
-def get_available_cameras() -> List[Tuple[int, str]]:
-    """
-    Определяет доступные камеры и возвращает их индексы и имена.
-    Имена камер получить, к сожалению, нельзя.
-    Returns:
-        List[Tuple[int, str]]: Список кортежей, где первый элемент - индекс камеры,
-                              а второй - строка "Camera {index}".
-    """
-    available_cameras = []
-    for index in range(10):  # Проверяем первые 10 камер
-        cap = cv2.VideoCapture(index)
-        if cap.isOpened():
-            available_cameras.append((index, f"Camera {index}"))
-            cap.release()  # Освобождаем ресурс камеры сразу после проверки
-        else:
-            cap.release()
-    return available_cameras
+# ==================== EXCEPTIONS ====================
+class CameraError(Exception):
+    """Базовое исключение для ошибок камер"""
+    pass
+
+class CameraNotInitializedError(CameraError):
+    """Исключение при использовании неинициализированной камеры"""
+    pass
+
+class CameraNotFoundError(CameraError):
+    """Исключение при отсутствии камеры"""
+    pass
+
+class CameraConnectionError(CameraError):
+    """Исключение при проблемах с подключением к камере"""
+    pass
 
 
-class CameraWidget:
-    """Базовый класс для виджета камеры."""
-
-    def __init__(self, settings, graphics_view: QGraphicsView):
+# ==================== BASE CLASS ====================
+class BaseCamera(ABC):
+    """Абстрактный базовый класс для всех камер"""
+    
+    def __init__(self, settings: Settings, graphics_view: QGraphicsView):
         self.settings = settings
         self.graphics_view = graphics_view
-        self.camera = None
-        self.video_writer = None
         self.is_recording = False
-
-        # Флаги для управления попытками подключения
+        self.video_writer = None
+        self._initialized = False
         self.is_disconnected = False
-
+        
         # Параметры повторного подключения
         self.reconnect_interval = 5000  # миллисекунды между попытками
         self.reconnect_timer = QTimer()
         self.reconnect_timer.setInterval(self.reconnect_interval)
         self.reconnect_timer.timeout.connect(self.attempt_reconnect)
-
-        # Инициализация камеры
-        self.camera = cv2.VideoCapture(self.get_camera_index())
-        self.setup_camera()
-        if self.camera and self.camera.isOpened():
-            self.apply_camera_settings()
-
-            # Настраиваем таймер для обновления кадров
-            self.timer = QTimer()
-            self.timer.timeout.connect(self.update_frame)
-            self.timer.start(1000 // self.get_preview_fps())
-
-            # Настраиваем сцену для отображения видео
-            self.scene = QGraphicsScene()
-            self.graphics_view.setScene(self.scene)
-            self.pixmap_item = QGraphicsPixmapItem()
-            self.scene.addItem(self.pixmap_item)
-        else:
-            logger.warning(f"Камера {self.get_camera_index()} не инициализирована. Видео не будет отображаться.")
-            self.notify_camera_error(f"Камера {self.get_camera_index()} не обнаружена.")
-            self.start_reconnect_timer()
-
+        
+        # Настройка сцены для отображения
+        self.scene = QGraphicsScene()
+        self.graphics_view.setScene(self.scene)
+        self.pixmap_item = QGraphicsPixmapItem()
+        self.scene.addItem(self.pixmap_item)
+        
+        # Таймер для обновления кадров
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_frame)
+    
+    @abstractmethod
+    def initialize(self) -> bool:
+        """Инициализирует камеру и возвращает статус успеха"""
+        pass
+    
+    @abstractmethod
+    def capture_frame(self):
+        """Захватывает кадр с камеры"""
+        pass
+    
+    @abstractmethod
+    def release_resources(self):
+        """Освобождает ресурсы камеры"""
+        pass
+    
+    @abstractmethod
+    def get_camera_name(self) -> str:
+        """Возвращает название камеры"""
+        pass
+    
+    @abstractmethod
+    def get_resolution(self) -> List[int]:
+        """Возвращает разрешение камеры"""
+        pass
+    
+    @abstractmethod
+    def get_preview_fps(self) -> int:
+        """Возвращает FPS для предпросмотра"""
+        pass
+    
+    @abstractmethod
+    def get_record_fps(self) -> int:
+        """Возвращает FPS для записи"""
+        pass
+    
+    def is_initialized(self) -> bool:
+        """Проверяет, инициализирована ли камера"""
+        return self._initialized
+    
     def start_recording(self, file_path: str):
-        """Начинает запись видео."""
-        if not self.camera or not self.camera.isOpened():
-            logger.error("Запись видео невозможна: камера не инициализирована.")
-            QMessageBox.critical(None, "Ошибка", "Камера не инициализирована. Запись видео невозможна.")
-            return
-
+        """Начинает запись видео"""
+        if not self.is_initialized():
+            raise CameraNotInitializedError(f"Камера {self.get_camera_name()} не инициализирована")
+        
         width, height = self.get_resolution()
         fps = self.get_record_fps()
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Формат кодека
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
         self.video_writer = cv2.VideoWriter(file_path, fourcc, fps, (width, height))
         self.is_recording = True
         logger.info(f"Начата запись видео: {file_path}")
-
+    
     def stop_recording(self):
-        """Останавливает запись видео."""
+        """Останавливает запись видео"""
         if self.is_recording and self.video_writer:
             self.video_writer.release()
             self.video_writer = None
             self.is_recording = False
             logger.info("Запись видео остановлена.")
-
+    
     def update_frame(self):
-        """Захватывает и обновляет кадры с камеры."""
-        if not self.camera:
-            logger.debug("Камера не инициализирована. Пропуск обновления кадра.")
-            return
-
-        ret, frame = self.camera.read()
-        if not ret:
-            logger.error(f"Не удалось получить кадр с камеры {self.get_camera_index()}.")
+        """Обновляет кадр с камеры и отображает его"""
+        try:
+            frame = self.capture_frame()
+            if frame is None:
+                if not self.is_disconnected:
+                    self.is_disconnected = True
+                    self.notify_camera_error(f"Камера {self.get_camera_name()} была отключена.")
+                    self.stop_recording_if_needed()
+                    self.timer.stop()
+                    self.start_reconnect_timer()
+                return
+            
+            # Если ранее была отключена, но теперь удалось получить кадр
+            if self.is_disconnected:
+                self.is_disconnected = False
+                self.notify_camera_reconnected(f"Камера {self.get_camera_name()} восстановлена.")
+                self.stop_reconnect_timer()
+                self.timer.start(1000 // self.get_preview_fps())
+            
+            # Если запись активна, записываем кадр
+            if self.is_recording and self.video_writer:
+                self.video_writer.write(frame)
+            
+            # Отображение видео в графической области
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            pixmap = QPixmap.fromImage(q_image)
+            self.pixmap_item.setPixmap(pixmap)
+            self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
+            
+        except Exception as e:
+            logger.error(f"Ошибка при обновлении кадра: {e}")
             if not self.is_disconnected:
                 self.is_disconnected = True
-                self.notify_camera_error(f"Камера {self.get_camera_index()} была отключена.")
+                self.notify_camera_error(f"Ошибка камеры {self.get_camera_name()}: {e}")
                 self.stop_recording_if_needed()
                 self.timer.stop()
-                self.camera.release()
                 self.start_reconnect_timer()
-            return
-
-        # Если ранее была отключена, но теперь удалось получить кадр
-        if self.is_disconnected:
-            self.is_disconnected = False
-            self.notify_camera_reconnected(f"Камера {self.get_camera_index()} восстановлена.")
-            self.stop_reconnect_timer()
-            self.setup_camera()
-            self.timer.start(1000 // self.get_preview_fps())
-
-        # Если запись активна, записываем кадр
-        if self.is_recording and self.video_writer:
-            self.video_writer.write(frame)
-
-        # Отображение видео в графической области
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        h, w, ch = frame.shape
-        bytes_per_line = ch * w
-        q_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        pixmap = QPixmap.fromImage(q_image)
-        self.pixmap_item.setPixmap(pixmap)
-        self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
-
+    
     def release(self):
-        """Освобождает ресурсы камеры."""
-        if self.camera and self.camera.isOpened():
-            self.camera.release()
-        if self.video_writer:
-            self.video_writer.release()
-        if hasattr(self, 'timer'):
+        """Освобождает все ресурсы камеры"""
+        self.stop_recording()
+        if self.timer.isActive():
             self.timer.stop()
         if self.reconnect_timer.isActive():
             self.reconnect_timer.stop()
-
-    def get_camera_index(self) -> int:
-        raise NotImplementedError("Метод get_camera_index должен быть реализован в подклассе.")
-
-    def get_preview_fps(self) -> int:
-        raise NotImplementedError("Метод get_preview_fps должен быть реализован в подклассе.")
-
-    def get_record_fps(self) -> int:
-        raise NotImplementedError("Метод get_record_fps должен быть реализован в подклассе.")
-
-    def get_resolution(self) -> List[int]:
-        raise NotImplementedError("Метод get_resolution должен быть реализован в подклассе.")
-
-    def setup_camera(self):
-        """Настройка параметров камеры (разрешение, FPS и т.д.)."""
-        # Разрешение
-        width, height = self.get_resolution()
-        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        # FPS
-        self.camera.set(cv2.CAP_PROP_FPS, self.get_preview_fps())
-
-    def apply_camera_settings(self):
-        """Применение настроек камеры (яркость, контрастность и т.д.)."""
-        pass  # Здесь можно добавить настройки для конкретной камеры
-
+        self.release_resources()
+    
     def start_reconnect_timer(self):
         """Запускает таймер повторного подключения."""
         if not self.reconnect_timer.isActive():
-            logger.info(f"Запуск таймера повторного подключения для камеры {self.get_camera_index()}.")
+            logger.info(f"Запуск таймера повторного подключения для камеры {self.get_camera_name()}.")
             self.reconnect_timer.start()
-
+    
     def stop_reconnect_timer(self):
         """Останавливает таймер повторного подключения."""
         if self.reconnect_timer.isActive():
-            logger.info(f"Остановка таймера повторного подключения для камеры {self.get_camera_index()}.")
+            logger.info(f"Остановка таймера повторного подключения для камеры {self.get_camera_name()}.")
             self.reconnect_timer.stop()
-
+    
     @Slot()
     def attempt_reconnect(self):
         """Пытается повторно подключиться к камере."""
-        logger.info(f"Попытка повторного подключения к камере {self.get_camera_index()}...")
-        self.camera = cv2.VideoCapture(self.get_camera_index())
-        if self.camera and self.camera.isOpened():
-            logger.info(f"Повторное подключение к камере {self.get_camera_index()} успешно.")
-            self.setup_camera()
-            self.apply_camera_settings()
-
-            # Настраиваем таймер для обновления кадров
+        logger.info(f"Попытка повторного подключения к камере {self.get_camera_name()}...")
+        if self.initialize():
+            logger.info(f"Повторное подключение к камере {self.get_camera_name()} успешно.")
             self.timer.start(1000 // self.get_preview_fps())
-
-            # Останавливаем таймер повторного подключения
             self.stop_reconnect_timer()
         else:
-            logger.warning(f"Повторное подключение к камере {self.get_camera_index()} неудачно.")
-
+            logger.warning(f"Повторное подключение к камере {self.get_camera_name()} неудачно.")
+    
     def notify_camera_error(self, message: str):
         """Уведомляет пользователя об ошибке камеры."""
         QMessageBox.critical(None, "Ошибка камеры", message)
-
+    
     def notify_camera_reconnected(self, message: str):
         """Уведомляет пользователя о восстановлении камеры."""
         QMessageBox.information(None, "Камера восстановлена", message)
-
+    
     def stop_recording_if_needed(self):
         """Останавливает запись видео, если она активна."""
         if self.is_recording:
             self.stop_recording()
 
 
-class VisibleCameraWidget(CameraWidget):
-    """Класс для основной (видимой) камеры."""
-
-    def get_camera_index(self) -> int:
-        return self.settings.visible_camera_index
-
+# ==================== OPENCV CAMERA ====================
+class OpenCVCamera(BaseCamera):
+    """Реализация для обычных камер через OpenCV"""
+    
+    def __init__(self, settings: Settings, graphics_view: QGraphicsView, camera_index: int):
+        super().__init__(settings, graphics_view)
+        self.camera_index = camera_index
+        self.camera = None
+    
+    def initialize(self) -> bool:
+        try:
+            self.camera = cv2.VideoCapture(self.camera_index)
+            if self.camera and self.camera.isOpened():
+                self._apply_opencv_settings()
+                self._initialized = True
+                self.timer.start(1000 // self.get_preview_fps())
+                return True
+            else:
+                logger.warning(f"Камера {self.get_camera_name()} не инициализирована.")
+                self.notify_camera_error(f"Камера {self.get_camera_name()} не обнаружена.")
+                self.start_reconnect_timer()
+                return False
+        except Exception as e:
+            logger.error(f"Ошибка инициализации OpenCV камеры: {e}")
+            self.notify_camera_error(f"Ошибка инициализации камеры {self.get_camera_name()}: {e}")
+            self.start_reconnect_timer()
+            return False
+    
+    def _apply_opencv_settings(self):
+        """Применяет настройки для OpenCV камеры"""
+        width, height = self.get_resolution()
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.camera.set(cv2.CAP_PROP_FPS, self.get_preview_fps())
+    
+    def capture_frame(self):
+        """Захватывает кадр с OpenCV камеры"""
+        if not self.is_initialized():
+            return None
+        
+        ret, frame = self.camera.read()
+        if not ret:
+            logger.error(f"Не удалось получить кадр с камеры {self.get_camera_name()}.")
+            return None
+        
+        return frame
+    
+    def release_resources(self):
+        """Освобождает ресурсы OpenCV камеры"""
+        if self.camera and self.camera.isOpened():
+            self.camera.release()
+        self.camera = None
+        self._initialized = False
+    
+    def get_camera_name(self) -> str:
+        return f"OpenCV Camera {self.camera_index}"
+    
+    def get_resolution(self) -> List[int]:
+        return self.settings.visible_camera_resolution
+    
     def get_preview_fps(self) -> int:
         return self.settings.visible_camera_previewFPS
-
+    
     def get_record_fps(self) -> int:
         return self.settings.visible_camera_recordFPS
 
-    def get_resolution(self) -> List[int]:
-        return self.settings.visible_camera_resolution
 
-
-class FLIRCameraWidget:
-    def __init__(self, settings, graphics_view: QGraphicsView):
-        self.settings = settings
-        self.graphics_view = graphics_view
-        self.is_recording = False
-        self.video_writer = None
+# ==================== FLIR CAMERA ====================
+class FLIRCamera(BaseCamera):
+    """Реализация для камер FLIR через PySpin"""
+    
+    def __init__(self, settings: Settings, graphics_view: QGraphicsView):
+        if not PYSPIN_AVAILABLE:
+            raise ImportError("PySpin is not available. Cannot create FLIR camera.")
         
-        self.system = PySpin.System.GetInstance()
-        self.cam_list = self.system.GetCameras()
-        num_cameras = self.cam_list.GetSize()
-        
-        if num_cameras == 0:
-            raise Exception("No FLIR cameras found.")
-        
+        super().__init__(settings, graphics_view)
+        self.system = None
+        self.cam_list = None
+        self.camera = None
+        self.pixel_format_logged = False
+    
+    def initialize(self) -> bool:
         try:
+            self.system = PySpin.System.GetInstance()
+            self.cam_list = self.system.GetCameras()
+            num_cameras = self.cam_list.GetSize()
+            
+            if num_cameras == 0:
+                logger.error("No FLIR cameras found.")
+                self.notify_camera_error("Не найдено камер FLIR.")
+                self.start_reconnect_timer()
+                return False
+            
             self.camera = self.cam_list.GetByIndex(0)
             self.camera.Init()
-            self.set_camera_settings()
+            self._apply_flir_settings()
             self.camera.BeginAcquisition()
             
-            self.timer = QTimer()
-            self.timer.timeout.connect(self.update_frame)
-            self.timer.start(1000 // settings.visible_camera_previewFPS)
-            
-            self.scene = QGraphicsScene()
-            graphics_view.setScene(self.scene)
-            self.pixmap_item = QGraphicsPixmapItem()
-            self.scene.addItem(self.pixmap_item)
-            
+            self._initialized = True
+            self.timer.start(1000 // self.get_preview_fps())
             logger.info("FLIR camera initialized successfully")
+            return True
+            
         except PySpin.SpinnakerException as ex:
-            self.release_resources()
             logger.error(f"FLIR camera initialization failed: {ex}")
-            raise Exception(f"FLIR camera error: {ex}")
+            self.notify_camera_error(f"Ошибка инициализации FLIR камеры: {ex}")
+            self.release_resources()
+            self.start_reconnect_timer()
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error during FLIR camera initialization: {e}")
+            self.notify_camera_error(f"Неожиданная ошибка при инициализации FLIR камеры: {e}")
+            self.release_resources()
+            self.start_reconnect_timer()
+            return False
     
-    def set_camera_settings(self):
-        """Настройка параметров камеры FLIR"""
+    def _apply_flir_settings(self):
+        """Применяет настройки для FLIR камеры"""
         nodemap = self.camera.GetNodeMap()
         
         # Отключаем биннинг и декimation
         for node_name in ['BinningHorizontal', 'BinningVertical', 
-                        'DecimationHorizontal', 'DecimationVertical']:
+                         'DecimationHorizontal', 'DecimationVertical']:
             node = PySpin.CIntegerPtr(nodemap.GetNode(node_name))
             if PySpin.IsAvailable(node) and PySpin.IsWritable(node):
                 node.SetValue(1)
@@ -323,118 +390,241 @@ class FLIRCameraWidget:
         # Установка FPS
         node_fps = PySpin.CFloatPtr(nodemap.GetNode("AcquisitionFrameRate"))
         if PySpin.IsAvailable(node_fps) and PySpin.IsWritable(node_fps):
-            node_fps.SetValue(self.settings.visible_camera_previewFPS)
+            node_fps.SetValue(self.get_preview_fps())
     
-    def start_recording(self, file_path: str):
-        """Начинает запись видео."""
-        width, height = self.settings.visible_camera_resolution
-        fps = self.settings.visible_camera_recordFPS
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.video_writer = cv2.VideoWriter(file_path, fourcc, fps, (width, height))
-        self.is_recording = True
-        logger.info(f"Начата запись видео: {file_path}")
-    
-    def stop_recording(self):
-        """Останавливает запись видео."""
-        if self.is_recording and self.video_writer:
-            self.video_writer.release()
-            self.video_writer = None
-            self.is_recording = False
-            logger.info("Запись видео остановлена.")
-    
-    def update_frame(self):
+    def capture_frame(self):
+        """Захватывает кадр с FLIR камеры"""
+        if not self.is_initialized():
+            return None
+        
         try:
             image_result = self.camera.GetNextImage(1000)
             if image_result.IsIncomplete():
                 logger.warning("FLIR image incomplete with status: %d", image_result.GetImageStatus())
+                image_result.Release()
+                return None
+            
+            # Получаем изображение в виде numpy массива
+            image_data = image_result.GetNDArray()
+            
+            # Получаем формат пикселя для правильной конвертации
+            pixel_format = image_result.GetPixelFormat()
+            
+            # Логируем формат для отладки
+            if not self.pixel_format_logged:
+                logger.info(f"FLIR Pixel Format: {pixel_format}")
+                logger.info(f"FLIR Image shape: {image_data.shape}")
+                self.pixel_format_logged = True
+            
+            # Конвертируем в BGR в зависимости от формата
+            if pixel_format == PySpin.PixelFormat_Mono8:
+                # Монохромное изображение - конвертируем в псевдоцвет
+                bgr_image = cv2.applyColorMap(image_data, cv2.COLORMAP_JET)
+            elif pixel_format == PySpin.PixelFormat_BayerBG8:
+                bgr_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_BG2BGR)
+            elif pixel_format == PySpin.PixelFormat_BayerGB8:
+                bgr_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_GB2BGR)
+            elif pixel_format == PySpin.PixelFormat_BayerGR8:
+                bgr_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_GR2BGR)
+            elif pixel_format == PySpin.PixelFormat_BayerRG8:
+                bgr_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_RG2BGR)
+            elif pixel_format == PySpin.PixelFormat_BGR8:
+                bgr_image = image_data  # Уже в BGR
+            elif pixel_format == PySpin.PixelFormat_RGB8:
+                bgr_image = cv2.cvtColor(image_data, cv2.COLOR_RGB2BGR)
             else:
-                # Получаем изображение в виде numpy массива
-                image_data = image_result.GetNDArray()
-                
-                # Получаем формат пикселя для правильной конвертации
-                pixel_format = image_result.GetPixelFormat()
-                
-                # Логируем формат для отладки
-                if not hasattr(self, 'pixel_format_logged'):
-                    logger.info(f"FLIR Pixel Format: {pixel_format}")
-                    logger.info(f"FLIR Image shape: {image_data.shape}")
-                    self.pixel_format_logged = True
-                
-                # Конвертируем в RGB в зависимости от формата
-                if pixel_format == PySpin.PixelFormat_Mono8:
-                    # Монохромное изображение - конвертируем в псевдоцвет
-                    rgb_image = cv2.applyColorMap(image_data, cv2.COLORMAP_JET)
-                elif pixel_format == PySpin.PixelFormat_BayerBG8:
-                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_BG2RGB)
-                elif pixel_format == PySpin.PixelFormat_BayerGB8:
-                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_GB2RGB)
-                elif pixel_format == PySpin.PixelFormat_BayerGR8:
-                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_GR2RGB)
-                elif pixel_format == PySpin.PixelFormat_BayerRG8:
-                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BAYER_RG2RGB)
-                elif pixel_format == PySpin.PixelFormat_BGR8:
-                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
-                elif pixel_format == PySpin.PixelFormat_RGB8:
-                    rgb_image = image_data  # Уже в RGB
-                else:
-                    # Для неизвестного формата попробуем конвертировать как BGR
-                    logger.warning(f"Unsupported pixel format: {pixel_format}. Trying BGR to RGB conversion.")
-                    rgb_image = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
-                
-                # Запись видео
-                if self.is_recording and self.video_writer:
-                    bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-                    self.video_writer.write(bgr_image)
-                
-                # Отображение в интерфейсе
-                height, width, _ = rgb_image.shape
-                bytes_per_line = 3 * width
-                q_image = QImage(rgb_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
-                pixmap = QPixmap.fromImage(q_image)
-                self.pixmap_item.setPixmap(pixmap)
-                self.graphics_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
+                # Для неизвестного формата попробуем конвертировать как есть
+                logger.warning(f"Unsupported pixel format: {pixel_format}. Using raw image.")
+                bgr_image = image_data
             
             image_result.Release()
+            return bgr_image
+            
         except PySpin.SpinnakerException as ex:
             logger.error("FLIR camera error: %s", ex)
+            return None
     
     def release_resources(self):
-        """Освобождает ресурсы камеры."""
-        if hasattr(self, 'camera') and self.camera.IsInitialized():
-            if self.camera.IsStreaming():
-                self.camera.EndAcquisition()
-            self.camera.DeInit()
-            del self.camera
+        """Освобождает ресурсы FLIR камеры"""
+        try:
+            if self.camera and hasattr(self.camera, 'IsInitialized') and self.camera.IsInitialized():
+                if self.camera.IsStreaming():
+                    self.camera.EndAcquisition()
+                self.camera.DeInit()
+                del self.camera
+                self.camera = None
+            
+            if self.cam_list:
+                self.cam_list.Clear()
+                del self.cam_list
+                self.cam_list = None
+            
+            if self.system:
+                self.system.ReleaseInstance()
+                del self.system
+                self.system = None
+                
+        except Exception as e:
+            logger.error(f"Error releasing FLIR resources: {e}")
         
-        if hasattr(self, 'cam_list'):
-            self.cam_list.Clear()
-            del self.cam_list
-        
-        if hasattr(self, 'system'):
-            self.system.ReleaseInstance()
-            del self.system
+        self._initialized = False
     
-    def release(self):
-        """Публичный метод для освобождения ресурсов."""
-        if hasattr(self, 'timer') and self.timer.isActive():
-            self.timer.stop()
-        self.stop_recording()
-        self.release_resources()
+    def get_camera_name(self) -> str:
+        return "FLIR Camera"
+    
+    def get_resolution(self) -> List[int]:
+        return self.settings.visible_camera_resolution
+    
+    def get_preview_fps(self) -> int:
+        return self.settings.visible_camera_previewFPS
+    
+    def get_record_fps(self) -> int:
+        return self.settings.visible_camera_recordFPS
 
 
-class ThermalCameraWidget(CameraWidget):
-    """Класс для ИК камеры."""
-
-    def get_camera_index(self) -> int:
-        return self.settings.thermal_camera_index
-
+# ==================== THERMAL CAMERA ====================
+class ThermalCamera(BaseCamera):
+    """Реализация для тепловизоров (заглушка для будущей реализации)"""
+    
+    def __init__(self, settings: Settings, graphics_view: QGraphicsView):
+        super().__init__(settings, graphics_view)
+        self.camera = None
+    
+    def initialize(self) -> bool:
+        try:
+            # Заглушка для будущей реализации тепловизора
+            # В реальной реализации здесь будет код инициализации тепловизора
+            logger.warning("Thermal camera implementation is not yet complete")
+            
+            # Для тестирования создаем заглушку с черным изображением
+            self._initialized = True
+            self.timer.start(1000 // self.get_preview_fps())
+            return True
+            
+        except Exception as e:
+            logger.error(f"Thermal camera initialization failed: {e}")
+            self.notify_camera_error(f"Ошибка инициализации тепловизора: {e}")
+            self.start_reconnect_timer()
+            return False
+    
+    def capture_frame(self):
+        """Захватывает кадр с тепловизора (заглушка)"""
+        if not self.is_initialized():
+            return None
+        
+        # Заглушка: создаем черное изображение с текстом
+        width, height = self.get_resolution()
+        frame = np.zeros((height, width, 3), dtype=np.uint8)
+        cv2.putText(frame, "Thermal Camera Not Implemented", (10, height//2), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        
+        return frame
+    
+    def release_resources(self):
+        """Освобождает ресурсы тепловизора"""
+        self.camera = None
+        self._initialized = False
+    
+    def get_camera_name(self) -> str:
+        return "Thermal Camera"
+    
+    def get_resolution(self) -> List[int]:
+        return self.settings.thermal_camera_resolution
+    
     def get_preview_fps(self) -> int:
         return self.settings.thermal_camera_previewFPS
-
+    
     def get_record_fps(self) -> int:
         return self.settings.thermal_camera_recordFPS
 
-    def get_resolution(self) -> List[int]:
-        return self.settings.thermal_camera_resolution
 
-    # Если необходимо, можно переопределить методы для других настроек ИК камеры
+# ==================== CAMERA FACTORY ====================
+class CameraFactory:
+    """Фабрика для создания экземпляров камер"""
+    
+    @staticmethod
+    def create_camera(camera_type: str, settings: Settings, graphics_view: QGraphicsView):
+        """
+        Создает экземпляр камеры указанного типа
+        
+        Args:
+            camera_type: Тип камеры ("visible" или "thermal")
+            settings: Экземпляр настроек
+            graphics_view: Виджет для отображения видео
+            
+        Returns:
+            Экземпляр камеры указанного типа
+            
+        Raises:
+            ValueError: Если передан неизвестный тип камеры
+            ImportError: Если запрошена FLIR камера, но PySpin недоступен
+        """
+        if camera_type == "visible":
+            if getattr(settings, 'use_flir_camera', True) and PYSPIN_AVAILABLE:
+                return FLIRCamera(settings, graphics_view)
+            else:
+                camera_index = getattr(settings, 'visible_camera_index', 0)
+                return OpenCVCamera(settings, graphics_view, camera_index)
+        elif camera_type == "thermal":
+            return ThermalCamera(settings, graphics_view)
+        else:
+            raise ValueError(f"Неизвестный тип камеры: {camera_type}")
+
+
+# ==================== CAMERA MANAGER ====================
+class CameraManager:
+    """Управляет несколькими камерами и их синхронизацией"""
+    
+    def __init__(self):
+        self.cameras = {}
+    
+    def add_camera(self, name: str, camera: BaseCamera):
+        """Добавляет камеру в менеджер"""
+        self.cameras[name] = camera
+    
+    def initialize_all(self):
+        """Инициализирует все камеры"""
+        results = {}
+        for name, camera in self.cameras.items():
+            results[name] = camera.initialize()
+        return results
+    
+    def start_recording_all(self, base_path: str):
+        """Начинает запись на всех камерах"""
+        for name, camera in self.cameras.items():
+            if camera.is_initialized():
+                camera.start_recording(f"{base_path}_{name}.avi")
+    
+    def stop_recording_all(self):
+        """Останавливает запись на всех камерах"""
+        for camera in self.cameras.values():
+            camera.stop_recording()
+    
+    def release_all(self):
+        """Освобождает ресурсы всех камер"""
+        for camera in self.cameras.values():
+            camera.release()
+    
+    def get_camera(self, name: str) -> Optional[BaseCamera]:
+        """Возвращает камеру по имени"""
+        return self.cameras.get(name)
+
+
+# ==================== UTILITY FUNCTIONS ====================
+def get_available_cameras() -> List[Tuple[int, str]]:
+    """
+    Определяет доступные камеры и возвращает их индексы и имена.
+    
+    Returns:
+        List[Tuple[int, str]]: Список кортежей, где первый элемент - индекс камеры,
+                              а второй - строка "Camera {index}".
+    """
+    available_cameras = []
+    for index in range(10):  # Проверяем первые 10 камер
+        cap = cv2.VideoCapture(index)
+        if cap.isOpened():
+            available_cameras.append((index, f"Camera {index}"))
+            cap.release()  # Освобождаем ресурс камеры сразу после проверки
+        else:
+            cap.release()
+    return available_cameras

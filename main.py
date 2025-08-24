@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QFileDialog,
 from serial_communicator import SerialCommunicator as com
 
 # Локальные модули
-from cameras import get_available_cameras, VisibleCameraWidget, FLIRCameraWidget, ThermalCameraWidget
+from cameras import CameraFactory, CameraManager, get_available_cameras
 from FinishDialog import Ui_FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow
@@ -200,23 +200,34 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         # Поля
-        self.current_position = np.zeros(2, dtype=int)  # Текущая зона контроля [x, y]
-        self.last_moving = np.zeros(2, dtype=int)       # Последнее перемещение [dx, dy]
+        self.current_position = np.zeros(2, dtype=int)
+        self.last_moving = np.zeros(2, dtype=int)
         self.progress = 0
 
-        # Инициализация камер
-        try:
-            # Сначала пробуем FLIR камеру
-            self.camera_widget = FLIRCameraWidget(settings, self.ui.MainCameraView)
-            logger.info("FLIR camera initialized")
-        except Exception as e:
-            logger.error(f"Failed to initialize FLIR camera: {e}")
-            # Fallback to regular camera
-            self.camera_widget = VisibleCameraWidget(settings, self.ui.MainCameraView)
-            logger.info("Using fallback visible camera")
+        # Создаем менеджер камер
+        self.camera_manager = CameraManager()
         
-        # Тепловизор всегда инициализируем отдельно
-        self.thermal_camera_widget = ThermalCameraWidget(settings, self.ui.MainTCameraView)
+        try:
+            # Создаем камеры через фабрику
+            visible_camera = CameraFactory.create_camera("visible", settings, self.ui.MainCameraView)
+            thermal_camera = CameraFactory.create_camera("thermal", settings, self.ui.MainTCameraView)
+            
+            # Инициализируем камеры
+            visible_init_success = visible_camera.initialize()
+            thermal_init_success = thermal_camera.initialize()
+            
+            if not visible_init_success:
+                logger.warning("Failed to initialize visible camera")
+            if not thermal_init_success:
+                logger.warning("Failed to initialize thermal camera")
+            
+            # Добавляем камеры в менеджер
+            self.camera_manager.add_camera("visible", visible_camera)
+            self.camera_manager.add_camera("thermal", thermal_camera)
+            
+        except Exception as e:
+            logger.error(f"Camera initialization error: {e}")
+            QMessageBox.critical(self, "Camera Error", f"Failed to initialize cameras: {e}")
 
         # Таймеры
         self.heating_timer = QTimer()
@@ -224,7 +235,7 @@ class MainWindow(QMainWindow):
         self.heating_timer.timeout.connect(self.start_cooling)
         
         self.cooling_timer = QTimer()
-        self.heating_timer.setSingleShot(True)
+        self.cooling_timer.setSingleShot(True)
         self.cooling_timer.timeout.connect(self.finish_testing)
         
         # Инициализация прогресс-бара
@@ -248,12 +259,10 @@ class MainWindow(QMainWindow):
         # Формируем имена файлов
         object_name = user_data.object_of_testing.replace(" ", "_")
         position = f"zone({self.current_position[0]},{self.current_position[1]})"
-        visible_file = f"{self.save_path}/{object_name}_{position}_visible.avi"
-        thermal_file = f"{self.save_path}/{object_name}_{position}_thermal.avi"
+        base_path = f"{self.save_path}/{object_name}_{position}"
         
-        # Сохраняем пути к файлам для возможного удаления
-        self.current_visible_file = visible_file
-        self.current_thermal_file = thermal_file
+        # Сохраняем путь для возможного удаления
+        self.current_base_path = base_path
         
         # Активируем кнопку Stop
         self.ui.MainStopButton.setEnabled(True)
@@ -261,9 +270,14 @@ class MainWindow(QMainWindow):
         # Деактивируем кнопку Start
         self.ui.MainPlayButton.setEnabled(False)
 
-        # Начинаем запись видео
-        self.camera_widget.start_recording(visible_file)
-        self.thermal_camera_widget.start_recording(thermal_file)
+        # Начинаем запись видео на всех камерах
+        try:
+            self.camera_manager.start_recording_all(base_path)
+        except Exception as e:
+            logger.error(f"Failed to start recording: {e}")
+            QMessageBox.critical(self, "Recording Error", f"Failed to start recording: {e}")
+            self.stop_testing()
+            return
 
         # Включаем нагрев
         heater.turn_on()
@@ -307,9 +321,8 @@ class MainWindow(QMainWindow):
         self.heating_timer.stop()
         self.cooling_timer.stop()
 
-        # Останавливаем запись
-        self.camera_widget.stop_recording()
-        self.thermal_camera_widget.stop_recording()
+        # Останавливаем запись на всех камерах
+        self.camera_manager.stop_recording_all()
         
         # Деактивируем кнопку Stop после успешного завершения
         self.ui.MainStopButton.setEnabled(False)
@@ -338,9 +351,8 @@ class MainWindow(QMainWindow):
         # Выключаем нагреватель
         heater.turn_off()
 
-        # Останавливаем запись
-        self.camera_widget.stop_recording()
-        self.thermal_camera_widget.stop_recording()
+        # Останавливаем запись на всех камерах
+        self.camera_manager.stop_recording_all()
         
         # Останавливаем анимацию прогресс-бара
         self.progress_animation.stop()
@@ -365,19 +377,15 @@ class MainWindow(QMainWindow):
     def delete_current_zone_files(self):
         """Удаляет файлы текущей зоны при прерывании тестирования."""
         try:
-            if hasattr(self, 'current_visible_file') and os.path.exists(self.current_visible_file):
-                os.remove(self.current_visible_file)
-                logger.info(f"Удален файл: {self.current_visible_file}")
-            if hasattr(self, 'current_thermal_file') and os.path.exists(self.current_thermal_file):
-                os.remove(self.current_thermal_file)
-                logger.info(f"Удален файл: {self.current_thermal_file}")
+            if hasattr(self, 'current_base_path'):
+                # Удаляем файлы для всех камер
+                for camera_name in self.camera_manager.cameras.keys():
+                    file_path = f"{self.current_base_path}_{camera_name}.avi"
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        logger.info(f"Удален файл: {file_path}")
         except Exception as e:
             logger.error(f"Ошибка при удалении файлов: {e}")
-
-    def open_trajectory_dialog(self):
-        """Открывает диалоговое окно выбора следующей зоны."""
-        self.trajectory_dialog = TrajectoryDialog()
-        self.trajectory_dialog.exec()
 
     def open_settings_window(self):
         """Открывает окно настроек."""
@@ -386,22 +394,8 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         """Закрывает камеры при завершении работы приложения."""
-        self.camera_widget.release()
-        self.thermal_camera_widget.release()
+        self.camera_manager.release_all()
         event.accept()
-    
-    def update_progress(self):
-        """Обновляет прогресс-бар на основе прошедшего времени."""
-        self.elapsed_time += 1
-        total_time = settings.duration_of_testing
-        
-        # Рассчитываем процент выполнения
-        progress = min(100, int((self.elapsed_time / total_time) * 100))
-        self.ui.MainProgressBar.setValue(progress)
-        
-        # Если тестирование завершено, останавливаем таймер
-        if self.elapsed_time >= total_time:
-            self.progress_timer.stop()
     
     def update_status_text(self):
         """Обновляет текст статуса с оставшимся временем."""
@@ -482,7 +476,8 @@ class MainWindow(QMainWindow):
         """Открывает финальное диалоговое окно."""
         self.finish_dialog = FinishDialog()
         self.finish_dialog.exec()
-    
+
+# Остальные классы без изменений
 class SettingsWindow(QDialog):
     def __init__(self):
         super(SettingsWindow, self).__init__()
@@ -571,16 +566,46 @@ class FinishDialog(QDialog):
 if __name__ == '__main__':
     # Настройка базового конфигуратора логирования
     logging.basicConfig(
-        level=logging.INFO,  # Уровень логирования можно изменить при необходимости
+        level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
-            #FileHandler("app.log"),    # Запись логов в файл
-            logging.StreamHandler()     # Также вывод логов в консоль
+            logging.StreamHandler()
         ]
     )
 
     logger = logging.getLogger(__name__)
     
+    # Диагностика PySpin и камер FLIR
+    try:
+        import PySpin
+        logger.info("PySpin imported successfully")
+        
+        # Быстрая проверка камер без длительного удержания ресурсов
+        system = PySpin.System.GetInstance()
+        cam_list = system.GetCameras()
+        num_cameras = cam_list.GetSize()
+        logger.info(f"Number of FLIR cameras detected: {num_cameras}")
+        
+        if num_cameras > 0:
+            # Получаем информацию о первой камере
+            camera = cam_list.GetByIndex(0)
+            camera.Init()
+            
+            try:
+                nodemap = camera.GetNodeMap()
+                node_model = PySpin.CStringPtr(nodemap.GetNode("DeviceModelName"))
+                if PySpin.IsAvailable(node_model):
+                    logger.info(f"Camera model: {node_model.GetValue()}")
+            finally:
+                camera.DeInit()
+                del camera
+        
+        cam_list.Clear()
+        system.ReleaseInstance()
+        
+    except Exception as e:
+        logger.error(f"PySpin diagnostic failed: {e}")
+        
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
     

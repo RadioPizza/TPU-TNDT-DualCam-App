@@ -47,8 +47,9 @@ class UserData(QObject):
 class Settings(QObject):
     
     # Флаги режима разработчика (только для тестирования)
-    auto_fill_forms: bool = True    # Автоматиеческое заполнение форм
-    mock_heater: bool = True        # Заглшука для тестирования без реального нагревателя
+    auto_fill_forms: bool = True    # Автоматическое заполнение форм
+    mock_heater: bool = True        # Заглушка для тестирования без реального нагревателя
+    use_flir_camera: bool = True    # Использовать FLIR камеру вместо OpenCV
     
     duration_of_testing: int = 10
     heating_duration: int = 3
@@ -140,6 +141,10 @@ class Settings(QObject):
         self.heater_baud_rate = rate
         self.data_changed.emit()
 
+    def set_use_flir_camera(self, use_flir: bool):
+        self.use_flir_camera = use_flir
+        self.data_changed.emit()
+
     def save_to_file(self):
         settings_file = 'settings.json'
         with open(settings_file, 'w') as f:
@@ -151,6 +156,8 @@ class Settings(QObject):
         if os.path.exists(settings_file):
             with open(settings_file, 'r') as f:
                 data = json.load(f)
+                if 'use_flir_camera' not in data:
+                    data['use_flir_camera'] = True
                 return Settings(**data)
         else:
             return Settings()  # Возвращаем экземпляр с значениями по умолчанию
