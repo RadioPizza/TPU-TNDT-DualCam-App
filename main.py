@@ -394,6 +394,14 @@ class MainWindow(QMainWindow):
         """Открывает окно настроек."""
         self.settingsWindow = SettingsWindow()
         self.settingsWindow.show()
+    
+    def open_settings_window(self):
+        """Открывает окно настроек (заглушка)."""
+        QMessageBox.information(
+            self,
+            "Settings",
+            "Окно с настройками ещё в разработке"
+        )
 
     def closeEvent(self, event):
         """Закрывает камеры при завершении работы приложения."""
