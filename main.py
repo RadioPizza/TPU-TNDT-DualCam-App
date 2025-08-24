@@ -238,6 +238,9 @@ class MainWindow(QMainWindow):
         self.cooling_timer.setSingleShot(True)
         self.cooling_timer.timeout.connect(self.finish_testing)
         
+        # Установка начального текста статуса
+        self.ui.MainProcessLabel.setText("Ready to start")
+        
         # Инициализация прогресс-бара
         self.ui.MainProgressBar.setValue(0)
         self.progress_animation = QPropertyAnimation(self.ui.MainProgressBar, b"value")
