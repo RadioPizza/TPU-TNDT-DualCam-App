@@ -470,8 +470,8 @@ class MainWindow(QMainWindow):
     def open_retest_dialog(self):
         """Открывает диалоговое окно повторного тестирования текущей зоны."""
         self.retest_dialog = RetestDialog()
-        self.retest_dialog.ui.RetestYesButton.clicked.connect(self.start_testing)
-        self.retest_dialog.ui.RetestNoButton.clicked.connect(self.open_trajectory_dialog)
+        self.retest_dialog.yes_clicked.connect(self.start_testing)
+        self.retest_dialog.no_clicked.connect(self.open_trajectory_dialog)
         self.retest_dialog.exec()
     
     def handle_preview_request(self):
@@ -486,7 +486,21 @@ class MainWindow(QMainWindow):
     def open_finish_dialog(self):
         """Открывает финальное диалоговое окно."""
         self.finish_dialog = FinishDialog()
+        self.finish_dialog.accepted.connect(self.handle_finish_accepted)
+        self.finish_dialog.rejected.connect(self.handle_finish_rejected)
         self.finish_dialog.exec()
+    
+    def handle_finish_accepted(self):
+        """Обрабатывает принятие финального диалога."""
+        logger.info("Testing completed successfully")
+        # Закрываем приложение
+        self.close()
+
+    def handle_finish_rejected(self):
+        """Обрабатывает отклонение финального диалога."""
+        logger.info("Testing completion cancelled")
+        # Возвращаемся к диалогу выбора траектории
+        self.open_trajectory_dialog()
 
 # Остальные классы без изменений
 class SettingsWindow(QDialog):
@@ -529,25 +543,18 @@ class TrajectoryDialog(QDialog):
             event.ignore()
 
 class RetestDialog(QDialog):
+    # Сигналы
+    yes_clicked = Signal()
+    no_clicked = Signal()
+    
     def __init__(self):
         super().__init__()
         self.ui = Ui_RetestDialog()
         self.ui.setupUi(self)
         
-        # Подключаем сигналы кнопок
-        self.ui.RetestNoButton.clicked.connect(self.open_trajectory_dialog)
-        self.ui.RetestYesButton.clicked.connect(self.close)
-
-    def open_trajectory_dialog(self) -> None:
-        """Открывает диалоговое окно выбора следующего положения."""
-        self.TrajectoryDialog = TrajectoryDialog()
-        self.TrajectoryDialog.show()
-        self.close()
-
-    def retest(self):
-        """Здесь нужно написать описание."""
-        self.main_window.delete_current_zone_data()
-        self.close()
+        # Подключаем сигналы кнопок к нашим сигналам
+        self.ui.RetestNoButton.clicked.connect(self.no_clicked.emit)
+        self.ui.RetestYesButton.clicked.connect(self.yes_clicked.emit)
 
 class PreviewWindow(QDialog):
     def __init__(self):
@@ -569,6 +576,10 @@ class PreviewWindow(QDialog):
         self.close()
 
 class FinishDialog(QDialog):
+    # Сигналы
+    accepted = Signal()
+    rejected = Signal()
+    
     def __init__(self):
         super(FinishDialog, self).__init__()
         self.ui = Ui_FinishDialog()
@@ -580,9 +591,9 @@ class FinishDialog(QDialog):
         # Подключаем кнопку смены пути
         self.ui.FinishChangePathButton.clicked.connect(self.change_save_path)
         
-        # Подключаем кнопки Yes/No
-        self.ui.FinishYesButton.clicked.connect(self.accept)
-        self.ui.FinishNoButton.clicked.connect(self.reject)
+        # Подключаем кнопки Yes/No к нашим сигналам
+        self.ui.FinishYesButton.clicked.connect(self.accepted.emit)
+        self.ui.FinishNoButton.clicked.connect(self.rejected.emit)
 
     def change_save_path(self):
         """Открывает диалоговое окно выбора каталога и устанавливает путь в поле FinishPathLineEdit."""
