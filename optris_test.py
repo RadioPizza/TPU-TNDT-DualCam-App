@@ -26,6 +26,281 @@ class EvoIRFrameMetadata(ct.Structure):
         ("tempBox", ct.c_float),    
     ]
 
+class FormatsDefParser:
+    """Парсер файла Formats.def для получения информации о доступных форматах камер"""
+    
+    def __init__(self, def_file_path='Formats.def'):
+        self.def_file_path = def_file_path
+        self.formats = []
+        self.parse_formats_file()
+    
+    def parse_formats_file(self):
+        """Парсит файл Formats.def и извлекает информацию о форматах"""
+        try:
+            with open(self.def_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Ищем все блоки форматов
+            format_blocks = re.findall(r'\[Format\](.*?)\[Format end\]', content, re.DOTALL)
+            
+            # Словарь для хранения форматов по GUID, чтобы отслеживать замены
+            formats_by_guid = {}
+            deprecated_guids = set()
+            
+            for block in format_blocks:
+                format_info = {}
+                
+                # Извлекаем GUID
+                guid_match = re.search(r'Guid\s*=\s*{([^}]+)}', block)
+                if not guid_match:
+                    continue
+                    
+                guid = guid_match.group(1)
+                format_info['guid'] = guid
+                
+                # Проверяем, является ли формат устаревшим
+                if "this format is deprecated" in block.lower():
+                    deprecated_guids.add(guid)
+                    continue
+                
+                # Проверяем, заменяет ли этот формат другой (устаревший)
+                replace_match = re.search(r'replaces\s*{([^}]+)}', block, re.IGNORECASE)
+                if replace_match:
+                    replaced_guid = replace_match.group(1)
+                    deprecated_guids.add(replaced_guid)
+                
+                # Извлекаем Name
+                name_match = re.search(r'Name\s*=\s*"([^"]+)"', block)
+                if name_match:
+                    format_info['name'] = name_match.group(1)
+                
+                # Извлекаем Out (выходное разрешение)
+                out_match = re.search(r'Out\s*=\s*(\d+)\s+(\d+)\s+([\d.]+)', block)
+                if out_match:
+                    format_info['width'] = int(out_match.group(1))
+                    format_info['height'] = int(out_match.group(2))
+                    format_info['fps'] = float(out_match.group(3))
+                
+                # Извлекаем HWRev
+                hwrev_match = re.search(r'HWRev\s*=\s*\(([^)]+)\)', block)
+                if hwrev_match:
+                    format_info['hwrev'] = hwrev_match.group(1)
+                
+                # Извлекаем FWRev
+                fwrev_match = re.search(r'FWRev\s*=\s*\(([^)]+)\)', block)
+                if fwrev_match:
+                    format_info['fwrev'] = fwrev_match.group(1)
+                
+                # Извлекаем DeviceRes если есть
+                device_res_match = re.search(r'DeviceRes\s*=\s*(\d+)\s+(\d+)\s+([\d.]+)', block)
+                if device_res_match:
+                    format_info['device_width'] = int(device_res_match.group(1))
+                    format_info['device_height'] = int(device_res_match.group(2))
+                    format_info['device_fps'] = float(device_res_match.group(3))
+                
+                if format_info:
+                    formats_by_guid[guid] = format_info
+            
+            # Фильтруем устаревшие форматы
+            self.formats = [fmt for guid, fmt in formats_by_guid.items() if guid not in deprecated_guids]
+            
+            print(f"Загружено {len(self.formats)} форматов из {self.def_file_path}")
+            
+        except Exception as e:
+            print(f"Ошибка загрузки файла Formats.def: {e}")
+    
+    def get_filtered_formats_info(self):
+        """Возвращает информацию об отфильтрованных форматах для отладки"""
+        try:
+            with open(self.def_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            format_blocks = re.findall(r'\[Format\](.*?)\[Format end\]', content, re.DOTALL)
+            
+            all_formats = []
+            deprecated_count = 0
+            
+            for block in format_blocks:
+                format_info = {}
+                
+                # Извлекаем GUID и имя
+                guid_match = re.search(r'Guid\s*=\s*{([^}]+)}', block)
+                name_match = re.search(r'Name\s*=\s*"([^"]+)"', block)
+                
+                if guid_match and name_match:
+                    format_info['guid'] = guid_match.group(1)
+                    format_info['name'] = name_match.group(1)
+                    format_info['deprecated'] = "this format is deprecated" in block.lower()
+                    format_info['replaces'] = "replaces" in block.lower()
+                    
+                    if format_info['deprecated']:
+                        deprecated_count += 1
+                    
+                    all_formats.append(format_info)
+            
+            return {
+                'total_formats': len(all_formats),
+                'deprecated_count': deprecated_count,
+                'filtered_formats': len(self.formats),
+                'details': all_formats
+            }
+            
+        except Exception as e:
+            return {'error': str(e)}
+    
+    def get_formats_by_resolution(self, width, height):
+        """Возвращает форматы по заданному разрешению"""
+        matching_formats = []
+        for fmt in self.formats:
+            if fmt.get('width') == width and fmt.get('height') == height:
+                matching_formats.append(fmt)
+        return matching_formats
+    
+    def get_all_formats(self):
+        """Возвращает все доступные форматы"""
+        return self.formats
+    
+    def get_formats_grouped_by_model(self):
+        """Группирует форматы по моделям камер"""
+        models = {}
+        for fmt in self.formats:
+            # Извлекаем название модели из имени формата
+            name_parts = fmt['name'].split()
+            if name_parts:
+                model_name = name_parts[0]  # Первое слово - название модели
+                if model_name not in models:
+                    models[model_name] = []
+                models[model_name].append(fmt)
+        return models
+
+class CameraManager:
+    """Менеджер для работы с камерами через libirimager.dll"""
+    
+    def __init__(self):
+        self.libir = None
+        self.formats_parser = FormatsDefParser()
+        self.current_format_index = 0
+        self.available_formats = []
+        
+    def init_library(self):
+        """Инициализирует библиотеку libirimager.dll"""
+        try:
+            self.libir = ct.CDLL('.\libirimager.dll')
+            
+            # Определяем прототипы функций
+            self.libir.evo_irimager_usb_init.argtypes = [ct.c_char_p, ct.c_char_p, ct.c_char_p]
+            self.libir.evo_irimager_usb_init.restype = ct.c_int
+            
+            self.libir.evo_irimager_get_thermal_image_size.argtypes = [ct.POINTER(ct.c_int), ct.POINTER(ct.c_int)]
+            self.libir.evo_irimager_get_thermal_image_size.restype = None
+            
+            self.libir.evo_irimager_get_palette_image_size.argtypes = [ct.POINTER(ct.c_int), ct.POINTER(ct.c_int)]
+            self.libir.evo_irimager_get_palette_image_size.restype = None
+            
+            self.libir.evo_irimager_get_thermal_palette_image_metadata.argtypes = [
+                ct.c_int, ct.c_int, ct.POINTER(ct.c_ushort),
+                ct.c_int, ct.c_int, ct.POINTER(ct.c_ubyte),
+                ct.POINTER(EvoIRFrameMetadata)
+            ]
+            self.libir.evo_irimager_get_thermal_palette_image_metadata.restype = ct.c_int
+            
+            self.libir.evo_irimager_set_palette.argtypes = [ct.c_int]
+            self.libir.evo_irimager_set_palette.restype = ct.c_int
+            
+            self.libir.evo_irimager_set_shutter_mode.argtypes = [ct.c_int]
+            self.libir.evo_irimager_set_shutter_mode.restype = ct.c_int
+            
+            self.libir.evo_irimager_trigger_shutter_flag.argtypes = []
+            self.libir.evo_irimager_trigger_shutter_flag.restype = ct.c_int
+            
+            self.libir.evo_irimager_to_palette_save_png.argtypes = [
+                ct.POINTER(ct.c_ushort), ct.c_int, ct.c_int,
+                ct.c_char_p, ct.c_int, ct.c_int
+            ]
+            self.libir.evo_irimager_to_palette_save_png.restype = ct.c_int
+            
+            self.libir.evo_irimager_to_palette_save_png_high_precision.argtypes = [
+                ct.POINTER(ct.c_ushort), ct.c_int, ct.c_int,
+                ct.c_char_p, ct.c_int, ct.c_int, ct.c_short
+            ]
+            self.libir.evo_irimager_to_palette_save_png_high_precision.restype = ct.c_int
+            
+            self.libir.evo_irimager_terminate.argtypes = []
+            self.libir.evo_irimager_terminate.restype = None
+            
+            # Новые функции для получения информации о камере
+            self.libir.evo_irimager_get_serial.argtypes = [ct.POINTER(ct.c_uint)]
+            self.libir.evo_irimager_get_serial.restype = ct.c_int
+            
+            return True
+            
+        except Exception as e:
+            print(f"Ошибка загрузки libirimager.dll: {e}")
+            return False
+    
+    def init_camera(self, xml_path='generic.xml'):
+        """Инициализирует камеру с указанным XML-файлом"""
+        if not self.libir:
+            if not self.init_library():
+                return False
+        
+        try:
+            pathXml = xml_path.encode('utf-8')
+            pathFormat = b''
+            pathLog = b''
+            
+            ret = self.libir.evo_irimager_usb_init(pathXml, pathFormat, pathLog)
+            if ret != 0:
+                print(f"Ошибка инициализации камеры: {ret}")
+                return False
+            
+            # Получаем размеры изображения
+            thermal_width = ct.c_int()
+            thermal_height = ct.c_int()
+            self.libir.evo_irimager_get_thermal_image_size(ct.byref(thermal_width), ct.byref(thermal_height))
+            
+            palette_width = ct.c_int()
+            palette_height = ct.c_int()
+            self.libir.evo_irimager_get_palette_image_size(ct.byref(palette_width), ct.byref(palette_height))
+            
+            # Получаем серийный номер
+            serial = ct.c_uint()
+            ret = self.libir.evo_irimager_get_serial(ct.byref(serial))
+            if ret == 0:
+                print(f"Серийный номер камеры: {serial.value}")
+            else:
+                print("Не удалось получить серийный номер камеры")
+            
+            print(f"Thermal size: {thermal_width.value}x{thermal_height.value}")
+            print(f"Palette size: {palette_width.value}x{palette_height.value}")
+            
+            # Определяем доступные форматы для этого разрешения
+            self.available_formats = self.formats_parser.get_formats_by_resolution(
+                thermal_width.value, thermal_height.value
+            )
+            
+            # Если не нашли точного совпадения, используем все форматы
+            if not self.available_formats:
+                self.available_formats = self.formats_parser.get_all_formats()
+                print("Точное совпадение не найдено, используются все доступные форматы")
+            
+            return {
+                'thermal_width': thermal_width,
+                'thermal_height': thermal_height,
+                'palette_width': palette_width,
+                'palette_height': palette_height,
+                'serial': serial.value if ret == 0 else 0
+            }
+            
+        except Exception as e:
+            print(f"Ошибка инициализации камеры: {e}")
+            return False
+    
+    def deinit_camera(self):
+        """Освобождает ресурсы камеры"""
+        if self.libir:
+            self.libir.evo_irimager_terminate()
+
 class PaletteManager:
     """Управление цветовыми палитрами камеры"""
     
@@ -46,8 +321,8 @@ class PaletteManager:
     DEFAULT_PALETTE_ID = 6
     SCALING_MODE_MINMAX = 2
     
-    def __init__(self, libir=None):
-        self.libir = libir
+    def __init__(self, camera_manager=None):
+        self.camera_manager = camera_manager
     
     def get_palette_id(self, palette_name):
         """Возвращает ID палитры по имени"""
@@ -59,11 +334,11 @@ class PaletteManager:
     
     def set_palette(self, palette_name):
         """Устанавливает цветовую палитру для камеры"""
-        if not self.libir:
+        if not self.camera_manager or not self.camera_manager.libir:
             return False
             
         palette_id = self.get_palette_id(palette_name)
-        ret = self.libir.evo_irimager_set_palette(palette_id)
+        ret = self.camera_manager.libir.evo_irimager_set_palette(palette_id)
         return ret == 0
 
 class ThermalCameraApp(QMainWindow):
@@ -72,11 +347,19 @@ class ThermalCameraApp(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Optris PI 640 Viewer")
+        self.setWindowTitle("Optris Thermal Camera Viewer")
         self.setGeometry(100, 100, 1200, 700)
         
-        # Инициализируем менеджер палитр
-        self.palette_manager = PaletteManager()
+        # Инициализируем менеджеры
+        self.camera_manager = CameraManager()
+        self.palette_manager = PaletteManager(self.camera_manager)
+        self.formats_parser = FormatsDefParser()
+        
+        debug_info = self.formats_parser.get_filtered_formats_info()
+        if 'error' not in debug_info:
+            print(f"Форматы: всего {debug_info['total_formats']}, "
+                f"устаревших {debug_info['deprecated_count']}, "
+                f"отфильтровано {debug_info['filtered_formats']}")
         
         # Загружаем шаблон XML при инициализации
         self.xml_template = self.load_xml_template()
@@ -109,14 +392,13 @@ class ThermalCameraApp(QMainWindow):
         camera_group.setLayout(camera_layout)
         right_layout.addWidget(camera_group)
         
-        # Добавляем выбор разрешения видеопотока
-        camera_layout.addWidget(QLabel("Разрешение видеопотока:", self))
+        # Информация о камере
+        self.camera_info_label = QLabel("Камера: не определена")
+        camera_layout.addWidget(self.camera_info_label)
+        
+        # Добавляем выбор формата видеопотока
+        camera_layout.addWidget(QLabel("Формат видеопотока:", self))
         self.resolution_combo = QComboBox(self)
-        self.resolution_combo.addItems([
-            "640x480 @ 32Hz (полный кадр)",
-            "640x120 @ 125Hz (высокая частота)"
-        ])
-        self.resolution_combo.currentIndexChanged.connect(self.change_video_format)
         camera_layout.addWidget(self.resolution_combo)
         
         # QCheckBox для управления автофлагом
@@ -133,7 +415,6 @@ class ThermalCameraApp(QMainWindow):
         # Создаем выпадающий список для выбора палитры
         camera_layout.addWidget(QLabel("Цветовая палитра:", self))
         self.palette_combo = QComboBox(self)
-        # Используем менеджер палитр для получения списка доступных палитр
         self.palette_combo.addItems(self.palette_manager.get_available_palettes())
         self.palette_combo.setCurrentText("Iron")
         self.palette_combo.currentTextChanged.connect(self.set_palette)
@@ -143,7 +424,7 @@ class ThermalCameraApp(QMainWindow):
         self.flag_label = QLabel("Состояние флага: --")
         camera_layout.addWidget(self.flag_label)
         
-        # Групка для метаданных
+        # Группа для метаданных
         meta_group = QGroupBox("Метаданные")
         meta_layout = QVBoxLayout()
         meta_group.setLayout(meta_layout)
@@ -317,62 +598,125 @@ class ThermalCameraApp(QMainWindow):
   <use_external_probe>0</use_external_probe>
 </imager>'''
 
-    def change_video_format(self, index):
-        """Изменяет формат видео потока"""
-        self.timer.stop()
-        self.record_timer.stop()
-        
-        if self.recording:
-            self.stop_video_recording()
-        
-        if index == 0:
-            videoformatindex = 0
-            framerate = 32.0
-        else:
-            videoformatindex = 1
-            framerate = 125.0
-        
-        new_xml = re.sub(
-            r'<videoformatindex>\d+</videoformatindex>',
-            f'<videoformatindex>{videoformatindex}</videoformatindex>',
-            self.xml_template
-        )
-        new_xml = re.sub(
-            r'<framerate>[\d.]+</framerate>',
-            f'<framerate>{framerate}</framerate>',
-            new_xml
+    def detect_camera_model(self):
+        """Определяет модель камеры на основе разрешения и доступных форматов"""
+        matching_formats = self.formats_parser.get_formats_by_resolution(
+            self.thermal_width.value, self.thermal_height.value
         )
         
-        temp_xml_path = 'temp_generic.xml'
-        try:
-            with open(temp_xml_path, 'w') as f:
-                f.write(new_xml)
-        except Exception as e:
-            print(f"Ошибка создания временного XML-файла: {e}")
+        if matching_formats:
+            # Берем первую подходящую модель
+            name_parts = matching_formats[0]['name'].split()
+            return name_parts[0] if name_parts else "Неизвестная"
+        
+        return "Неизвестная модель"
+
+    def update_available_formats(self):
+        """Обновляет список доступных форматов в UI"""
+        self.resolution_combo.clear()
+        
+        # Группируем форматы по моделям для лучшего отображения
+        grouped_formats = self.formats_parser.get_formats_grouped_by_model()
+        
+        for model_name, formats in grouped_formats.items():
+            for fmt in formats:
+                display_name = f"{model_name}: {fmt['name'].split(' ', 1)[1] if ' ' in fmt['name'] else fmt['name']}"
+                self.resolution_combo.addItem(display_name, fmt)
+        
+        # Подключаем обработчик изменения формата
+        self.resolution_combo.currentIndexChanged.connect(self.on_format_changed)
+
+    def on_format_changed(self, index):
+        """Обработчик изменения формата видео"""
+        if index < 0:
+            return
+            
+        format_data = self.resolution_combo.itemData(index)
+        if not format_data:
             return
         
-        self.deinit_camera()
-        if not self.init_camera(xml_path=temp_xml_path):
-            print("Ошибка переинициализации камеры")
-            self.deinit_camera()
-            self.init_camera()
+        # Здесь должна быть логика переключения формата через XML
+        print(f"Выбран формат: {format_data['name']}")
+
+    def init_camera(self, xml_path='generic.xml'):
+        """Инициализирует камеру и обновляет UI"""
+        camera_info = self.camera_manager.init_camera(xml_path)
+        if not camera_info:
+            return False
         
-        self.timer.start(100)
-        self.record_timer.start()
+        self.thermal_width = camera_info['thermal_width']
+        self.thermal_height = camera_info['thermal_height']
+        self.palette_width = camera_info['palette_width']
+        self.palette_height = camera_info['palette_height']
         
-        try:
-            os.remove(temp_xml_path)
-        except:
-            pass
+        # Обновляем информацию о камере
+        model_name = self.detect_camera_model()
+        self.camera_info_label.setText(
+            f"Модель: {model_name}\n"
+            f"Разрешение: {self.thermal_width.value}x{self.thermal_height.value}\n"
+            f"Серийный: {camera_info['serial']}"
+        )
+        
+        # Обновляем доступные форматы
+        self.update_available_formats()
+        
+        # Буферы для данных
+        self.np_thermal = np.zeros([self.thermal_width.value * self.thermal_height.value], dtype=np.uint16)
+        self.np_img = np.zeros([self.palette_width.value * self.palette_height.value * 3], dtype=np.uint8)
+        self.metadata = EvoIRFrameMetadata()
+        
+        # Установка начальной палитры
+        self.set_palette(self.palette_combo.currentText())
+        
+        # Установка начального режима затвора
+        ret = self.camera_manager.libir.evo_irimager_set_shutter_mode(1)
+        if ret != 0:
+            print(f"Ошибка установки начального режима затвора: {ret}")
+        
+        return True
+
+    def deinit_camera(self):
+        """Освобождает ресурсы камеры"""
+        self.camera_manager.deinit_camera()
+
+    def set_palette(self, palette_name):
+        """Устанавливает цветовую палитру для камеры"""
+        success = self.palette_manager.set_palette(palette_name)
+        if not success:
+            print(f"Ошибка установки палитры '{palette_name}'")
+        else:
+            print(f"Установлена палитра: {palette_name}")
+
+    def toggle_auto_calib(self, state):
+        """Включает/выключает автоматическую калибровку"""
+        if not hasattr(self, 'camera_manager') or not self.camera_manager.libir:
+            return
+            
+        shutter_mode = self.SHUTTER_MODE_AUTO if state == 2 else self.SHUTTER_MODE_MANUAL
+        
+        ret = self.camera_manager.libir.evo_irimager_set_shutter_mode(shutter_mode)
+        if ret != 0:
+            print(f"Ошибка установки режима затвора: {ret}")
+        else:
+            mode = "Автоматический" if shutter_mode == 1 else "Ручной"
+            print(f"Установлен режим затвора: {mode}")
+
+    def trigger_calibration(self):
+        """Ручной запуск калибровки"""
+        ret = self.camera_manager.libir.evo_irimager_trigger_shutter_flag()
+        if ret != 0:
+            print(f"Ошибка запуска калибровки: {ret}")
+        else:
+            print("Запущена ручная калибровка")
 
     def run_save_speed_test(self):
         """Запускает тест скорости сохранения разными методами"""
-        if not hasattr(self, 'libir'):
+        if not hasattr(self, 'camera_manager') or not self.camera_manager.libir:
             QMessageBox.warning(self, "Ошибка", "Камера не инициализирована")
             return
         
         try:
-            ret = self.libir.evo_irimager_get_thermal_palette_image_metadata(
+            ret = self.camera_manager.libir.evo_irimager_get_thermal_palette_image_metadata(
                 self.thermal_width, self.thermal_height, 
                 self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)), 
                 self.palette_width, self.palette_height, 
@@ -381,7 +725,7 @@ class ThermalCameraApp(QMainWindow):
             )
             
             if ret != 0:
-                QMessageBox.warning(self, "Ошибка", "Не удалось получить кадр от камеря")
+                QMessageBox.warning(self, "Ошибка", "Не удалось получить кадр от камеры")
                 return
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка получения кадра: {e}")
@@ -402,7 +746,7 @@ class ThermalCameraApp(QMainWindow):
             try:
                 start_time = time.time()
                 filename_bytes = test_filename.encode('utf-8')
-                ret = self.libir.evo_irimager_to_palette_save_png(
+                ret = self.camera_manager.libir.evo_irimager_to_palette_save_png(
                     thermal_data.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                     self.thermal_width.value,
                     self.thermal_height.value,
@@ -439,7 +783,7 @@ class ThermalCameraApp(QMainWindow):
             try:
                 start_time = time.time()
                 filename_bytes = test_filename.encode('utf-8')
-                ret = self.libir.evo_irimager_to_palette_save_png_high_precision(
+                ret = self.camera_manager.libir.evo_irimager_to_palette_save_png_high_precision(
                     thermal_data.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                     self.thermal_width.value,
                     self.thermal_height.value,
@@ -560,28 +904,6 @@ class ThermalCameraApp(QMainWindow):
             self.record_duration = int(time.time() - self.record_start_time)
             self.record_time_label.setText(f"Время записи: {self.record_duration} сек")
 
-    def toggle_auto_calib(self, state):
-        """Включает/выключает автоматическую калибровку"""
-        if not hasattr(self, 'libir'):
-            return
-            
-        shutter_mode = self.SHUTTER_MODE_AUTO if state == 2 else self.SHUTTER_MODE_MANUAL
-        
-        ret = self.libir.evo_irimager_set_shutter_mode(shutter_mode)
-        if ret != 0:
-            print(f"Ошибка установки режима затвора: {ret}")
-        else:
-            mode = "Автоматический" if shutter_mode == 1 else "Ручной"
-            print(f"Установлен режим затвора: {mode}")
-
-    def trigger_calibration(self):
-        """Ручной запуск калибровки"""
-        ret = self.libir.evo_irimager_trigger_shutter_flag()
-        if ret != 0:
-            print(f"Ошибка запуска калибровки: {ret}")
-        else:
-            print("Запущена ручная калибровка")
-
     def save_snapshot(self):
         """Сохраняет выбранные типы данных по нажатию кнопки"""
         try:
@@ -619,7 +941,7 @@ class ThermalCameraApp(QMainWindow):
                     # Используем менеджер палитр для получения ID
                     palette_id = self.palette_manager.get_palette_id(palette_name)
                     
-                    ret = self.libir.evo_irimager_to_palette_save_png(
+                    ret = self.camera_manager.libir.evo_irimager_to_palette_save_png(
                         self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                         self.thermal_width.value,
                         self.thermal_height.value,
@@ -647,7 +969,7 @@ class ThermalCameraApp(QMainWindow):
                     # Используем менеджер палитр для получения ID
                     palette_id = self.palette_manager.get_palette_id(palette_name)
                     
-                    ret = self.libir.evo_irimager_to_palette_save_png_high_precision(
+                    ret = self.camera_manager.libir.evo_irimager_to_palette_save_png_high_precision(
                         self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)),
                         self.thermal_width.value,
                         self.thermal_height.value,
@@ -686,118 +1008,11 @@ class ThermalCameraApp(QMainWindow):
             
         except Exception as e:
             print(f"Ошибка сохранения данных: {e}")
-    
-    def init_camera(self, xml_path='generic.xml'):
-        """Инициализирует камеру с указанным XML-файлом"""
-        try:
-            self.libir = ct.CDLL('.\libirimager.dll')
-            
-            self.libir.evo_irimager_usb_init.argtypes = [ct.c_char_p, ct.c_char_p, ct.c_char_p]
-            self.libir.evo_irimager_usb_init.restype = ct.c_int
-            
-            self.libir.evo_irimager_get_thermal_image_size.argtypes = [ct.POINTER(ct.c_int), ct.POINTER(ct.c_int)]
-            self.libir.evo_irimager_get_thermal_image_size.restype = None
-            
-            self.libir.evo_irimager_get_palette_image_size.argtypes = [ct.POINTER(ct.c_int), ct.POINTER(ct.c_int)]
-            self.libir.evo_irimager_get_palette_image_size.restype = None
-            
-            self.libir.evo_irimager_get_thermal_palette_image_metadata.argtypes = [
-                ct.c_int, ct.c_int, ct.POINTER(ct.c_ushort),
-                ct.c_int, ct.c_int, ct.POINTER(ct.c_ubyte),
-                ct.POINTER(EvoIRFrameMetadata)
-            ]
-            self.libir.evo_irimager_get_thermal_palette_image_metadata.restype = ct.c_int
-            
-            self.libir.evo_irimager_set_palette.argtypes = [ct.c_int]
-            self.libir.evo_irimager_set_palette.restype = ct.c_int
-            
-            self.libir.evo_irimager_set_shutter_mode.argtypes = [ct.c_int]
-            self.libir.evo_irimager_set_shutter_mode.restype = ct.c_int
-            
-            self.libir.evo_irimager_trigger_shutter_flag.argtypes = []
-            self.libir.evo_irimager_trigger_shutter_flag.restype = ct.c_int
-            
-            self.libir.evo_irimager_to_palette_save_png.argtypes = [
-                ct.POINTER(ct.c_ushort), ct.c_int, ct.c_int,
-                ct.c_char_p, ct.c_int, ct.c_int
-            ]
-            self.libir.evo_irimager_to_palette_save_png.restype = ct.c_int
-            
-            self.libir.evo_irimager_to_palette_save_png_high_precision.argtypes = [
-                ct.POINTER(ct.c_ushort), ct.c_int, ct.c_int,
-                ct.c_char_p, ct.c_int, ct.c_int, ct.c_short
-            ]
-            self.libir.evo_irimager_to_palette_save_png_high_precision.restype = ct.c_int
-            
-            self.libir.evo_irimager_terminate.argtypes = []
-            self.libir.evo_irimager_terminate.restype = None
-            
-            pathXml = xml_path.encode('utf-8')
-            pathFormat = b''
-            pathLog = b''
-            
-            ret = self.libir.evo_irimager_usb_init(pathXml, pathFormat, pathLog)
-            if ret != 0:
-                print(f"Ошибка инициализации: {ret}")
-                return False
-            
-            self.thermal_width = ct.c_int()
-            self.thermal_height = ct.c_int()
-            self.libir.evo_irimager_get_thermal_image_size(ct.byref(self.thermal_width), ct.byref(self.thermal_height))
-            print(f"Thermal size: {self.thermal_width.value}x{self.thermal_height.value}")
-            
-            self.palette_width = ct.c_int()
-            self.palette_height = ct.c_int()
-            self.libir.evo_irimager_get_palette_image
-            self.libir.evo_irimager_get_palette_image_size(ct.byref(self.palette_width), ct.byref(self.palette_height))
-            print(f"Palette size: {self.palette_width.value}x{self.palette_height.value}")
-            
-            # Обновляем лейбл с разрешением
-            self.resolution_label.setText(
-                f"Разрешение: {self.thermal_width.value}x{self.thermal_height.value} (Thermal)\n"
-                f"Палитра: {self.palette_width.value}x{self.palette_height.value} (RGB)"
-            )
-            
-            # Буферы для данных
-            self.np_thermal = np.zeros([self.thermal_width.value * self.thermal_height.value], dtype=np.uint16)
-            self.np_img = np.zeros([self.palette_width.value * self.palette_height.value * 3], dtype=np.uint8)
-            self.metadata = EvoIRFrameMetadata()
-            
-            # Передаем библиотеку в менеджер палитр
-            self.palette_manager.libir = self.libir
-            
-            # Установка начальной палитры
-            self.set_palette(self.palette_combo.currentText())
-            
-            # Установка начального режима затвора
-            ret = self.libir.evo_irimager_set_shutter_mode(1)
-            if ret != 0:
-                print(f"Ошибка установки начального режима затвора: {ret}")
-            
-            return True
-            
-        except Exception as e:
-            print(f"Ошибка инициализации: {e}")
-            return False
-
-    def deinit_camera(self):
-        """Освобождает ресурсы камеры"""
-        if hasattr(self, 'libir'):
-            self.libir.evo_irimager_terminate()
-
-    def set_palette(self, palette_name):
-        """Устанавливает цветовую палитру для камеры"""
-        # Используем менеджер палитр для установки
-        success = self.palette_manager.set_palette(palette_name)
-        if not success:
-            print(f"Ошибка установки палитры '{palette_name}'")
-        else:
-            print(f"Установлена палитра: {palette_name}")
 
     def update_frame(self):
         try:
             # Получение изображения
-            ret = self.libir.evo_irimager_get_thermal_palette_image_metadata(
+            ret = self.camera_manager.libir.evo_irimager_get_thermal_palette_image_metadata(
                 self.thermal_width, self.thermal_height, 
                 self.np_thermal.ctypes.data_as(ct.POINTER(ct.c_ushort)), 
                 self.palette_width, self.palette_height, 
@@ -882,6 +1097,12 @@ class ThermalCameraApp(QMainWindow):
             # Временная метка
             self.timestamp_label.setText(f"Временная метка: {self.metadata.timestamp}")
             
+            # Обновляем лейбл с разрешением
+            self.resolution_label.setText(
+                f"Разрешение: {self.thermal_width.value}x{self.thermal_height.value} (Thermal)\n"
+                f"Палитра: {self.palette_width.value}x{self.palette_height.value} (RGB)"
+            )
+            
         except Exception as e:
             # Выводим более подробную информацию об ошибке
             import traceback
@@ -896,8 +1117,8 @@ class ThermalCameraApp(QMainWindow):
         if self.recording:
             self.stop_video_recording()
             
-        if hasattr(self, 'libir'):
-            self.libir.evo_irimager_terminate()
+        if hasattr(self, 'camera_manager'):
+            self.camera_manager.deinit_camera()
         super().closeEvent(event)
 
 if __name__ == "__main__":
