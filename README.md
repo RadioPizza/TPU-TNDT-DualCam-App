@@ -128,7 +128,7 @@ _Здесь будет описана ключевая структура пап
 
 **2. Склонируйте репозиторий**
    ```bash
-   git clone https://github.com/your-username/TPU-TNDT-DualCam-App.git
+   git clone https://github.com/RadioPizza/TPU-TNDT-DualCam-App.git
    ```
 
 **3. Настройте виртуальное окружение с интерпретатором  Python 3.10**
