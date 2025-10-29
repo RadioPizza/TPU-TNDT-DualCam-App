@@ -1,332 +1,677 @@
-# -*- coding: utf-8 -*-
+"""
+Модуль настроек приложения с графическим интерфейсом
+Содержит классы для работы с настройками камер, тепловизора и интерфейса
+"""
 
-################################################################################
-## Form generated from reading UI file 'SettingsWindow.ui'
-##
-## Created by: Qt User Interface Compiler version 6.6.0
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
+# Импорты с псевдонимами для лучшей читаемости и избежания конфликтов
+from PySide6.QtCore import Qt as QtCore
+from PySide6.QtWidgets import (
+    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, 
+    QScrollArea, QWidget, QLineEdit, QComboBox, QFormLayout, 
+    QGraphicsView, QGraphicsScene, QGraphicsRectItem, QApplication
+)
+from PySide6.QtGui import QIntValidator, QBrush, QColor, QPainter
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFrame,
-    QGraphicsView, QLabel, QPushButton, QSizePolicy,
-    QSlider, QWidget)
-import res_rs
 
-class Ui_SettingsWindow(object):
-    def setupUi(self, SettingsWindow):
-        if not SettingsWindow.objectName():
-            SettingsWindow.setObjectName(u"SettingsWindow")
-        SettingsWindow.resize(1920, 1200)
-        SettingsWindow.setMinimumSize(QSize(1920, 1200))
-        SettingsWindow.setMaximumSize(QSize(1920, 1200))
-        SettingsWindow.setStyleSheet(u"")
-        SettingsWindow.setInputMethodHints(Qt.ImhNone)
-        self.SettingsTitle = QLabel(SettingsWindow)
-        self.SettingsTitle.setObjectName(u"SettingsTitle")
-        self.SettingsTitle.setGeometry(QRect(120, 50, 600, 100))
-        self.SettingsTitle.setStyleSheet(u"")
-        self.SettingsUIFrame = QFrame(SettingsWindow)
-        self.SettingsUIFrame.setObjectName(u"SettingsUIFrame")
-        self.SettingsUIFrame.setGeometry(QRect(992, 742, 400, 268))
-        self.SettingsUIFrame.setStyleSheet(u"")
-        self.SettingsUIFrame.setFrameShape(QFrame.StyledPanel)
-        self.SettingsUIFrame.setFrameShadow(QFrame.Raised)
-        self.SettingsThemeLabel = QLabel(self.SettingsUIFrame)
-        self.SettingsThemeLabel.setObjectName(u"SettingsThemeLabel")
-        self.SettingsThemeLabel.setGeometry(QRect(42, 170, 350, 24))
-        self.SettingsThemeLabel.setStyleSheet(u"")
-        self.SettingsThemeComboBox = QComboBox(self.SettingsUIFrame)
-        self.SettingsThemeComboBox.addItem("")
-        self.SettingsThemeComboBox.addItem("")
-        self.SettingsThemeComboBox.setObjectName(u"SettingsThemeComboBox")
-        self.SettingsThemeComboBox.setGeometry(QRect(32, 200, 250, 32))
-        self.SettingsThemeComboBox.setStyleSheet(u"")
-        self.SettingsLangLabel = QLabel(self.SettingsUIFrame)
-        self.SettingsLangLabel.setObjectName(u"SettingsLangLabel")
-        self.SettingsLangLabel.setGeometry(QRect(42, 90, 350, 24))
-        self.SettingsLangLabel.setStyleSheet(u"")
-        self.SettingsLangComboBox = QComboBox(self.SettingsUIFrame)
-        self.SettingsLangComboBox.addItem("")
-        self.SettingsLangComboBox.addItem("")
-        self.SettingsLangComboBox.setObjectName(u"SettingsLangComboBox")
-        self.SettingsLangComboBox.setGeometry(QRect(32, 120, 250, 32))
-        self.SettingsLangComboBox.setStyleSheet(u"")
-        self.SettingsUITitle = QLabel(self.SettingsUIFrame)
-        self.SettingsUITitle.setObjectName(u"SettingsUITitle")
-        self.SettingsUITitle.setGeometry(QRect(32, 40, 350, 32))
-        self.SettingsUITitle.setStyleSheet(u"")
-        self.SettingsHeaterFrame = QFrame(SettingsWindow)
-        self.SettingsHeaterFrame.setObjectName(u"SettingsHeaterFrame")
-        self.SettingsHeaterFrame.setGeometry(QRect(992, 542, 400, 170))
-        self.SettingsHeaterFrame.setStyleSheet(u"")
-        self.SettingsHeaterFrame.setFrameShape(QFrame.StyledPanel)
-        self.SettingsHeaterFrame.setFrameShadow(QFrame.Raised)
-        self.SettingsHeaterLabel = QLabel(self.SettingsHeaterFrame)
-        self.SettingsHeaterLabel.setObjectName(u"SettingsHeaterLabel")
-        self.SettingsHeaterLabel.setGeometry(QRect(32, 40, 350, 32))
-        self.SettingsHeaterLabel.setStyleSheet(u"")
-        self.SettingsStopButton = QPushButton(self.SettingsHeaterFrame)
-        self.SettingsStopButton.setObjectName(u"SettingsStopButton")
-        self.SettingsStopButton.setGeometry(QRect(170, 90, 120, 40))
-        self.SettingsStopButton.setStyleSheet(u"")
-        self.SettingsHeatButton = QPushButton(self.SettingsHeaterFrame)
-        self.SettingsHeatButton.setObjectName(u"SettingsHeatButton")
-        self.SettingsHeatButton.setGeometry(QRect(32, 90, 120, 40))
-        self.SettingsHeatButton.setStyleSheet(u"")
-        self.SettingsCamFrame = QFrame(SettingsWindow)
-        self.SettingsCamFrame.setObjectName(u"SettingsCamFrame")
-        self.SettingsCamFrame.setGeometry(QRect(120, 610, 800, 400))
-        self.SettingsCamFrame.setStyleSheet(u"")
-        self.SettingsCamFrame.setFrameShape(QFrame.StyledPanel)
-        self.SettingsCamFrame.setFrameShadow(QFrame.Raised)
-        self.SettingsCamResLabel = QLabel(self.SettingsCamFrame)
-        self.SettingsCamResLabel.setObjectName(u"SettingsCamResLabel")
-        self.SettingsCamResLabel.setGeometry(QRect(42, 170, 350, 24))
-        self.SettingsCamResLabel.setStyleSheet(u"")
-        self.SettingsCamResComboBox = QComboBox(self.SettingsCamFrame)
-        self.SettingsCamResComboBox.addItem("")
-        self.SettingsCamResComboBox.setObjectName(u"SettingsCamResComboBox")
-        self.SettingsCamResComboBox.setGeometry(QRect(32, 200, 180, 32))
-        self.SettingsCamResComboBox.setStyleSheet(u"")
-        self.SettingsCamFPSComboBox = QComboBox(self.SettingsCamFrame)
-        self.SettingsCamFPSComboBox.addItem("")
-        self.SettingsCamFPSComboBox.addItem("")
-        self.SettingsCamFPSComboBox.setObjectName(u"SettingsCamFPSComboBox")
-        self.SettingsCamFPSComboBox.setGeometry(QRect(32, 280, 120, 32))
-        self.SettingsCamComboBox = QComboBox(self.SettingsCamFrame)
-        self.SettingsCamComboBox.addItem("")
-        self.SettingsCamComboBox.setObjectName(u"SettingsCamComboBox")
-        self.SettingsCamComboBox.setGeometry(QRect(32, 120, 250, 32))
-        self.SettingsCamComboBox.setStyleSheet(u"")
-        self.SettingsCamComboBox.setIconSize(QSize(16, 16))
-        self.SettingsCamFPSLabel = QLabel(self.SettingsCamFrame)
-        self.SettingsCamFPSLabel.setObjectName(u"SettingsCamFPSLabel")
-        self.SettingsCamFPSLabel.setGeometry(QRect(42, 250, 350, 24))
-        self.SettingsCamFPSLabel.setStyleSheet(u"")
-        self.SettingsCamConnectButton = QPushButton(self.SettingsCamFrame)
-        self.SettingsCamConnectButton.setObjectName(u"SettingsCamConnectButton")
-        self.SettingsCamConnectButton.setGeometry(QRect(290, 120, 96, 32))
-        self.SettingsCamConnectButton.setStyleSheet(u"")
-        self.SettingsCamTitle = QLabel(self.SettingsCamFrame)
-        self.SettingsCamTitle.setObjectName(u"SettingsCamTitle")
-        self.SettingsCamTitle.setGeometry(QRect(32, 40, 400, 32))
-        self.SettingsCamTitle.setStyleSheet(u"")
-        self.SettingsCamView = QGraphicsView(self.SettingsCamFrame)
-        self.SettingsCamView.setObjectName(u"SettingsCamView")
-        self.SettingsCamView.setGeometry(QRect(400, 71, 381, 241))
-        self.SettingsCamView.setStyleSheet(u"")
-        self.SettingsCamLabel = QLabel(self.SettingsCamFrame)
-        self.SettingsCamLabel.setObjectName(u"SettingsCamLabel")
-        self.SettingsCamLabel.setGeometry(QRect(42, 90, 350, 24))
-        self.SettingsCamLabel.setStyleSheet(u"")
-        self.SettingsCamLabel.raise_()
-        self.SettingsCamResLabel.raise_()
-        self.SettingsCamResComboBox.raise_()
-        self.SettingsCamFPSComboBox.raise_()
-        self.SettingsCamComboBox.raise_()
-        self.SettingsCamFPSLabel.raise_()
-        self.SettingsCamConnectButton.raise_()
-        self.SettingsCamTitle.raise_()
-        self.SettingsCamView.raise_()
-        self.SettingsTCamFrame = QFrame(SettingsWindow)
-        self.SettingsTCamFrame.setObjectName(u"SettingsTCamFrame")
-        self.SettingsTCamFrame.setGeometry(QRect(120, 160, 800, 420))
-        self.SettingsTCamFrame.setStyleSheet(u"")
-        self.SettingsTCamFrame.setFrameShape(QFrame.StyledPanel)
-        self.SettingsTCamFrame.setFrameShadow(QFrame.Raised)
-        self.SettingsTCamConnectButton = QPushButton(self.SettingsTCamFrame)
-        self.SettingsTCamConnectButton.setObjectName(u"SettingsTCamConnectButton")
-        self.SettingsTCamConnectButton.setGeometry(QRect(290, 120, 96, 32))
-        self.SettingsTCamConnectButton.setStyleSheet(u"")
-        self.SettingsTCamResLabel = QLabel(self.SettingsTCamFrame)
-        self.SettingsTCamResLabel.setObjectName(u"SettingsTCamResLabel")
-        self.SettingsTCamResLabel.setGeometry(QRect(42, 170, 350, 24))
-        self.SettingsTCamResLabel.setStyleSheet(u"")
-        self.SettingsTCamLabel = QLabel(self.SettingsTCamFrame)
-        self.SettingsTCamLabel.setObjectName(u"SettingsTCamLabel")
-        self.SettingsTCamLabel.setGeometry(QRect(42, 90, 350, 24))
-        self.SettingsTCamLabel.setStyleSheet(u"")
-        self.SettingsTCamComboBox = QComboBox(self.SettingsTCamFrame)
-        self.SettingsTCamComboBox.setObjectName(u"SettingsTCamComboBox")
-        self.SettingsTCamComboBox.setGeometry(QRect(32, 120, 250, 32))
-        self.SettingsTCamTitle = QLabel(self.SettingsTCamFrame)
-        self.SettingsTCamTitle.setObjectName(u"SettingsTCamTitle")
-        self.SettingsTCamTitle.setGeometry(QRect(32, 40, 400, 32))
-        self.SettingsTCamTitle.setStyleSheet(u"")
-        self.SettingsTCamFPSLabel = QLabel(self.SettingsTCamFrame)
-        self.SettingsTCamFPSLabel.setObjectName(u"SettingsTCamFPSLabel")
-        self.SettingsTCamFPSLabel.setGeometry(QRect(42, 250, 350, 24))
-        self.SettingsTCamFPSLabel.setStyleSheet(u"")
-        self.SettingsTCamView = QGraphicsView(self.SettingsTCamFrame)
-        self.SettingsTCamView.setObjectName(u"SettingsTCamView")
-        self.SettingsTCamView.setGeometry(QRect(400, 71, 381, 241))
-        self.SettingsTCamView.setStyleSheet(u"")
-        self.SettingsTCamResComboBox = QComboBox(self.SettingsTCamFrame)
-        self.SettingsTCamResComboBox.setObjectName(u"SettingsTCamResComboBox")
-        self.SettingsTCamResComboBox.setGeometry(QRect(32, 200, 180, 32))
-        self.SettingsTCamResComboBox.setStyleSheet(u"")
-        self.SettingsTCamFPSComboBox = QComboBox(self.SettingsTCamFrame)
-        self.SettingsTCamFPSComboBox.setObjectName(u"SettingsTCamFPSComboBox")
-        self.SettingsTCamFPSComboBox.setGeometry(QRect(32, 280, 150, 32))
-        self.SettingsTCamFPSComboBox.setStyleSheet(u"")
-        self.SettingsTCamCalibrationButton = QPushButton(self.SettingsTCamFrame)
-        self.SettingsTCamCalibrationButton.setObjectName(u"SettingsTCamCalibrationButton")
-        self.SettingsTCamCalibrationButton.setGeometry(QRect(485, 340, 96, 32))
-        self.SettingsTCamCalibrationButton.setStyleSheet(u"")
-        self.SettingsTCamFocusButton = QPushButton(self.SettingsTCamFrame)
-        self.SettingsTCamFocusButton.setObjectName(u"SettingsTCamFocusButton")
-        self.SettingsTCamFocusButton.setGeometry(QRect(600, 340, 96, 32))
-        self.SettingsTCamFocusButton.setStyleSheet(u"")
-        self.SettingsTCamFPSComboBox.raise_()
-        self.SettingsTCamResComboBox.raise_()
-        self.SettingsTCamConnectButton.raise_()
-        self.SettingsTCamResLabel.raise_()
-        self.SettingsTCamLabel.raise_()
-        self.SettingsTCamComboBox.raise_()
-        self.SettingsTCamTitle.raise_()
-        self.SettingsTCamFPSLabel.raise_()
-        self.SettingsTCamView.raise_()
-        self.SettingsTCamCalibrationButton.raise_()
-        self.SettingsTCamFocusButton.raise_()
-        self.SettingsTestingFrame = QFrame(SettingsWindow)
-        self.SettingsTestingFrame.setObjectName(u"SettingsTestingFrame")
-        self.SettingsTestingFrame.setGeometry(QRect(992, 160, 800, 352))
-        self.SettingsTestingFrame.setStyleSheet(u"")
-        self.SettingsTestingFrame.setFrameShape(QFrame.StyledPanel)
-        self.SettingsTestingFrame.setFrameShadow(QFrame.Raised)
-        self.SettingsTestingDurationSlider = QSlider(self.SettingsTestingFrame)
-        self.SettingsTestingDurationSlider.setObjectName(u"SettingsTestingDurationSlider")
-        self.SettingsTestingDurationSlider.setGeometry(QRect(80, 120, 640, 32))
-        self.SettingsTestingDurationSlider.setStyleSheet(u"")
-        self.SettingsTestingDurationSlider.setOrientation(Qt.Horizontal)
-        self.SettingsHeatingDurationSlider = QSlider(self.SettingsTestingFrame)
-        self.SettingsHeatingDurationSlider.setObjectName(u"SettingsHeatingDurationSlider")
-        self.SettingsHeatingDurationSlider.setGeometry(QRect(80, 200, 640, 32))
-        self.SettingsHeatingDurationSlider.setStyleSheet(u"")
-        self.SettingsHeatingDurationSlider.setOrientation(Qt.Horizontal)
-        self.SettingsHeatingDurationLabel = QLabel(self.SettingsTestingFrame)
-        self.SettingsHeatingDurationLabel.setObjectName(u"SettingsHeatingDurationLabel")
-        self.SettingsHeatingDurationLabel.setGeometry(QRect(42, 170, 400, 24))
-        self.SettingsHeatingDurationLabel.setStyleSheet(u"color: #252525;\n"
-"font-size: 14px; ")
-        self.SettingsTestingTitle = QLabel(self.SettingsTestingFrame)
-        self.SettingsTestingTitle.setObjectName(u"SettingsTestingTitle")
-        self.SettingsTestingTitle.setGeometry(QRect(32, 40, 400, 32))
-        self.SettingsTestingTitle.setStyleSheet(u"")
-        self.SettingsTestingDurationLabel = QLabel(self.SettingsTestingFrame)
-        self.SettingsTestingDurationLabel.setObjectName(u"SettingsTestingDurationLabel")
-        self.SettingsTestingDurationLabel.setGeometry(QRect(42, 90, 400, 24))
-        self.SettingsTestingDurationLabel.setStyleSheet(u"")
-        self.SettingsRecordFPSLabel = QLabel(self.SettingsTestingFrame)
-        self.SettingsRecordFPSLabel.setObjectName(u"SettingsRecordFPSLabel")
-        self.SettingsRecordFPSLabel.setGeometry(QRect(42, 250, 400, 24))
-        self.SettingsRecordFPSLabel.setStyleSheet(u"")
-        self.SettingsRecordFPSComboBox = QComboBox(self.SettingsTestingFrame)
-        self.SettingsRecordFPSComboBox.addItem("")
-        self.SettingsRecordFPSComboBox.addItem("")
-        self.SettingsRecordFPSComboBox.addItem("")
-        self.SettingsRecordFPSComboBox.addItem("")
-        self.SettingsRecordFPSComboBox.addItem("")
-        self.SettingsRecordFPSComboBox.addItem("")
-        self.SettingsRecordFPSComboBox.addItem("")
-        self.SettingsRecordFPSComboBox.setObjectName(u"SettingsRecordFPSComboBox")
-        self.SettingsRecordFPSComboBox.setGeometry(QRect(32, 280, 120, 32))
-        self.SettingsHeatingDurationPlusButton = QPushButton(self.SettingsTestingFrame)
-        self.SettingsHeatingDurationPlusButton.setObjectName(u"SettingsHeatingDurationPlusButton")
-        self.SettingsHeatingDurationPlusButton.setGeometry(QRect(736, 200, 32, 32))
-        self.SettingsHeatingDurationPlusButton.setStyleSheet(u"")
-        self.SettingsTestingDurationPlusButton = QPushButton(self.SettingsTestingFrame)
-        self.SettingsTestingDurationPlusButton.setObjectName(u"SettingsTestingDurationPlusButton")
-        self.SettingsTestingDurationPlusButton.setGeometry(QRect(736, 120, 32, 32))
-        self.SettingsTestingDurationPlusButton.setStyleSheet(u"")
-        self.SettingsTestingDurationMinusButton = QPushButton(self.SettingsTestingFrame)
-        self.SettingsTestingDurationMinusButton.setObjectName(u"SettingsTestingDurationMinusButton")
-        self.SettingsTestingDurationMinusButton.setGeometry(QRect(32, 120, 32, 32))
-        self.SettingsTestingDurationMinusButton.setStyleSheet(u"")
-        self.SettingsHeatingDurationMinusButton = QPushButton(self.SettingsTestingFrame)
-        self.SettingsHeatingDurationMinusButton.setObjectName(u"SettingsHeatingDurationMinusButton")
-        self.SettingsHeatingDurationMinusButton.setGeometry(QRect(32, 200, 32, 32))
-        self.SettingsHeatingDurationMinusButton.setStyleSheet(u"")
-        self.SettingsHomeButton = QPushButton(SettingsWindow)
-        self.SettingsHomeButton.setObjectName(u"SettingsHomeButton")
-        self.SettingsHomeButton.setGeometry(QRect(1570, 1070, 240, 80))
-        self.SettingsHomeButton.setStyleSheet(u"")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons/home.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.SettingsHomeButton.setIcon(icon)
-        self.SettingsHomeButton.setIconSize(QSize(60, 60))
-        self.SettingsTitle.raise_()
-        self.SettingsUIFrame.raise_()
-        self.SettingsCamFrame.raise_()
-        self.SettingsTCamFrame.raise_()
-        self.SettingsTestingFrame.raise_()
-        self.SettingsHomeButton.raise_()
-        self.SettingsHeaterFrame.raise_()
+class CameraGraphicsView(QGraphicsView):
+    """
+    Кастомный вид для отображения видео с камеры с поддержкой соотношения сторон
+    
+    Attributes:
+        aspect_ratio (float): Соотношение сторон (ширина/высота) для поддержки
+    """
+    
+    def __init__(self, aspect_ratio, parent=None):
+        """
+        Инициализация вида камеры
+        
+        Args:
+            aspect_ratio (float): Соотношение сторон для отображения
+            parent (QWidget, optional): Родительский виджет. Defaults to None.
+        """
+        super().__init__(parent)
+        self.aspect_ratio = aspect_ratio
+        self._setup_view()
+        
+    def _setup_view(self):
+        """Настройка параметров отображения вида"""
+        self.setScene(QGraphicsScene(self))
+        self.setRenderHint(QPainter.Antialiasing)
+        self.setRenderHint(QPainter.SmoothPixmapTransform)
+        self.setHorizontalScrollBarPolicy(QtCore.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(QtCore.ScrollBarAlwaysOff)
+        self.setFrameShape(QFrame.NoFrame)
+        
+    def resizeEvent(self, event):
+        """
+        Обработчик изменения размера вида для поддержки соотношения сторон
+        
+        Args:
+            event (QResizeEvent): Событие изменения размера
+        """
+        super().resizeEvent(event)
+        # Поддерживаем соотношение сторон при изменении размера
+        if self.scene() and self.scene().items():
+            self.fitInView(self.scene().itemsBoundingRect(), QtCore.KeepAspectRatio)
 
-        self.retranslateUi(SettingsWindow)
 
-        QMetaObject.connectSlotsByName(SettingsWindow)
-    # setupUi
+class SettingsWindow(QDialog):
+    """
+    Окно настроек приложения
+    
+    Предоставляет интерфейс для настройки параметров тестирования, камер, 
+    тепловизора, нагревателя и интерфейса
+    """
+    
+    def __init__(self):
+        """Инициализация окна настроек"""
+        super().__init__()
+        self._setup_window_properties()
+        self.setup_ui()
+        
+    def _setup_window_properties(self):
+        """Настройка основных свойств окна"""
+        self.setWindowTitle("Настройки")
+        self.setModal(True)
+        self.setMinimumSize(1050, 600)
+        
+    def setup_ui(self):
+        """Основная настройка пользовательского интерфейса"""
+        # Главный layout окна
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(20)
+        
+        # Создание и добавление элементов интерфейса
+        header_layout = self._create_header()
+        main_layout.addLayout(header_layout)
+        
+        scroll_area = self._create_scroll_area()
+        main_layout.addWidget(scroll_area)
+        
+    def _create_header(self):
+        """
+        Создание заголовка окна с кнопкой возврата
+        
+        Returns:
+            QHBoxLayout: Layout заголовка
+        """
+        layout = QHBoxLayout()
+        
+        title = QLabel("Настройки")
+        title.setObjectName("StartTitle")
+        
+        home_btn = QPushButton("На главную")
+        home_btn.setObjectName("SettingsHomeButton")
+        home_btn.setFixedSize(120, 40)
+        home_btn.clicked.connect(self.close)
+        
+        layout.addWidget(title)
+        layout.addStretch()
+        layout.addWidget(home_btn)
+        
+        return layout
+        
+    def _create_scroll_area(self):
+        """
+        Создание области прокрутки для настроек
+        
+        Returns:
+            QScrollArea: Область прокрутки с содержимым настроек
+        """
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QFrame.NoFrame)
+        
+        # Контейнер для центрирования содержимого
+        center_widget = QWidget()
+        center_layout = QHBoxLayout(center_widget)
+        center_layout.setContentsMargins(0, 0, 0, 0)
+        
+        content_widget = QWidget()
+        self.content_layout = QVBoxLayout(content_widget)
+        self.content_layout.setAlignment(QtCore.AlignTop)
+        self.content_layout.setSpacing(25)
+        
+        # Создание секций настроек
+        self._create_testing_section()
+        self._create_camera_section()
+        self._create_thermal_camera_section()
+        self._create_heater_section()
+        self._create_interface_section()
+        
+        # Центрирование содержимого
+        center_layout.addStretch()
+        center_layout.addWidget(content_widget)
+        center_layout.addStretch()
+        
+        scroll_area.setWidget(center_widget)
+        return scroll_area
+        
+    def _create_testing_section(self):
+        """Создание секции настроек тестирования"""
+        frame = QFrame()
+        frame.setObjectName("SettingsTestingFrame")
+        frame.setMaximumWidth(1000)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
+        
+        title = QLabel("Настройки тестирования")
+        title.setObjectName("MainProcessLabel")
+        layout.addWidget(title)
+        
+        content_widget = self._create_testing_content()
+        layout.addWidget(content_widget)
+        self.content_layout.addWidget(frame)
+        
+    def _create_testing_content(self):
+        """
+        Создание содержимого секции тестирования
+        
+        Returns:
+            QWidget: Виджет с настройками тестирования
+        """
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setSpacing(15)
+        
+        # Длительность нагрева
+        heating_widget = self._create_heating_duration_widget()
+        content_layout.addWidget(heating_widget)
+        
+        # Длительность тестирования
+        testing_widget = self._create_testing_duration_widget()
+        content_layout.addWidget(testing_widget)
+        
+        # Частота записи
+        fps_widget = self._create_recording_fps_widget()
+        content_layout.addWidget(fps_widget)
+        
+        return content_widget
+        
+    def _create_heating_duration_widget(self):
+        """
+        Создание виджета для настройки длительности нагрева
+        
+        Returns:
+            QWidget: Виджет настройки нагрева
+        """
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        label = QLabel("Длительность нагрева:")
+        label.setObjectName("SettingsHeatingDurationLabel")
+        
+        edit = QLineEdit()
+        edit.setObjectName("SettingsHeatingDurationEdit")
+        edit.setFixedWidth(80)
+        edit.setText("60")
+        edit.setValidator(QIntValidator(0, 300))
+        
+        unit = QLabel("секунд")
+        unit.setObjectName("SettingsHeatingDurationUnit")
+        
+        layout.addWidget(label)
+        layout.addWidget(edit)
+        layout.addWidget(unit)
+        layout.addStretch()
+        
+        return widget
+        
+    def _create_testing_duration_widget(self):
+        """
+        Создание виджета для настройки длительности тестирования
+        
+        Returns:
+            QWidget: Виджет настройки тестирования
+        """
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        label = QLabel("Длительность тестирования:")
+        label.setObjectName("SettingsTestingDurationLabel")
+        
+        edit = QLineEdit()
+        edit.setObjectName("SettingsTestingDurationEdit")
+        edit.setFixedWidth(80)
+        edit.setText("120")
+        edit.setValidator(QIntValidator(0, 600))
+        
+        unit = QLabel("секунд")
+        unit.setObjectName("SettingsTestingDurationUnit")
+        
+        layout.addWidget(label)
+        layout.addWidget(edit)
+        layout.addWidget(unit)
+        layout.addStretch()
+        
+        return widget
+        
+    def _create_recording_fps_widget(self):
+        """
+        Создание виджета для настройки частоты записи
+        
+        Returns:
+            QWidget: Виджет настройки FPS
+        """
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        label = QLabel("Частота записи:")
+        label.setObjectName("SettingsRecordFPSLabel")
+        
+        combo = QComboBox()
+        combo.setObjectName("SettingsRecordFPSComboBox")
+        combo.addItems(["30 FPS", "25 FPS", "15 FPS", "10 FPS"])
+        
+        layout.addWidget(label)
+        layout.addWidget(combo)
+        layout.addStretch()
+        
+        return widget
+        
+    def _create_camera_section(self):
+        """Создание секции настроек камеры"""
+        frame = QFrame()
+        frame.setObjectName("SettingsCamFrame")
+        frame.setMaximumWidth(1000)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
+        
+        title = QLabel("Настройки камеры")
+        title.setObjectName("MainCameraTitle")
+        layout.addWidget(title)
+        
+        content_widget = self._create_camera_content()
+        layout.addWidget(content_widget)
+        self.content_layout.addWidget(frame)
+        
+    def _create_camera_content(self):
+        """
+        Создание содержимого секции камеры
+        
+        Returns:
+            QWidget: Виджет с настройками камеры
+        """
+        content_widget = QWidget()
+        content_layout = QHBoxLayout(content_widget)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Левая часть - предпросмотр камеры
+        view_widget = self._create_camera_preview()
+        content_layout.addWidget(view_widget, 2)
+        content_layout.addSpacing(20)
+        
+        # Правая часть - управление камерой
+        control_widget = self._create_camera_controls()
+        content_layout.addWidget(control_widget, 1)
+        
+        return content_widget
+        
+    def _create_camera_preview(self):
+        """
+        Создание виджета предпросмотра камеры
+        
+        Returns:
+            QWidget: Виджет предпросмотра
+        """
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setAlignment(QtCore.AlignCenter)
+        
+        # Видимая камера с соотношением сторон 1.33 (640/480)
+        cam_view = CameraGraphicsView(640/480)
+        cam_view.setObjectName("SettingsCamView")
+        cam_view.setMinimumSize(320, 240)
+        cam_view.setMaximumSize(640, 480)
+        
+        # Тестовый прямоугольник для демонстрации
+        self._add_test_rectangle(cam_view, QColor(200, 200, 255))
+        
+        label = QLabel("Предпросмотр камеры (1936×1464)")
+        label.setObjectName("SettingsCamLabel")
+        label.setAlignment(QtCore.AlignCenter)
+        
+        layout.addWidget(cam_view)
+        layout.addWidget(label)
+        
+        return widget
+        
+    def _create_camera_controls(self):
+        """
+        Создание элементов управления камерой
+        
+        Returns:
+            QWidget: Виджет управления камерой
+        """
+        widget = QWidget()
+        layout = QFormLayout(widget)
+        layout.setContentsMargins(0, 40, 0, 0)
+        layout.setVerticalSpacing(15)
+        layout.setHorizontalSpacing(20)
+        
+        # Разрешение
+        res_label = QLabel("Разрешение:")
+        res_label.setObjectName("SettingsCamResLabel")
+        res_combo = QComboBox()
+        res_combo.setObjectName("SettingsCamResComboBox")
+        res_combo.addItems(["1936x1464", "1280x720", "640x480"])
+        
+        # Частота кадров
+        fps_label = QLabel("Частота кадров:")
+        fps_label.setObjectName("SettingsCamFPSLabel")
+        fps_combo = QComboBox()
+        fps_combo.setObjectName("SettingsCamFPSComboBox")
+        fps_combo.addItems(["30 FPS", "60 FPS", "120 FPS"])
+        
+        # Выбор камеры
+        cam_combo = QComboBox()
+        cam_combo.setObjectName("SettingsCamComboBox")
+        cam_combo.addItems(["Камера 1", "Камера 2", "Камера 3"])
+        
+        # Кнопка подключения
+        connect_btn = QPushButton("Подключить")
+        connect_btn.setObjectName("SettingsCamConnectButton")
+        connect_btn.setFixedSize(200*3+10, 35)
+        
+        layout.addRow(res_label, res_combo)
+        layout.addRow(fps_label, fps_combo)
+        layout.addRow(QLabel("Камера:"), cam_combo)
+        layout.addRow(connect_btn)
+        
+        return widget
+        
+    def _create_thermal_camera_section(self):
+        """Создание секции настроек тепловизора"""
+        frame = QFrame()
+        frame.setObjectName("SettingsTCamFrame")
+        frame.setMaximumWidth(1000)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
+        
+        title = QLabel("Настройки тепловизора")
+        title.setObjectName("MainTCameraTitle")
+        layout.addWidget(title)
+        
+        content_widget = self._create_thermal_camera_content()
+        layout.addWidget(content_widget)
+        self.content_layout.addWidget(frame)
+        
+    def _create_thermal_camera_content(self):
+        """
+        Создание содержимого секции тепловизора
+        
+        Returns:
+            QWidget: Виджет с настройками тепловизора
+        """
+        content_widget = QWidget()
+        content_layout = QHBoxLayout(content_widget)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Левая часть - предпросмотр тепловизора
+        view_widget = self._create_thermal_camera_preview()
+        content_layout.addWidget(view_widget, 2)
+        content_layout.addSpacing(20)
+        
+        # Правая часть - управление тепловизором
+        control_widget = self._create_thermal_camera_controls()
+        content_layout.addWidget(control_widget, 1)
+        
+        return content_widget
+        
+    def _create_thermal_camera_preview(self):
+        """
+        Создание виджета предпросмотра тепловизора
+        
+        Returns:
+            QWidget: Виджет предпросмотра тепловизора
+        """
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setAlignment(QtCore.AlignCenter)
+        
+        # Тепловизор с соотношением сторон 1.33
+        tcam_view = CameraGraphicsView(640/480)
+        tcam_view.setObjectName("SettingsTCamView")
+        tcam_view.setMinimumSize(320, 240)
+        tcam_view.setMaximumSize(640, 480)
+        
+        # Тестовый прямоугольник для демонстрации
+        self._add_test_rectangle(tcam_view, QColor(255, 200, 200))
+        
+        label = QLabel("Предпросмотр тепловизора (640×480)")
+        label.setObjectName("SettingsTCamLabel")
+        label.setAlignment(QtCore.AlignCenter)
+        
+        layout.addWidget(tcam_view)
+        layout.addWidget(label)
+        
+        return widget
+        
+    def _create_thermal_camera_controls(self):
+        """
+        Создание элементов управления тепловизором
+        
+        Returns:
+            QWidget: Виджет управления тепловизором
+        """
+        widget = QWidget()
+        layout = QFormLayout(widget)
+        layout.setContentsMargins(0, 40, 0, 0)
+        layout.setVerticalSpacing(15)
+        layout.setHorizontalSpacing(20)
+        
+        # Разрешение
+        res_label = QLabel("Разрешение:")
+        res_label.setObjectName("SettingsTCamResLabel")
+        res_combo = QComboBox()
+        res_combo.setObjectName("SettingsTCamResComboBox")
+        res_combo.addItems(["640x480", "320x240", "160x120"])
+        
+        # Частота кадров
+        fps_label = QLabel("Частота кадров:")
+        fps_label.setObjectName("SettingsTCamFPSLabel")
+        fps_combo = QComboBox()
+        fps_combo.setObjectName("SettingsTCamFPSComboBox")
+        fps_combo.addItems(["30 FPS", "15 FPS", "9 FPS"])
+        
+        # Выбор тепловизора
+        tcam_combo = QComboBox()
+        tcam_combo.setObjectName("SettingsTCamComboBox")
+        tcam_combo.addItems(["Тепловизор 1", "Тепловизор 2"])
+        
+        # Кнопки управления
+        buttons_widget = self._create_thermal_camera_buttons()
+        layout.addRow(res_label, res_combo)
+        layout.addRow(fps_label, fps_combo)
+        layout.addRow(QLabel("Тепловизор:"), tcam_combo)
+        layout.addRow(buttons_widget)
+        
+        return widget
+        
+    def _create_thermal_camera_buttons(self):
+        """
+        Создание кнопок управления тепловизором
+        
+        Returns:
+            QWidget: Виджет с кнопками управления
+        """
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        
+        connect_btn = QPushButton("Подключить")
+        connect_btn.setObjectName("SettingsTCamConnectButton")
+        connect_btn.setFixedSize(200, 35)
+        
+        cal_btn = QPushButton("Калибровка")
+        cal_btn.setObjectName("SettingsTCamCalibrationButton")
+        cal_btn.setFixedSize(200, 35)
+        
+        focus_btn = QPushButton("Фокус")
+        focus_btn.setObjectName("SettingsTCamFocusButton")
+        focus_btn.setFixedSize(200, 35)
+        
+        layout.addWidget(connect_btn)
+        layout.addWidget(cal_btn)
+        layout.addWidget(focus_btn)
+        
+        return widget
+        
+    def _create_interface_section(self):
+        """Создание секции настроек интерфейса"""
+        frame = QFrame()
+        frame.setObjectName("SettingsUIFrame")
+        frame.setMaximumWidth(1000)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
 
-    def retranslateUi(self, SettingsWindow):
-        SettingsWindow.setWindowTitle(QCoreApplication.translate("SettingsWindow", u"Settings", None))
-        self.SettingsTitle.setText(QCoreApplication.translate("SettingsWindow", u"Settings", None))
-        self.SettingsThemeLabel.setText(QCoreApplication.translate("SettingsWindow", u"Theme:", None))
-        self.SettingsThemeComboBox.setItemText(0, QCoreApplication.translate("SettingsWindow", u"Light", None))
-        self.SettingsThemeComboBox.setItemText(1, QCoreApplication.translate("SettingsWindow", u"Dark", None))
+        title = QLabel("Настройки интерфейса")
+        title.setObjectName("MainProcessLabel")
+        layout.addWidget(title)
+        
+        content_widget = self._create_interface_content()
+        layout.addWidget(content_widget)
+        self.content_layout.addWidget(frame)
+        
+    def _create_interface_content(self):
+        """
+        Создание содержимого секции интерфейса
+        
+        Returns:
+            QWidget: Виджет с настройками интерфейса
+        """
+        widget = QWidget()
+        layout = QFormLayout(widget)
+        layout.setVerticalSpacing(15)
+        layout.setHorizontalSpacing(20)
+        
+        # Настройка темы
+        theme_label = QLabel("Тема оформления:")
+        theme_label.setObjectName("SettingsThemeLabel")
+        theme_combo = QComboBox()
+        theme_combo.setObjectName("SettingsThemeComboBox")
+        theme_combo.addItems(["Светлая", "Темная", "Системная"])
+        
+        # Настройка языка
+        lang_label = QLabel("Язык интерфейса:")
+        lang_label.setObjectName("SettingsLangLabel")
+        lang_combo = QComboBox()
+        lang_combo.setObjectName("SettingsLangComboBox")
+        lang_combo.addItems(["Русский", "English"])
+        
+        layout.addRow(theme_label, theme_combo)
+        layout.addRow(lang_label, lang_combo)
+        
+        return widget
+        
+    def _create_heater_section(self):
+        """Создание секции тестирования нагревателя"""
+        frame = QFrame()
+        frame.setObjectName("SettingsHeaterFrame")
+        frame.setMaximumWidth(1000)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
+        
+        title = QLabel("Тестирование нагревателя")
+        title.setObjectName("SettingsHeaterLabel")
+        layout.addWidget(title)
+        
+        content_widget = self._create_heater_controls()
+        layout.addWidget(content_widget)
+        self.content_layout.addWidget(frame)
+    
+    def _create_heater_controls(self):
+        """
+        Создание элементов управления нагревателем
+        
+        Returns:
+            QWidget: Виджет с кнопками управления нагревателем
+        """
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setAlignment(QtCore.AlignCenter)
+        
+        heat_btn = QPushButton("Нагрев")
+        heat_btn.setObjectName("SettingsHeatButton")
+        heat_btn.setFixedSize(200, 50)
+        heat_btn.clicked.connect(self._on_heat_clicked)
+        
+        stop_btn = QPushButton("Стоп")
+        stop_btn.setObjectName("SettingsStopButton")
+        stop_btn.setFixedSize(200, 50)
+        stop_btn.clicked.connect(self._on_stop_clicked)
+        
+        layout.addWidget(heat_btn)
+        layout.addSpacing(20)
+        layout.addWidget(stop_btn)
+        
+        return widget
+        
+    def _add_test_rectangle(self, view, color):
+        """
+        Добавление тестового прямоугольника в сцену вида
+        
+        Args:
+            view (CameraGraphicsView): Вид для добавления прямоугольника
+            color (QColor): Цвет прямоугольника
+        """
+        test_rect = QGraphicsRectItem(0, 0, 640, 480)
+        test_rect.setBrush(QBrush(color))
+        view.scene().addItem(test_rect)
+    
+    def _on_heat_clicked(self):
+        """Обработчик нажатия кнопки включения нагревателя"""
+        # TODO: Реализовать логику включения нагревателя
+        print("Heater ON")
 
-        self.SettingsLangLabel.setText(QCoreApplication.translate("SettingsWindow", u"Change language:", None))
-        self.SettingsLangComboBox.setItemText(0, QCoreApplication.translate("SettingsWindow", u"English", None))
-        self.SettingsLangComboBox.setItemText(1, QCoreApplication.translate("SettingsWindow", u"Russian", None))
+    def _on_stop_clicked(self):
+        """Обработчик нажатия кнопки выключения нагревателя"""
+        # TODO: Реализовать логику выключения нагревателя  
+        print("Heater OFF")
+    
+    def closeEvent(self, event):
+        """
+        Обработчик события закрытия окна
+        
+        Args:
+            event (QCloseEvent): Событие закрытия окна
+        """
+        # TODO: Добавить логику сохранения настроек перед закрытием
+        event.accept()
 
-        self.SettingsLangComboBox.setCurrentText(QCoreApplication.translate("SettingsWindow", u"English", None))
-        self.SettingsUITitle.setText(QCoreApplication.translate("SettingsWindow", u"UI settings", None))
-        self.SettingsHeaterLabel.setText(QCoreApplication.translate("SettingsWindow", u"Check heater", None))
-        self.SettingsStopButton.setText(QCoreApplication.translate("SettingsWindow", u"Stop", None))
-        self.SettingsHeatButton.setText(QCoreApplication.translate("SettingsWindow", u"Heat", None))
-        self.SettingsCamResLabel.setText(QCoreApplication.translate("SettingsWindow", u"Resolution:", None))
-        self.SettingsCamResComboBox.setItemText(0, QCoreApplication.translate("SettingsWindow", u"1936 x 1464", None))
+    @staticmethod
+    def load_stylesheet(filename):
+        """
+        Загрузка CSS стилей из файла
+        
+        Args:
+            filename (str): Путь к файлу со стилями
+            
+        Returns:
+            str: Содержимое CSS файла
+        """
+        with open(filename, 'r', encoding='utf-8') as f:
+            return f.read()
 
-        self.SettingsCamFPSComboBox.setItemText(0, QCoreApplication.translate("SettingsWindow", u"4 Hz", None))
-        self.SettingsCamFPSComboBox.setItemText(1, QCoreApplication.translate("SettingsWindow", u"43 Hz", None))
 
-        self.SettingsCamComboBox.setItemText(0, QCoreApplication.translate("SettingsWindow", u"Blackfly S BFS-PGE-27S5C", None))
-
-        self.SettingsCamFPSLabel.setText(QCoreApplication.translate("SettingsWindow", u"FPS (preview):", None))
-        self.SettingsCamConnectButton.setText(QCoreApplication.translate("SettingsWindow", u"Connect", None))
-        self.SettingsCamTitle.setText(QCoreApplication.translate("SettingsWindow", u"Visible camera parameters", None))
-        self.SettingsCamLabel.setText(QCoreApplication.translate("SettingsWindow", u"Use camera:", None))
-        self.SettingsTCamConnectButton.setText(QCoreApplication.translate("SettingsWindow", u"Connect", None))
-        self.SettingsTCamResLabel.setText(QCoreApplication.translate("SettingsWindow", u"Resolution:", None))
-        self.SettingsTCamLabel.setText(QCoreApplication.translate("SettingsWindow", u"Use a thermal imager:", None))
-        self.SettingsTCamTitle.setText(QCoreApplication.translate("SettingsWindow", u"IR camera parameters", None))
-        self.SettingsTCamFPSLabel.setText(QCoreApplication.translate("SettingsWindow", u"FPS (preview):", None))
-        self.SettingsTCamCalibrationButton.setText(QCoreApplication.translate("SettingsWindow", u"\u0421alibration", None))
-        self.SettingsTCamFocusButton.setText(QCoreApplication.translate("SettingsWindow", u"Focus", None))
-        self.SettingsHeatingDurationLabel.setText(QCoreApplication.translate("SettingsWindow", u"Heating duration: ... sec", None))
-        self.SettingsTestingTitle.setText(QCoreApplication.translate("SettingsWindow", u"Thermal testing parameters", None))
-        self.SettingsTestingDurationLabel.setText(QCoreApplication.translate("SettingsWindow", u"Duration of testing (heating + smooth cooling): ... sec", None))
-        self.SettingsRecordFPSLabel.setText(QCoreApplication.translate("SettingsWindow", u"FPS (record):", None))
-        self.SettingsRecordFPSComboBox.setItemText(0, QCoreApplication.translate("SettingsWindow", u"1 Hz", None))
-        self.SettingsRecordFPSComboBox.setItemText(1, QCoreApplication.translate("SettingsWindow", u"2 Hz", None))
-        self.SettingsRecordFPSComboBox.setItemText(2, QCoreApplication.translate("SettingsWindow", u"3 Hz", None))
-        self.SettingsRecordFPSComboBox.setItemText(3, QCoreApplication.translate("SettingsWindow", u"10 Hz", None))
-        self.SettingsRecordFPSComboBox.setItemText(4, QCoreApplication.translate("SettingsWindow", u"20 Hz", None))
-        self.SettingsRecordFPSComboBox.setItemText(5, QCoreApplication.translate("SettingsWindow", u"30 Hz", None))
-        self.SettingsRecordFPSComboBox.setItemText(6, QCoreApplication.translate("SettingsWindow", u"60 Hz", None))
-
-        self.SettingsHeatingDurationPlusButton.setText(QCoreApplication.translate("SettingsWindow", u"+", None))
-        self.SettingsTestingDurationPlusButton.setText(QCoreApplication.translate("SettingsWindow", u"+", None))
-        self.SettingsTestingDurationMinusButton.setText(QCoreApplication.translate("SettingsWindow", u"-", None))
-        self.SettingsHeatingDurationMinusButton.setText(QCoreApplication.translate("SettingsWindow", u"-", None))
-        self.SettingsHomeButton.setText(QCoreApplication.translate("SettingsWindow", u"Home", None))
-    # retranslateUi
-
+if __name__ == "__main__":
+    app = QApplication([])
+    
+    # Загрузка стиля (раскомментировать при наличии файла стилей)
+    # style = SettingsWindow.load_stylesheet('LightStyle.qss')
+    # app.setStyleSheet(style)
+    
+    window = SettingsWindow()
+    window.show()
+    
+    app.exec()

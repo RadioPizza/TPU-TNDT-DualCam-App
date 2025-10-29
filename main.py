@@ -21,7 +21,7 @@ from osk import OnScreenKeyboard as osk
 from PreviewWindow import Ui_PreviewWindow
 from RetestDialog import Ui_RetestDialog
 from settings import PreviewSettings, Settings, UserData
-from SettingsWindow import Ui_SettingsWindow
+from SettingsWindow import SettingsWindow
 from StartDialog import Ui_StartDialog
 from TrajectoryDialog import Ui_TrajectoryDialog
 from utils import Utilities as utils
@@ -390,10 +390,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка при удалении файлов: {e}")
 
-    def open_settings_window(self):
-        """Открывает окно настроек."""
-        self.settingsWindow = SettingsWindow()
-        self.settingsWindow.show()
+    
     
     def open_settings_window(self):
         """Открывает окно настроек (заглушка)."""
@@ -403,6 +400,11 @@ class MainWindow(QMainWindow):
             "Окно с настройками ещё в разработке"
         )
 
+    def open_settings_window(self):
+        """Открывает окно настроек."""
+        self.settingsWindow = SettingsWindow()
+        self.settingsWindow.exec()
+    
     def closeEvent(self, event):
         """Закрывает камеры при завершении работы приложения."""
         self.camera_manager.release_all()
@@ -501,15 +503,6 @@ class MainWindow(QMainWindow):
         logger.info("Testing completion cancelled")
         # Возвращаемся к диалогу выбора траектории
         self.open_trajectory_dialog()
-
-# Остальные классы без изменений
-class SettingsWindow(QDialog):
-    def __init__(self):
-        super(SettingsWindow, self).__init__()
-        self.ui = Ui_SettingsWindow()
-        self.ui.setupUi(self)
-        
-        self.ui.SettingsHomeButton.clicked.connect(self.close)
 
 class TrajectoryDialog(QDialog):
     # Сигналы
