@@ -18,7 +18,6 @@ from FinishDialog import Ui_FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow
 from osk import OnScreenKeyboard as osk
-from PreviewWindow import Ui_PreviewWindow
 from RetestDialog import Ui_RetestDialog
 from settings import PreviewSettings, Settings, UserData
 from SettingsWindow import SettingsWindow
@@ -548,25 +547,6 @@ class RetestDialog(QDialog):
         # Подключаем сигналы кнопок к нашим сигналам
         self.ui.RetestNoButton.clicked.connect(self.no_clicked.emit)
         self.ui.RetestYesButton.clicked.connect(self.yes_clicked.emit)
-
-class PreviewWindow(QDialog):
-    def __init__(self):
-        super(PreviewWindow, self).__init__()
-        self.ui = Ui_PreviewWindow()
-        self.ui.setupUi(self)
-
-        self.ui.PreviewHomeButton.clicked.connect(self.openTrajectoryDialog)
-        self.ui.PreviewFinishButton.clicked.connect(self.openFinishDialog)
-
-    def openTrajectoryDialog(self):
-        self.openTrajectoryDialog = TrajectoryDialog()
-        self.openTrajectoryDialog.show()
-        self.close()
-    
-    def openFinishDialog(self):
-        self.FinishDialog = FinishDialog()
-        self.FinishDialog.show()
-        self.close()
 
 class FinishDialog(QDialog):
     # Сигналы
