@@ -317,10 +317,6 @@
         <property name="text">
          <string>Settings</string>
         </property>
-        <property name="icon">
-         <iconset resource="res_rs.qrc">
-          <normaloff>:/icons/icons/settings.svg</normaloff>:/icons/icons/settings.svg</iconset>
-        </property>
         <property name="iconSize">
          <size>
           <width>30</width>

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.0
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.CentralWidget.setObjectName(u"CentralWidget")
         self.verticalLayout_5 = QVBoxLayout(self.CentralWidget)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.verticalSpacer_2 = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.verticalSpacer_2 = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
@@ -48,7 +48,7 @@ class Ui_MainWindow(object):
 
         self.MainCameraView = QGraphicsView(self.CentralWidget)
         self.MainCameraView.setObjectName(u"MainCameraView")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.MainCameraView.sizePolicy().hasHeightForWidth())
@@ -84,7 +84,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_2)
 
-        self.verticalSpacer = QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Maximum)
+        self.verticalSpacer = QSpacerItem(20, 25, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
 
         self.verticalLayout_5.addItem(self.verticalSpacer)
 
@@ -105,13 +105,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_3)
 
         self.MainStopButton = QPushButton(self.CentralWidget)
         self.MainStopButton.setObjectName(u"MainStopButton")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.MainStopButton.sizePolicy().hasHeightForWidth())
@@ -122,7 +122,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.MainStopButton)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
@@ -136,20 +136,20 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.MainPlayButton)
 
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_4)
 
 
         self.verticalLayout_5.addLayout(self.horizontalLayout)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.verticalSpacer_3 = QSpacerItem(20, 25, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalSpacer_2 = QSpacerItem(40, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 40, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
 
@@ -159,9 +159,6 @@ class Ui_MainWindow(object):
         self.MainSettingsButton.setSizePolicy(sizePolicy1)
         self.MainSettingsButton.setMinimumSize(QSize(120, 40))
         self.MainSettingsButton.setStyleSheet(u"")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons/settings.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.MainSettingsButton.setIcon(icon)
         self.MainSettingsButton.setIconSize(QSize(30, 30))
 
         self.horizontalLayout_3.addWidget(self.MainSettingsButton)
@@ -169,7 +166,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_3)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.verticalSpacer_4 = QSpacerItem(20, 25, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_4)
 
