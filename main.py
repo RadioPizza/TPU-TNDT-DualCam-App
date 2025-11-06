@@ -54,6 +54,8 @@ class StartWindow(QDialog):
         super().__init__()
         self.ui = Ui_StartDialog()
         self.ui.setupUi(self)
+        self.showMaximized()
+
 
         # Список полей ввода, за которыми будем отслеживать фокус
         self.input_fields = [
@@ -197,6 +199,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.showMaximized()
 
         # Поля
         self.current_position = np.zeros(2, dtype=int)

@@ -68,12 +68,13 @@ class SettingsWindow(QDialog):
         super().__init__()
         self._setup_window_properties()
         self.setup_ui()
+        self.showMaximized()
         
     def _setup_window_properties(self):
         """Настройка основных свойств окна"""
         self.setWindowTitle("Настройки")
         self.setModal(True)
-        self.setMinimumSize(1050, 600)
+        self.setMinimumSize(1920, 1200)
         
     def setup_ui(self):
         """Основная настройка пользовательского интерфейса"""
