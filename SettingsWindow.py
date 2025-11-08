@@ -6,7 +6,7 @@
 # Импорты с псевдонимами для лучшей читаемости и избежания конфликтов
 from PySide6.QtCore import Qt as QtCore
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, 
+    QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame,
     QScrollArea, QWidget, QLineEdit, QComboBox, QFormLayout, 
     QGraphicsView, QGraphicsScene, QGraphicsRectItem, QApplication
 )
@@ -55,7 +55,7 @@ class CameraGraphicsView(QGraphicsView):
             self.fitInView(self.scene().itemsBoundingRect(), QtCore.KeepAspectRatio)
 
 
-class SettingsWindow(QDialog):
+class SettingsWindow(QMainWindow):
     """
     Окно настроек приложения
     
@@ -69,17 +69,21 @@ class SettingsWindow(QDialog):
         self._setup_window_properties()
         self.setup_ui()
         self.showMaximized()
+
         
     def _setup_window_properties(self):
         """Настройка основных свойств окна"""
         self.setWindowTitle("Настройки")
-        self.setModal(True)
-        self.setMinimumSize(1920, 1200)
-        
+        self.setMinimumSize(1050, 600)
+
     def setup_ui(self):
         """Основная настройка пользовательского интерфейса"""
+        # Центральный виджет для QMainWindow
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
         # Главный layout окна
-        main_layout = QVBoxLayout(self)
+        main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(20)
         
@@ -89,6 +93,7 @@ class SettingsWindow(QDialog):
         
         scroll_area = self._create_scroll_area()
         main_layout.addWidget(scroll_area)
+
         
     def _create_header(self):
         """
