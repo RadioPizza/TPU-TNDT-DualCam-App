@@ -161,3 +161,7 @@ cython_debug/
 
 # Video files
 *.avi
+
+# IDE
+.idea/
+.vscode/
