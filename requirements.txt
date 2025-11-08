@@ -7,5 +7,5 @@ PySide6==6.9.1
 PySide6_Addons==6.9.1
 PySide6_Essentials==6.9.1
 serial_communicator==1.0.0
-spinnaker-python==4.2.0.83
+#spinnaker-python==4.2.0.83
 Pillow==9.2.0
