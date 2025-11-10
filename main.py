@@ -474,9 +474,31 @@ class MainWindow(QMainWindow):
     def open_retest_dialog(self):
         """Открывает диалоговое окно повторного тестирования текущей зоны."""
         self.retest_dialog = RetestDialog()
-        self.retest_dialog.yes_clicked.connect(self.start_testing)
-        self.retest_dialog.no_clicked.connect(self.open_trajectory_dialog)
+        self.retest_dialog.yes_clicked.connect(self._on_retest_yes)
+        self.retest_dialog.no_clicked.connect(self._on_retest_no)
         self.retest_dialog.exec()
+
+    def _on_retest_yes(self):
+        """Обрабатываеn нажатие кнопку "Yes" в RetestDialog."""
+        # Закрываем оба диалога
+        self.retest_dialog.close()
+        if hasattr(self, 'trajectory_dialog'):
+            self.trajectory_dialog.allow_close = True
+            self.trajectory_dialog.close()
+        # Запускаем тестирование    
+        self.start_testing()
+
+    def _on_retest_no(self):
+        """Обрабатывает нажатие No в RetestDialog."""
+        # Закрываем оба диалога
+        self.retest_dialog.close()
+        if hasattr(self, 'trajectory_dialog'):
+            self.trajectory_dialog.allow_close = True
+            self.trajectory_dialog.close()
+    
+        # Переходим к выбору направления
+        self.open_trajectory_dialog()
+
     
     def handle_preview_request(self):
         """Обрабатывает запрос на предпросмотр результатов."""
