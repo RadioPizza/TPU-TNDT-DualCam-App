@@ -54,7 +54,7 @@ class Ui_RetestDialog(object):
     def retranslateUi(self, RetestDialog):
         RetestDialog.setWindowTitle(QCoreApplication.translate("RetestDialog", u"Test this zone again?", None))
         self.RetestTitle.setText(QCoreApplication.translate("RetestDialog", u"<html><head/><body><p><span style=\" font-size:24px; font-weight:600; color:#252525;\">Zone \u2116 ...<br/></span><br/><span style=\" font-size:14px; color:#252525;\">Do you want re-testing this zone?<br/></span></p></body></html>", None))
-        self.RetestYesButton.setText(QCoreApplication.translate("RetestDialog", u"No", None))
-        self.RetestNoButton.setText(QCoreApplication.translate("RetestDialog", u"Yes", None))
+        self.RetestYesButton.setText(QCoreApplication.translate("RetestDialog", u"Yes", None))
+        self.RetestNoButton.setText(QCoreApplication.translate("RetestDialog", u"No", None))
     # retranslateUi
 
