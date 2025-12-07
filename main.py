@@ -464,51 +464,79 @@ class MainWindow(QMainWindow):
     
     def open_retest_dialog(self):
         """Открывает диалоговое окно повторного тестирования текущей зоны."""
-        # Создаем строку с номером зоны
+        # Закрываем диалог выбора траектории СРАЗУ при переходе
+        if hasattr(self, 'trajectory_dialog') and self.trajectory_dialog:
+            self.trajectory_dialog.allow_close = True
+            self.trajectory_dialog.close()
+        
+        # Создаем диалог повторного тестирования
         zone_num = f"{self.current_position[0]},{self.current_position[1]}"
         self.retest_dialog = RetestDialog(zone_number=zone_num, parent=self)
         
-        self.retest_dialog.yes_clicked.connect(self._on_retest_yes)
-        self.retest_dialog.no_clicked.connect(self._on_retest_no)
+        # Подключаем сигналы с новыми именами (по вашей рекомендации)
+        self.retest_dialog.yes_clicked.connect(self.handle_retest_confirm)
+        self.retest_dialog.no_clicked.connect(self.handle_retest_cancel)
+        
         self.retest_dialog.exec()
 
-    def _on_retest_yes(self):
-        """Обрабатывает нажатие на кнопку "Yes" в RetestDialog."""
-        # Закрываем оба диалога
-        self.retest_dialog.close()
-        if hasattr(self, 'trajectory_dialog'):
-            self.trajectory_dialog.allow_close = True
-            self.trajectory_dialog.close()
-        # Запускаем тестирование    
-        self.start_testing()
+    def handle_retest_confirm(self):
+        """Обрабатывает подтверждение повторного тестирования текущей зоны."""
+        # Закрываем диалог повторного тестирования
+        if hasattr(self, 'retest_dialog') and self.retest_dialog:
+            self.retest_dialog.close()
+        
+        # Удаляем записанные файлы текущей зоны
+        self.delete_current_zone_files()
+        
+        # Восстанавливаем элементы главного окна в исходное состояние
+        self.reset_main_window_state()
+        
+        # Обновляем статус
+        self.ui.MainProcessLabel.setText("Ready to retest current zone")
+        logger.info(f"Подготовка к повторному тестированию зоны {tuple(self.current_position)}")
+        
+        # НЕ запускаем тестирование автоматически!
+        # Тестирование должно начинаться ТОЛЬКО по нажатию оператором на кнопку старт
 
-    def _on_retest_no(self):
-        """Обрабатывает нажатие на кнопку "No" в RetestDialog."""
-        # Закрываем оба диалога
-        self.retest_dialog.close()
-        if hasattr(self, 'trajectory_dialog'):
-            self.trajectory_dialog.allow_close = True
-            self.trajectory_dialog.close()
-    
-        # Переходим к выбору направления
+    def handle_retest_cancel(self):
+        """Обрабатывает отмену повторного тестирования текущей зоны."""
+        # Закрываем диалог повторного тестирования
+        if hasattr(self, 'retest_dialog') and self.retest_dialog:
+            self.retest_dialog.close()
+        
+        # Открываем диалог выбора траектории (trajectory_dialog НЕ должен существовать сейчас)
         self.open_trajectory_dialog()
     
     def handle_preview_request(self):
         """Обрабатывает запрос на предпросмотр результатов."""
+        # Закрываем диалог выбора траектории СРАЗУ при переходе
+        if hasattr(self, 'trajectory_dialog') and self.trajectory_dialog:
+            self.trajectory_dialog.allow_close = True
+            self.trajectory_dialog.close()
+        
         # Показываем сообщение о том, что функция в разработке
         QMessageBox.information(
             self,
             "Preview",
             "Функция предпросмотра ещё в разработке"
         )
+        
+        # После закрытия сообщения снова открываем диалог выбора траектории
+        self.open_trajectory_dialog()
     
     def open_finish_dialog(self):
         """Открывает финальное диалоговое окно."""
+        # Закрываем диалог выбора траектории СРАЗУ при переходе
+        if hasattr(self, 'trajectory_dialog') and self.trajectory_dialog:
+            self.trajectory_dialog.allow_close = True
+            self.trajectory_dialog.close()
+        
+        # Создаем финальный диалог
         self.finish_dialog = FinishDialog()
         self.finish_dialog.accepted.connect(self.handle_finish_accepted)
         self.finish_dialog.rejected.connect(self.handle_finish_rejected)
         self.finish_dialog.exec()
-    
+
     def handle_finish_accepted(self):
         """Обрабатывает принятие финального диалога."""
         logger.info("Testing completed successfully")
@@ -518,9 +546,38 @@ class MainWindow(QMainWindow):
     def handle_finish_rejected(self):
         """Обрабатывает отклонение финального диалога."""
         logger.info("Testing completion cancelled")
+        # Закрываем финальный диалог
+        if hasattr(self, 'finish_dialog') and self.finish_dialog:
+            self.finish_dialog.close()
+        
         # Возвращаемся к диалогу выбора траектории
         self.open_trajectory_dialog()
-
+    
+    def reset_main_window_state(self):
+        """Сбрасывает состояние главного окна в исходное состояние."""
+        # Сбрасываем прогресс-бар
+        self.ui.MainProgressBar.setValue(0)
+        
+        # Деактивируем кнопку Stop
+        self.ui.MainStopButton.setEnabled(False)
+        
+        # Активируем кнопку Start
+        self.ui.MainPlayButton.setEnabled(True)
+        
+        # Сбрасываем анимацию прогресс-бара
+        self.progress_animation.stop()
+        
+        # Останавливаем все таймеры, если они запущены
+        self.heating_timer.stop()
+        self.cooling_timer.stop()
+        if hasattr(self, 'status_update_timer'):
+            self.status_update_timer.stop()
+        
+        # Выключаем нагреватель на всякий случай
+        try:
+            heater.turn_off()
+        except:
+            pass
 
 class TrajectoryDialog(QDialog):
     # Сигналы
