@@ -18,7 +18,7 @@ from FinishDialog import Ui_FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow
 from osk import OnScreenKeyboard as osk
-from RetestDialog import Ui_RetestDialog
+from RetestDialog import RetestDialog
 from settings import PreviewSettings, Settings, UserData
 from SettingsWindow import SettingsWindow
 from StartDialog import Ui_StartDialog
@@ -49,13 +49,13 @@ class FocusWatcher(QObject):
     def emit_focus_out(self):
         self.focus_out.emit()
 
+
 class StartWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.ui = Ui_StartDialog()
         self.ui.setupUi(self)
         self.showMaximized()
-
 
         # Список полей ввода, за которыми будем отслеживать фокус
         self.input_fields = [
@@ -193,6 +193,7 @@ class StartWindow(QDialog):
         self.ui.StartSurnameLineEdit.setText("Kravtsov")
         self.ui.StartObjectLineEdit.setText("Test object name")
         self.ui.StartPathLineEdit.setText(os.getcwd())
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -391,17 +392,7 @@ class MainWindow(QMainWindow):
                         logger.info(f"Удален файл: {file_path}")
         except Exception as e:
             logger.error(f"Ошибка при удалении файлов: {e}")
-
     
-    
-    def open_settings_window(self):
-        """Открывает окно настроек (заглушка)."""
-        QMessageBox.information(
-            self,
-            "Settings",
-            "Окно с настройками ещё в разработке"
-        )
-
     def open_settings_window(self):
         """Открывает окно настроек."""
         self.settingsWindow = SettingsWindow()
@@ -473,10 +464,34 @@ class MainWindow(QMainWindow):
     
     def open_retest_dialog(self):
         """Открывает диалоговое окно повторного тестирования текущей зоны."""
-        self.retest_dialog = RetestDialog()
-        self.retest_dialog.yes_clicked.connect(self.start_testing)
-        self.retest_dialog.no_clicked.connect(self.open_trajectory_dialog)
+        # Создаем строку с номером зоны
+        zone_num = f"{self.current_position[0]},{self.current_position[1]}"
+        self.retest_dialog = RetestDialog(zone_number=zone_num, parent=self)
+        
+        self.retest_dialog.yes_clicked.connect(self._on_retest_yes)
+        self.retest_dialog.no_clicked.connect(self._on_retest_no)
         self.retest_dialog.exec()
+
+    def _on_retest_yes(self):
+        """Обрабатывает нажатие на кнопку "Yes" в RetestDialog."""
+        # Закрываем оба диалога
+        self.retest_dialog.close()
+        if hasattr(self, 'trajectory_dialog'):
+            self.trajectory_dialog.allow_close = True
+            self.trajectory_dialog.close()
+        # Запускаем тестирование    
+        self.start_testing()
+
+    def _on_retest_no(self):
+        """Обрабатывает нажатие на кнопку "No" в RetestDialog."""
+        # Закрываем оба диалога
+        self.retest_dialog.close()
+        if hasattr(self, 'trajectory_dialog'):
+            self.trajectory_dialog.allow_close = True
+            self.trajectory_dialog.close()
+    
+        # Переходим к выбору направления
+        self.open_trajectory_dialog()
     
     def handle_preview_request(self):
         """Обрабатывает запрос на предпросмотр результатов."""
@@ -505,6 +520,7 @@ class MainWindow(QMainWindow):
         logger.info("Testing completion cancelled")
         # Возвращаемся к диалогу выбора траектории
         self.open_trajectory_dialog()
+
 
 class TrajectoryDialog(QDialog):
     # Сигналы
@@ -537,19 +553,6 @@ class TrajectoryDialog(QDialog):
         else:
             event.ignore()
 
-class RetestDialog(QDialog):
-    # Сигналы
-    yes_clicked = Signal()
-    no_clicked = Signal()
-    
-    def __init__(self):
-        super().__init__()
-        self.ui = Ui_RetestDialog()
-        self.ui.setupUi(self)
-        
-        # Подключаем сигналы кнопок к нашим сигналам
-        self.ui.RetestNoButton.clicked.connect(self.no_clicked.emit)
-        self.ui.RetestYesButton.clicked.connect(self.yes_clicked.emit)
 
 class FinishDialog(QDialog):
     # Сигналы
@@ -580,6 +583,7 @@ class FinishDialog(QDialog):
                 user_data.save_path = path
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred while selecting the save path: {e}.")
+
 
 if __name__ == '__main__':
     # Настройка базового конфигуратора логирования

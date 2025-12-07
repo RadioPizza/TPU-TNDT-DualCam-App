@@ -211,7 +211,6 @@ pyside6-designer
 pyside6-uic ui/StartDialog.ui -o StartDialog.py
 pyside6-uic ui/MainWindow.ui -o MainWindow.py
 pyside6-uic ui/TrajectoryDialog.ui -o TrajectoryDialog.py
-pyside6-uic ui/RetestDialog.ui -o RetestDialog.py
 pyside6-uic ui/FinishDialog.ui -o FinishDialog.py
 
 # Конвертация ресурсов
