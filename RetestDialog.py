@@ -42,7 +42,7 @@ class RetestDialog(QDialog):
     def _setup_window_properties(self):
         """Настройка основных параметров окна"""
         self.setWindowTitle("Повторное тестирование зоны")
-        self.setFixedSize(450, 250)
+        self.setFixedSize(500, 300)
         self.setModal(True)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         
