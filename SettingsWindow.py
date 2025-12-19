@@ -67,16 +67,16 @@ class SettingsWindow(QMainWindow):
         """Инициализация окна настроек"""
         super().__init__()
         self._setup_window_properties()
-        self.setup_ui()
+        self._setup_ui()
         self.showMaximized()
 
         
     def _setup_window_properties(self):
-        """Настройка основных свойств окна"""
+        """Настройка основных параметров окна"""
         self.setWindowTitle("Настройки")
         self.setMinimumSize(1050, 600)
 
-    def setup_ui(self):
+    def _setup_ui(self):
         """Основная настройка пользовательского интерфейса"""
         # Центральный виджет для QMainWindow
         central_widget = QWidget()
