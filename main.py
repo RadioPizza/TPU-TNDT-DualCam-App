@@ -220,17 +220,17 @@ class MainWindow(QMainWindow):
             thermal_init_success = thermal_camera.initialize()
             
             if not visible_init_success:
-                logger.warning("Failed to initialize visible camera")
+                logger.warning("Не удалось инициализировать камеру видимого спектра")
             if not thermal_init_success:
-                logger.warning("Failed to initialize thermal camera")
+                logger.warning("Не удалось инициализировать тепловизор")
             
             # Добавляем камеры в менеджер
             self.camera_manager.add_camera("visible", visible_camera)
             self.camera_manager.add_camera("thermal", thermal_camera)
             
         except Exception as e:
-            logger.error(f"Camera initialization error: {e}")
-            QMessageBox.critical(self, "Camera Error", f"Failed to initialize cameras: {e}")
+            logger.error(f"Ошибка инициализации камер: {e}")
+            QMessageBox.critical(self, "Ошибка камеры", f"Не удалось инициализировать камеры: {e}")
 
         # Таймеры
         self.heating_timer = QTimer()
@@ -242,7 +242,7 @@ class MainWindow(QMainWindow):
         self.cooling_timer.timeout.connect(self.finish_testing)
         
         # Установка начального текста статуса
-        self.ui.MainProcessLabel.setText("Ready to start")
+        self.ui.MainProcessLabel.setText("Готов к началу")
         
         # Инициализация прогресс-бара
         self.ui.MainProgressBar.setValue(0)
@@ -280,8 +280,8 @@ class MainWindow(QMainWindow):
         try:
             self.camera_manager.start_recording_all(base_path)
         except Exception as e:
-            logger.error(f"Failed to start recording: {e}")
-            QMessageBox.critical(self, "Recording Error", f"Failed to start recording: {e}")
+            logger.error(f"Не удалось начать запись: {e}")
+            QMessageBox.critical(self, "Ошибка записи", f"Не удалось начать запись: {e}")
             self.stop_testing()
             return
 
@@ -289,7 +289,7 @@ class MainWindow(QMainWindow):
         heater.turn_on()
         
         # Обновляем текст с оставшимся временем
-        self.ui.MainProcessLabel.setText(f"Heating... ({settings.heating_duration}s remaining)")
+        self.ui.MainProcessLabel.setText(f"Нагрев... (осталось {settings.heating_duration} с)")
         
         # Запускаем таймер для обновления текста
         self.status_update_timer = QTimer()
@@ -315,7 +315,7 @@ class MainWindow(QMainWindow):
         
         # Обновляем текст процесса
         cooling_duration = (settings.duration_of_testing - settings.heating_duration)
-        self.ui.MainProcessLabel.setText(f"Cooling... ({cooling_duration}s remaining)")
+        self.ui.MainProcessLabel.setText(f"Охлаждение... (осталось {cooling_duration} с)")
 
         # Запускаем таймер охлаждения
         cooling_duration = (settings.duration_of_testing - settings.heating_duration) * 1000  # В миллисекундах
@@ -342,8 +342,8 @@ class MainWindow(QMainWindow):
 
         # Устанавливаем завершающие значения
         self.ui.MainProgressBar.setValue(100)
-        self.ui.MainProcessLabel.setText("Zone testing completed successfully!")
-        logger.info(f"Тестирование зоны {tuple(self.current_position)} завершено.")
+        self.ui.MainProcessLabel.setText("Контроль зоны успешно завершён!")
+        logger.info(f"Контроль зоны {tuple(self.current_position)} завершён.")
 
         # Переход к следующему действию
         self.open_trajectory_dialog()
@@ -368,8 +368,8 @@ class MainWindow(QMainWindow):
             self.status_update_timer.stop()
         
         # Обновляем статус
-        self.ui.MainProcessLabel.setText("Testing was interrupted")
-        logger.warning("Тестирование было прервано пользователем")
+        self.ui.MainProcessLabel.setText("Контроль прерван")
+        logger.warning("Контроль был прерван пользователем")
         
         # Удаляем записанные файлы текущей зоны
         self.delete_current_zone_files()
@@ -409,14 +409,14 @@ class MainWindow(QMainWindow):
         remaining = settings.duration_of_testing - elapsed
         
         if elapsed < settings.heating_duration:
-            phase = "Heating"
+            phase = "Нагрев"
             phase_remaining = settings.heating_duration - elapsed
         else:
-            phase = "Cooling"
+            phase = "Охлаждение"
             phase_remaining = remaining
         
         self.ui.MainProcessLabel.setText(
-            f"{phase}... ({phase_remaining:.0f}s remaining)"
+            f"{phase}... (осталось {phase_remaining:.0f} с)"
         )
     
     def open_trajectory_dialog(self):
@@ -441,6 +441,14 @@ class MainWindow(QMainWindow):
             'down': np.array([0, -1])
         }
         
+        # Словарь для перевода направлений на русский
+        direction_translation = {
+            'right': 'вправо',
+            'left': 'влево',
+            'up': 'вверх',
+            'down': 'вниз'
+        }
+        
         # Обновляем позицию
         move_vector = direction_map[direction]
         self.last_moving = move_vector
@@ -450,11 +458,11 @@ class MainWindow(QMainWindow):
         self.trajectory_dialog.allow_close = True
         self.trajectory_dialog.close()
         
-        # Показываем сообщение о перемещении устройства
+        # Показываем сообщение о перемещении дефектоскопа
         QMessageBox.information(
             self,
-            "Перемещение устройства",
-            f"Пожалуйста, переместите устройство в направлении {direction}.\n"
+            "Перемещение дефектоскопа",
+            f"Пожалуйста, переместите дефектоскоп в направлении {direction_translation[direction]}.\n"
             "После перемещения нажмите ОК, чтобы начать тестирование новой зоны.",
             QMessageBox.Ok
         )
@@ -492,7 +500,7 @@ class MainWindow(QMainWindow):
         self.reset_main_window_state()
         
         # Обновляем статус
-        self.ui.MainProcessLabel.setText("Ready to retest current zone")
+        self.ui.MainProcessLabel.setText("Готов к повторному контролю текущей зоны")
         logger.info(f"Подготовка к повторному тестированию зоны {tuple(self.current_position)}")
         
         # НЕ запускаем тестирование автоматически!
@@ -517,7 +525,7 @@ class MainWindow(QMainWindow):
         # Показываем сообщение о том, что функция в разработке
         QMessageBox.information(
             self,
-            "Preview",
+            "Предпросмотр",
             "Функция предпросмотра ещё в разработке"
         )
         
@@ -539,13 +547,13 @@ class MainWindow(QMainWindow):
 
     def handle_finish_accepted(self):
         """Обрабатывает принятие финального диалога."""
-        logger.info("Testing completed successfully")
+        logger.info("Тестирование успешно завершено")
         # Закрываем приложение
         self.close()
 
     def handle_finish_rejected(self):
         """Обрабатывает отклонение финального диалога."""
-        logger.info("Testing completion cancelled")
+        logger.info("Завершение контроля отменено")
         # Закрываем финальный диалог
         if hasattr(self, 'finish_dialog') and self.finish_dialog:
             self.finish_dialog.close()

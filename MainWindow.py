@@ -178,13 +178,13 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Portable Thermal Control", None))
-        self.MainCameraTitle.setText(QCoreApplication.translate("MainWindow", u"Camera", None))
-        self.MainTCameraTitle.setText(QCoreApplication.translate("MainWindow", u"Thermographic imager", None))
-        self.MainProcessLabel.setText(QCoreApplication.translate("MainWindow", u"Heating...", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"TPU-TNDT-DualCam-App", None))
+        self.MainCameraTitle.setText(QCoreApplication.translate("MainWindow", u"Камера", None))
+        self.MainTCameraTitle.setText(QCoreApplication.translate("MainWindow", u"Тепловизор", None))
+        self.MainProcessLabel.setText(QCoreApplication.translate("MainWindow", u"Нагрев...", None))
         self.MainProgressBar.setFormat("")
-        self.MainStopButton.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
-        self.MainPlayButton.setText(QCoreApplication.translate("MainWindow", u"Start", None))
-        self.MainSettingsButton.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
+        self.MainStopButton.setText(QCoreApplication.translate("MainWindow", u"Стоп", None))
+        self.MainPlayButton.setText(QCoreApplication.translate("MainWindow", u"Старт", None))
+        self.MainSettingsButton.setText(QCoreApplication.translate("MainWindow", u"Настройки", None))
     # retranslateUi
 
