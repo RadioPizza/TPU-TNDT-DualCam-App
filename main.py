@@ -152,7 +152,7 @@ class StartWindow(QDialog):
             errors.append("Фамилия не может состоять из одной буквы.")
             self._highlight_field(self.ui.StartSurnameLineEdit)
 
-        # Проверка объекта тестирования
+        # Проверка объекта контроля
         if not object_of_testing:
             errors.append("Объект контроля не может быть пустым.")
             self._highlight_field(self.ui.StartObjectLineEdit)
@@ -260,7 +260,7 @@ class MainWindow(QMainWindow):
 
     def start_testing(self):
         """Начинает процесс контроля: нагрев + охлаждение."""
-        logger.info(f"Начало тестирования зоны {tuple(self.current_position)}")
+        logger.info(f"Начало контроля зоны {tuple(self.current_position)}")
 
         # Формируем имена файлов
         object_name = user_data.object_of_testing.replace(" ", "_")
@@ -381,7 +381,7 @@ class MainWindow(QMainWindow):
         self.ui.MainPlayButton.setEnabled(True)
     
     def delete_current_zone_files(self):
-        """Удаляет файлы текущей зоны при прерывании тестирования."""
+        """Удаляет файлы текущей зоны при прерывании контроля."""
         try:
             if hasattr(self, 'current_base_path'):
                 # Удаляем файлы для всех камер
@@ -463,7 +463,7 @@ class MainWindow(QMainWindow):
             self,
             "Перемещение дефектоскопа",
             f"Пожалуйста, переместите дефектоскоп в направлении {direction_translation[direction]}.\n"
-            "После перемещения нажмите ОК, чтобы начать тестирование новой зоны.",
+            "После перемещения нажмите ОК, чтобы начать контроль новой зоны.",
             QMessageBox.Ok
         )
         
@@ -471,13 +471,13 @@ class MainWindow(QMainWindow):
         self.ui.MainPlayButton.setEnabled(True)
     
     def open_retest_dialog(self):
-        """Открывает диалоговое окно повторного тестирования текущей зоны."""
+        """Открывает диалоговое окно повторного контроля текущей зоны."""
         # Закрываем диалог выбора траектории СРАЗУ при переходе
         if hasattr(self, 'trajectory_dialog') and self.trajectory_dialog:
             self.trajectory_dialog.allow_close = True
             self.trajectory_dialog.close()
         
-        # Создаем диалог повторного тестирования
+        # Создаем диалог повторного контроля
         zone_num = f"{self.current_position[0]},{self.current_position[1]}"
         self.retest_dialog = RetestDialog(zone_number=zone_num, parent=self)
         
@@ -488,8 +488,8 @@ class MainWindow(QMainWindow):
         self.retest_dialog.exec()
 
     def handle_retest_confirm(self):
-        """Обрабатывает подтверждение повторного тестирования текущей зоны."""
-        # Закрываем диалог повторного тестирования
+        """Обрабатывает подтверждение повторного контроля текущей зоны."""
+        # Закрываем диалог повторного контроля
         if hasattr(self, 'retest_dialog') and self.retest_dialog:
             self.retest_dialog.close()
         
@@ -501,14 +501,14 @@ class MainWindow(QMainWindow):
         
         # Обновляем статус
         self.ui.MainProcessLabel.setText("Готов к повторному контролю текущей зоны")
-        logger.info(f"Подготовка к повторному тестированию зоны {tuple(self.current_position)}")
+        logger.info(f"Подготовка к повторному контролю зоны {tuple(self.current_position)}")
         
-        # НЕ запускаем тестирование автоматически!
-        # Тестирование должно начинаться ТОЛЬКО по нажатию оператором на кнопку старт
+        # НЕ запускаем контроль автоматически!
+        # Контроль должно начинаться ТОЛЬКО по нажатию оператором на кнопку старт
 
     def handle_retest_cancel(self):
-        """Обрабатывает отмену повторного тестирования текущей зоны."""
-        # Закрываем диалог повторного тестирования
+        """Обрабатывает отмену повторного контроля текущей зоны."""
+        # Закрываем диалог повторного контроля
         if hasattr(self, 'retest_dialog') and self.retest_dialog:
             self.retest_dialog.close()
         
@@ -547,7 +547,7 @@ class MainWindow(QMainWindow):
 
     def handle_finish_accepted(self):
         """Обрабатывает принятие финального диалога."""
-        logger.info("Тестирование успешно завершено")
+        logger.info("Контроль успешно завершён")
         # Закрываем приложение
         self.close()
 

@@ -59,7 +59,7 @@ class SettingsWindow(QMainWindow):
     """
     Окно настроек приложения
     
-    Предоставляет интерфейс для настройки параметров тестирования, камер, 
+    Предоставляет интерфейс для настройки параметров контроля, камер, 
     тепловизора, нагревателя и интерфейса
     """
     
@@ -155,7 +155,7 @@ class SettingsWindow(QMainWindow):
         return scroll_area
         
     def _create_testing_section(self):
-        """Создание секции настроек тестирования"""
+        """Создание секции настроек контроля"""
         frame = QFrame()
         frame.setObjectName("SettingsTestingFrame")
         frame.setMaximumWidth(1000)
@@ -163,7 +163,7 @@ class SettingsWindow(QMainWindow):
         layout.setContentsMargins(15, 15, 15, 15)
         layout.setSpacing(10)
         
-        title = QLabel("Настройки тестирования")
+        title = QLabel("Настройки контроля")
         title.setObjectName("MainProcessLabel")
         layout.addWidget(title)
         
@@ -173,10 +173,10 @@ class SettingsWindow(QMainWindow):
         
     def _create_testing_content(self):
         """
-        Создание содержимого секции тестирования
+        Создание содержимого секции контроля
         
         Returns:
-            QWidget: Виджет с настройками тестирования
+            QWidget: Виджет с настройками контроля
         """
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
@@ -186,7 +186,7 @@ class SettingsWindow(QMainWindow):
         heating_widget = self._create_heating_duration_widget()
         content_layout.addWidget(heating_widget)
         
-        # Длительность тестирования
+        # Длительность контроля
         testing_widget = self._create_testing_duration_widget()
         content_layout.addWidget(testing_widget)
         
@@ -228,16 +228,16 @@ class SettingsWindow(QMainWindow):
         
     def _create_testing_duration_widget(self):
         """
-        Создание виджета для настройки длительности тестирования
+        Создание виджета для настройки длительности контроля
         
         Returns:
-            QWidget: Виджет настройки тестирования
+            QWidget: Виджет настройки контроля
         """
         widget = QWidget()
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 0, 0, 0)
         
-        label = QLabel("Длительность тестирования:")
+        label = QLabel("Длительность контроля:")
         label.setObjectName("SettingsTestingDurationLabel")
         
         edit = QLineEdit()

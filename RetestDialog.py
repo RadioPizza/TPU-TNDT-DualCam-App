@@ -1,5 +1,5 @@
 """
-Модуль диалогового окна для подтверждения повторного тестирования зоны
+Модуль диалогового окна для подтверждения повторного контроля зоны
 Содержит класс RetestDialog для взаимодействия с пользователем
 """
 
@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 
 class RetestDialog(QDialog):
     """
-    Диалоговое окно для подтверждения или отмены повторного тестирования зоны
+    Диалоговое окно для подтверждения или отмены повторного контроля зоны
     
     Attributes:
         yes_clicked (Signal): Сигнал при выборе "Да"
@@ -41,7 +41,7 @@ class RetestDialog(QDialog):
         
     def _setup_window_properties(self):
         """Настройка основных параметров окна"""
-        self.setWindowTitle("Повторное тестирование зоны")
+        self.setWindowTitle("Повторный контроль зоны")
         self.setFixedSize(500, 300)
         self.setModal(True)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -102,7 +102,7 @@ class RetestDialog(QDialog):
                 </span>
                 <br/>
                 <span style="font-size:14px; color:#252525;">
-                    Вы хотите повторить тестирование этой зоны?<br/>
+                    Вы хотите повторить контроль этой зоны? Старые данные текущей зоны будут удалены<br/>
                 </span>
             </p>
         </body>
