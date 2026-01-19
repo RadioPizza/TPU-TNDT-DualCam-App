@@ -100,11 +100,11 @@ class StartWindow(QDialog):
     def change_save_path(self) -> None:
         """Открывает диалоговое окно выбора каталога и устанавливает путь в поле StartPathLineEdit."""
         try:
-            path = QFileDialog.getExistingDirectory(self, "Select Directory")
+            path = QFileDialog.getExistingDirectory(self, "Выберите папку")
             if path:
                 self.ui.StartPathLineEdit.setText(path)
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred while selecting the save path: {e}.")
+            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при выборе пути сохранения: {e}.")
 
     def open_main_window(self) -> None:
         """Открывает основное окно, закрывая стартовое."""
@@ -132,42 +132,42 @@ class StartWindow(QDialog):
 
         # Проверка имени
         if not user_name:
-            errors.append("Name cannot be empty.")
+            errors.append("Имя не может быть пустым.")
             self._highlight_field(self.ui.StartNameLineEdit)
         elif not user_name.isalpha():
-            errors.append("The name must contain only letters.")
+            errors.append("Имя должно содержать только буквы.")
             self._highlight_field(self.ui.StartNameLineEdit)
         elif len(user_name) == 1:
-            errors.append("The name cannot consist of one letter.")
+            errors.append("Имя не может состоять из одной буквы.")
             self._highlight_field(self.ui.StartNameLineEdit)
 
         # Проверка фамилии
         if not user_surname:
-            errors.append("The last name cannot be empty.")
+            errors.append("Фамилия не может быть пустой.")
             self._highlight_field(self.ui.StartSurnameLineEdit)
         elif not user_surname.isalpha():
-            errors.append("The last name must contain only letters.")
+            errors.append("Фамилия должна содержать только буквы.")
             self._highlight_field(self.ui.StartSurnameLineEdit)
         elif len(user_surname) == 1:
-            errors.append("The surname cannot consist of one letter.")
+            errors.append("Фамилия не может состоять из одной буквы.")
             self._highlight_field(self.ui.StartSurnameLineEdit)
 
         # Проверка объекта тестирования
         if not object_of_testing:
-            errors.append("The test object cannot be empty.")
+            errors.append("Объект контроля не может быть пустым.")
             self._highlight_field(self.ui.StartObjectLineEdit)
 
         # Проверка пути сохранения
         if not save_path or save_path == '...':
-            errors.append("You must select a path to save.")
+            errors.append("Необходимо выбрать путь сохранения.")
             self._highlight_field(self.ui.StartPathLineEdit)
         elif not utils.is_valid_path(save_path):
-            errors.append("The specified save path is invalid. Please select an existing folder..")
+            errors.append("Указанный путь сохранения недействителен. Пожалуйста, выберите существующую папку.")
             self._highlight_field(self.ui.StartPathLineEdit)
 
         if errors:
             error_message = "\n".join(errors)
-            QMessageBox.critical(self, "Error filling out the form", error_message)
+            QMessageBox.critical(self, "Ошибка заполнения формы", error_message)
             return False
 
         return True
@@ -189,9 +189,9 @@ class StartWindow(QDialog):
     
     def _auto_fill_form(self):
         """Автозаполнение формы для тестирования."""
-        self.ui.StartNameLineEdit.setText("Oleg")
-        self.ui.StartSurnameLineEdit.setText("Kravtsov")
-        self.ui.StartObjectLineEdit.setText("Test object name")
+        self.ui.StartNameLineEdit.setText("Олег")
+        self.ui.StartSurnameLineEdit.setText("Кравцов")
+        self.ui.StartObjectLineEdit.setText("Тестовый объект")
         self.ui.StartPathLineEdit.setText(os.getcwd())
 
 

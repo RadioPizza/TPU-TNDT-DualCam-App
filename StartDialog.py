@@ -181,19 +181,19 @@ class Ui_StartDialog(object):
     # setupUi
 
     def retranslateUi(self, StartDialog):
-        StartDialog.setWindowTitle(QCoreApplication.translate("StartDialog", u"Start thermal testing", None))
-        self.StartTitle.setText(QCoreApplication.translate("StartDialog", u"Start thermal testing", None))
-        self.StartStartButton.setText(QCoreApplication.translate("StartDialog", u"Start", None))
-        self.StartAuthorisationTitle.setText(QCoreApplication.translate("StartDialog", u"<html><head/><body><p><span style=\" font-size:24px; font-weight:600; color:#252525;\">Authorisation<br/></span><br/><span style=\" font-size:14px; color:#252525;\">Enter your first name, last name and the name of the testing object<br/></span></p></body></html>", None))
-        self.StartExitButton.setText(QCoreApplication.translate("StartDialog", u"Exit", None))
+        StartDialog.setWindowTitle(QCoreApplication.translate("StartDialog", u"Начать тепловой контроль", None))
+        self.StartTitle.setText(QCoreApplication.translate("StartDialog", u"Начать тепловой контроль", None))
+        self.StartStartButton.setText(QCoreApplication.translate("StartDialog", u"Начать", None))
+        self.StartAuthorisationTitle.setText(QCoreApplication.translate("StartDialog", u"<html><head/><body><p><span style=\" font-size:24px; font-weight:600; color:#252525;\">Авторизация<br/></span><br/><span style=\" font-size:14px; color:#252525;\">Введите ваше имя, фамилию и название объекта контроля<br/></span></p></body></html>", None))
+        self.StartExitButton.setText(QCoreApplication.translate("StartDialog", u"Выход", None))
 #if QT_CONFIG(whatsthis)
         self.StartNameLabel.setWhatsThis(QCoreApplication.translate("StartDialog", u"<html><head/><body><p><br/></p></body></html>", None))
 #endif // QT_CONFIG(whatsthis)
-        self.StartNameLabel.setText(QCoreApplication.translate("StartDialog", u"Name", None))
-        self.StartSurnameLabel.setText(QCoreApplication.translate("StartDialog", u"Surname", None))
-        self.StartObjectLabel.setText(QCoreApplication.translate("StartDialog", u"Object of testing", None))
+        self.StartNameLabel.setText(QCoreApplication.translate("StartDialog", u"Имя", None))
+        self.StartSurnameLabel.setText(QCoreApplication.translate("StartDialog", u"Фамилия", None))
+        self.StartObjectLabel.setText(QCoreApplication.translate("StartDialog", u"Объект контроля", None))
         self.StartPathLineEdit.setText(QCoreApplication.translate("StartDialog", u"...", None))
-        self.StartPathLabel.setText(QCoreApplication.translate("StartDialog", u"Files saving path", None))
-        self.StartChangePathButton.setText(QCoreApplication.translate("StartDialog", u"Change path", None))
+        self.StartPathLabel.setText(QCoreApplication.translate("StartDialog", u"Путь сохранения файлов", None))
+        self.StartChangePathButton.setText(QCoreApplication.translate("StartDialog", u"Изменить путь", None))
     # retranslateUi
 
