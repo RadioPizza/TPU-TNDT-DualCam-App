@@ -14,7 +14,7 @@ from serial_communicator import SerialCommunicator as com
 
 # Локальные модули
 from cameras import CameraFactory, CameraManager, get_available_cameras
-from FinishDialog import Ui_FinishDialog
+from FinishDialog import FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow
 from osk import OnScreenKeyboard as osk
@@ -540,7 +540,7 @@ class MainWindow(QMainWindow):
             self.trajectory_dialog.close()
         
         # Создаем финальный диалог
-        self.finish_dialog = FinishDialog()
+        self.finish_dialog = FinishDialog(parent=self)
         self.finish_dialog.accepted.connect(self.handle_finish_accepted)
         self.finish_dialog.rejected.connect(self.handle_finish_rejected)
         self.finish_dialog.exec()
@@ -617,37 +617,6 @@ class TrajectoryDialog(QDialog):
             event.accept()
         else:
             event.ignore()
-
-
-class FinishDialog(QDialog):
-    # Сигналы
-    accepted = Signal()
-    rejected = Signal()
-    
-    def __init__(self):
-        super(FinishDialog, self).__init__()
-        self.ui = Ui_FinishDialog()
-        self.ui.setupUi(self)
-        
-        # Устанавливаем путь сохранения из user_data
-        self.ui.FinishPathLineEdit.setText(user_data.save_path)
-        
-        # Подключаем кнопку смены пути
-        self.ui.FinishChangePathButton.clicked.connect(self.change_save_path)
-        
-        # Подключаем кнопки Yes/No к нашим сигналам
-        self.ui.FinishYesButton.clicked.connect(self.accepted.emit)
-        self.ui.FinishNoButton.clicked.connect(self.rejected.emit)
-
-    def change_save_path(self):
-        """Открывает диалоговое окно выбора каталога и устанавливает путь в поле FinishPathLineEdit."""
-        try:
-            path = QFileDialog.getExistingDirectory(self, "Выберите папку")
-            if path:
-                self.ui.FinishPathLineEdit.setText(path)
-                user_data.save_path = path
-        except Exception as e:
-            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при выборе пути сохранения: {e}.")
 
 
 if __name__ == '__main__':
