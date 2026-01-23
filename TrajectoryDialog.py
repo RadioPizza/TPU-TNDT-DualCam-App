@@ -95,14 +95,14 @@ class Ui_TrajectoryDialog(object):
     # setupUi
 
     def retranslateUi(self, TrajectoryDialog):
-        TrajectoryDialog.setWindowTitle(QCoreApplication.translate("TrajectoryDialog", u"Zone testing completed!", None))
-        self.TrajectoryTitle.setText(QCoreApplication.translate("TrajectoryDialog", u"<html><head/><body><p><span style=\" font-size:24px; font-weight:600; color:#252525;\">Zone testing completed!<br/></span><br/><span style=\" font-size:14px; color:#252525;\">Select the location of the next testing zone<br/><br/></span></p></body></html>", None))
+        TrajectoryDialog.setWindowTitle(QCoreApplication.translate("TrajectoryDialog", u"Контроль зоны завершён!", None))
+        self.TrajectoryTitle.setText(QCoreApplication.translate("TrajectoryDialog", u"<html><head/><body><p><span style=\" font-size:24px; font-weight:600; color:#252525;\">Контроль зоны завершён!<br/></span><br/><span style=\" font-size:14px; color:#252525;\">Выберите расположение следующей зоны контроля<br/><br/></span></p></body></html>", None))
         self.TrajectoryLeftButton.setText("")
         self.TrajectoryUpButton.setText("")
         self.TrajectoryDownButton.setText("")
         self.TrajectoryRightButton.setText("")
-        self.TrajectoryRepeatButton.setText(QCoreApplication.translate("TrajectoryDialog", u"Repeat", None))
-        self.TrajectoryPreviewButton.setText(QCoreApplication.translate("TrajectoryDialog", u"Preview", None))
-        self.TrajectoryFinishButton.setText(QCoreApplication.translate("TrajectoryDialog", u"Finish", None))
+        self.TrajectoryRepeatButton.setText(QCoreApplication.translate("TrajectoryDialog", u"Повторить", None))
+        self.TrajectoryPreviewButton.setText(QCoreApplication.translate("TrajectoryDialog", u"Предпросмотр", None))
+        self.TrajectoryFinishButton.setText(QCoreApplication.translate("TrajectoryDialog", u"Завершить", None))
     # retranslateUi
-
+    

@@ -35,7 +35,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>Zone testing completed!</string>
+   <string>Контроль зоны завершён!</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -71,7 +71,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:24px; font-weight:600; color:#252525;&quot;&gt;Zone testing completed!&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:14px; color:#252525;&quot;&gt;Select the location of the next testing zone&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:24px; font-weight:600; color:#252525;&quot;&gt;Контроль зоны завершён!&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:14px; color:#252525;&quot;&gt;Выберите расположение следующей зоны контроля&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QPushButton" name="TrajectoryLeftButton">
@@ -191,7 +191,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Repeat</string>
+     <string>Повторить</string>
     </property>
    </widget>
    <widget class="QPushButton" name="TrajectoryPreviewButton">
@@ -207,7 +207,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Preview</string>
+     <string>Предпросмотр</string>
     </property>
    </widget>
    <widget class="QPushButton" name="TrajectoryFinishButton">
@@ -223,7 +223,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Finish</string>
+     <string>Завершить</string>
     </property>
    </widget>
   </widget>
