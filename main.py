@@ -642,12 +642,12 @@ class FinishDialog(QDialog):
     def change_save_path(self):
         """Открывает диалоговое окно выбора каталога и устанавливает путь в поле FinishPathLineEdit."""
         try:
-            path = QFileDialog.getExistingDirectory(self, "Select Directory")
+            path = QFileDialog.getExistingDirectory(self, "Выберите папку")
             if path:
                 self.ui.FinishPathLineEdit.setText(path)
                 user_data.save_path = path
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred while selecting the save path: {e}.")
+            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при выборе пути сохранения: {e}.")
 
 
 if __name__ == '__main__':

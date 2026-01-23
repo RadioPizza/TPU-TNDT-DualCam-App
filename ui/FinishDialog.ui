@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Finish thermal testing</string>
+   <string>Завершение теплового контроля</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -62,7 +62,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:24px; font-weight:600; color:#252525;&quot;&gt;Complete thermal testing?&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:14px; color:#252525;&quot;&gt;Check the save path&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:24px; font-weight:600; color:#252525;&quot;&gt;Завершить тепловой контроль?&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:14px; color:#252525;&quot;&gt;Проверьте путь сохранения&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QPushButton" name="FinishNoButton">
@@ -78,7 +78,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>No</string>
+     <string>Нет</string>
     </property>
    </widget>
    <widget class="QPushButton" name="FinishYesButton">
@@ -94,7 +94,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Yes</string>
+     <string>Да</string>
     </property>
    </widget>
    <widget class="QPushButton" name="FinishChangePathButton">
@@ -110,7 +110,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Change path</string>
+     <string>Изменить путь</string>
     </property>
    </widget>
    <widget class="QLabel" name="FinishPathLabel">
@@ -126,7 +126,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>File saving path</string>
+     <string>Путь сохранения файлов</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="FinishPathLineEdit">

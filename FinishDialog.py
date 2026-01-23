@@ -67,12 +67,12 @@ class Ui_FinishDialog(object):
     # setupUi
 
     def retranslateUi(self, FinishDialog):
-        FinishDialog.setWindowTitle(QCoreApplication.translate("FinishDialog", u"Finish thermal testing", None))
-        self.FinishTitle.setText(QCoreApplication.translate("FinishDialog", u"<html><head/><body><p><span style=\" font-size:24px; font-weight:600; color:#252525;\">Complete thermal testing?<br/></span><br/><span style=\" font-size:14px; color:#252525;\">Check the save path<br/></span></p></body></html>", None))
-        self.FinishNoButton.setText(QCoreApplication.translate("FinishDialog", u"No", None))
-        self.FinishYesButton.setText(QCoreApplication.translate("FinishDialog", u"Yes", None))
-        self.FinishChangePathButton.setText(QCoreApplication.translate("FinishDialog", u"Change path", None))
-        self.FinishPathLabel.setText(QCoreApplication.translate("FinishDialog", u"File saving path", None))
+        FinishDialog.setWindowTitle(QCoreApplication.translate("FinishDialog", u"Завершение теплового контроля", None))
+        self.FinishTitle.setText(QCoreApplication.translate("FinishDialog", u"<html><head/><body><p><span style=\" font-size:24px; font-weight:600; color:#252525;\">Завершить тепловой контроль?<br/></span><br/><span style=\" font-size:14px; color:#252525;\">Проверьте путь сохранения<br/></span></p></body></html>", None))
+        self.FinishNoButton.setText(QCoreApplication.translate("FinishDialog", u"Нет", None))
+        self.FinishYesButton.setText(QCoreApplication.translate("FinishDialog", u"Да", None))
+        self.FinishChangePathButton.setText(QCoreApplication.translate("FinishDialog", u"Изменить путь", None))
+        self.FinishPathLabel.setText(QCoreApplication.translate("FinishDialog", u"Путь сохранения файлов", None))
         self.FinishPathLineEdit.setText(QCoreApplication.translate("FinishDialog", u"...", None))
     # retranslateUi
-
+    
