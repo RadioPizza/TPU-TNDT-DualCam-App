@@ -716,10 +716,10 @@ if __name__ == '__main__':
     if settings.mock_heater:
         class MockHeater:
             def turn_on(self):
-                logger.info("SIMULATION: Heater turned ON")
+                logger.info("СИМУЛЯЦИЯ: Нагреватель включен")
             
             def turn_off(self):
-                logger.info("SIMULATION: Heater turned OFF")
+                logger.info("СИМУЛЯЦИЯ: Нагреватель выключен")
         
         heater = MockHeater()
     else:
