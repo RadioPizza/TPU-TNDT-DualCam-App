@@ -665,13 +665,13 @@ if __name__ == '__main__':
     # Диагностика PySpin и камер FLIR
     try:
         import PySpin
-        logger.info("PySpin imported successfully")
+        logger.info("PySpin успешно импортирован")
         
         # Быстрая проверка камер без длительного удержания ресурсов
         system = PySpin.System.GetInstance()
         cam_list = system.GetCameras()
         num_cameras = cam_list.GetSize()
-        logger.info(f"Number of FLIR cameras detected: {num_cameras}")
+        logger.info(f"Количество обнаруженных камер FLIR: {num_cameras}")
         
         if num_cameras > 0:
             # Получаем информацию о первой камере
@@ -682,7 +682,7 @@ if __name__ == '__main__':
                 nodemap = camera.GetNodeMap()
                 node_model = PySpin.CStringPtr(nodemap.GetNode("DeviceModelName"))
                 if PySpin.IsAvailable(node_model):
-                    logger.info(f"Camera model: {node_model.GetValue()}")
+                    logger.info(f"Модель камеры: {node_model.GetValue()}")
             finally:
                 camera.DeInit()
                 del camera
@@ -691,7 +691,7 @@ if __name__ == '__main__':
         system.ReleaseInstance()
         
     except Exception as e:
-        logger.error(f"PySpin diagnostic failed: {e}")
+        logger.error(f"Диагностика PySpin не удалась: {e}")
     
     # Загрузка настроек из файла
     settings = Settings.load_from_file()
