@@ -21,179 +21,40 @@ from osk import OnScreenKeyboard as osk
 from RetestDialog import RetestDialog
 from settings import PreviewSettings, Settings, UserData
 from SettingsWindow import SettingsWindow
-from StartDialog import Ui_StartDialog
+from StartDialog import StartWindow
 from TrajectoryDialog import TrajectoryDialog
 from utils import Utilities as utils
 
+# Настройка базового конфигуратора логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
 
-class FocusWatcher(QObject):
-    # Определяем сигналы, которые будем испускать при получении и потере фокуса
-    focus_in = Signal()
-    focus_out = Signal()
+logger = logging.getLogger(__name__)
 
-    # Переопределяем метод eventFilter для фильтрации событий
-    def eventFilter(self, obj, event: QEvent) -> bool:
-        # Проверяем тип события
-        if event.type() == QEvent.FocusIn:
-            # Если объект получил фокус, испускаем сигнал focus_in
-            self.focus_in.emit()
-        elif event.type() == QEvent.FocusOut:
-            # Если объект потерял фокус
-            # Используем QTimer.singleShot, чтобы убедиться, что фокус уже обновился
-            # Это откладывает вызов emit_focus_out до следующего цикла обработки событий
-            QTimer.singleShot(0, self.emit_focus_out)
-        # Вызываем базовый метод для продолжения стандартной обработки события
-        return super(FocusWatcher, self).eventFilter(obj, event)
+# Загрузка настроек из файла (глобальная переменная)
+settings = Settings.load_from_file()
 
-    # Метод для испускания сигнала focus_out
-    def emit_focus_out(self):
-        self.focus_out.emit()
+# Глобальные объекты, которые будут использоваться в MainWindow
+user_data = UserData.get_instance()
+preview_settings = PreviewSettings.get_instance()
 
-
-class StartWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.ui = Ui_StartDialog()
-        self.ui.setupUi(self)
-        self.showMaximized()
-
-        # Список полей ввода, за которыми будем отслеживать фокус
-        self.input_fields = [
-            self.ui.StartNameLineEdit,
-            self.ui.StartSurnameLineEdit,
-            self.ui.StartObjectLineEdit
-        ]
+# Инициализация нагревателя
+if settings.mock_heater:
+    class MockHeater:
+        def turn_on(self):
+            logger.info("СИМУЛЯЦИЯ: Нагреватель включен")
         
-        # Автозаполнение формы для разработки
-        if Settings.auto_fill_forms:
-            self._auto_fill_form()
-
-        # Создаем экземпляр наблюдателя за фокусом и устанавливаем на поля
-        self.focus_watcher = FocusWatcher()
-        for field in self.input_fields:
-            field.installEventFilter(self.focus_watcher)
-
-        # Подключаем сигналы фокусировки
-        self.focus_watcher.focus_in.connect(osk.open)
-        self.focus_watcher.focus_out.connect(self.hide_osk)
-
-        # Подключаем сигналы кнопок
-        self.ui.StartStartButton.clicked.connect(self.open_main_window)
-        self.ui.StartExitButton.clicked.connect(self.close)
-        self.ui.StartChangePathButton.clicked.connect(self.change_save_path)
+        def turn_off(self):
+            logger.info("СИМУЛЯЦИЯ: Нагреватель выключен")
     
-    def keyPressEvent(self, event) -> None:
-        """Обрабатывает нажатия клавиш, игнорируя Enter и Return."""
-        if event.key() not in (Qt.Key_Return, Qt.Key_Enter):
-            super().keyPressEvent(event)
-
-    def hide_osk(self) -> None:
-        """Закрывает экранную клавиатуру, если фокус ушел не на другое текстовое поле."""
-        QTimer.singleShot(250, self._conditional_close_osk)
-
-    def _conditional_close_osk(self) -> None:
-        focused_widget = QApplication.focusWidget()
-        if focused_widget not in self.input_fields:
-            osk.close()
-        # Если фокус на одном из текстовых полей, ничего не делаем
-
-    def change_save_path(self) -> None:
-        """Открывает диалоговое окно выбора каталога и устанавливает путь в поле StartPathLineEdit."""
-        try:
-            path = QFileDialog.getExistingDirectory(self, "Выберите папку")
-            if path:
-                self.ui.StartPathLineEdit.setText(path)
-        except Exception as e:
-            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка при выборе пути сохранения: {e}.")
-
-    def open_main_window(self) -> None:
-        """Открывает основное окно, закрывая стартовое."""
-        if self._validate_form():
-            user_data.user_name = self.ui.StartNameLineEdit.text().strip()
-            user_data.user_surname = self.ui.StartSurnameLineEdit.text().strip()
-            user_data.object_of_testing = self.ui.StartObjectLineEdit.text().strip()
-            user_data.save_path = self.ui.StartPathLineEdit.text().strip()
-
-            self.main_window = MainWindow()
-            self.main_window.show()
-            self.close()
-    
-    def _validate_form(self) -> bool:
-        """Проверяет заполнены ли все необходимые поля и корректны ли введенные данные."""
-        errors = []
-
-        user_name = self.ui.StartNameLineEdit.text().strip()
-        user_surname = self.ui.StartSurnameLineEdit.text().strip()
-        object_of_testing = self.ui.StartObjectLineEdit.text().strip()
-        save_path = self.ui.StartPathLineEdit.text().strip()
-
-        # Сброс ранее установленных стилей
-        self._reset_field_styles()
-
-        # Проверка имени
-        if not user_name:
-            errors.append("Имя не может быть пустым.")
-            self._highlight_field(self.ui.StartNameLineEdit)
-        elif not user_name.isalpha():
-            errors.append("Имя должно содержать только буквы.")
-            self._highlight_field(self.ui.StartNameLineEdit)
-        elif len(user_name) == 1:
-            errors.append("Имя не может состоять из одной буквы.")
-            self._highlight_field(self.ui.StartNameLineEdit)
-
-        # Проверка фамилии
-        if not user_surname:
-            errors.append("Фамилия не может быть пустой.")
-            self._highlight_field(self.ui.StartSurnameLineEdit)
-        elif not user_surname.isalpha():
-            errors.append("Фамилия должна содержать только буквы.")
-            self._highlight_field(self.ui.StartSurnameLineEdit)
-        elif len(user_surname) == 1:
-            errors.append("Фамилия не может состоять из одной буквы.")
-            self._highlight_field(self.ui.StartSurnameLineEdit)
-
-        # Проверка объекта контроля
-        if not object_of_testing:
-            errors.append("Объект контроля не может быть пустым.")
-            self._highlight_field(self.ui.StartObjectLineEdit)
-
-        # Проверка пути сохранения
-        if not save_path or save_path == '...':
-            errors.append("Необходимо выбрать путь сохранения.")
-            self._highlight_field(self.ui.StartPathLineEdit)
-        elif not utils.is_valid_path(save_path):
-            errors.append("Указанный путь сохранения недействителен. Пожалуйста, выберите существующую папку.")
-            self._highlight_field(self.ui.StartPathLineEdit)
-
-        if errors:
-            error_message = "\n".join(errors)
-            QMessageBox.critical(self, "Ошибка заполнения формы", error_message)
-            return False
-
-        return True
-    
-    def _highlight_field(self, field: QLineEdit) -> None:
-        """Выделяет поле, в котором обнаружена ошибка."""
-        field.setStyleSheet("border: 1px solid red;")
-
-    def _reset_field_styles(self) -> None:
-        """Сбрасывает стили всех полей ввода."""
-        fields = [
-            self.ui.StartNameLineEdit,
-            self.ui.StartSurnameLineEdit,
-            self.ui.StartObjectLineEdit,
-            self.ui.StartPathLineEdit
-        ]
-        for field in fields:
-            field.setStyleSheet("")
-    
-    def _auto_fill_form(self):
-        """Автозаполнение формы для тестирования."""
-        self.ui.StartNameLineEdit.setText("Олег")
-        self.ui.StartSurnameLineEdit.setText("Кравцов")
-        self.ui.StartObjectLineEdit.setText("Тестовый объект")
-        self.ui.StartPathLineEdit.setText(os.getcwd())
-
+    heater = MockHeater()
+else:
+    heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -589,17 +450,6 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == '__main__':
-    # Настройка базового конфигуратора логирования
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler()
-        ]
-    )
-
-    logger = logging.getLogger(__name__)
-    
     # Диагностика PySpin и камер FLIR
     try:
         import PySpin
@@ -631,34 +481,12 @@ if __name__ == '__main__':
     except Exception as e:
         logger.error(f"Диагностика PySpin не удалась: {e}")
     
-    # Загрузка настроек из файла
-    settings = Settings.load_from_file()
-        
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
     
     # Создание и отображение главного окна приложения
-    StartWindow = StartWindow()
-    StartWindow.show()
-    
-    # Получение экземпляра объекта UserData
-    user_data = UserData.get_instance()
+    start_window = StartWindow()
+    start_window.showMaximized()
       
-    # Инициализация нагревателя
-    if settings.mock_heater:
-        class MockHeater:
-            def turn_on(self):
-                logger.info("СИМУЛЯЦИЯ: Нагреватель включен")
-            
-            def turn_off(self):
-                logger.info("СИМУЛЯЦИЯ: Нагреватель выключен")
-        
-        heater = MockHeater()
-    else:
-        heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
-    
-    # Получение экземпляра объекта PreviewSettings
-    preview_settings = PreviewSettings.get_instance()
-    
     # Запуск главного цикла приложения и выход при завершении
     sys.exit(app.exec())
