@@ -22,7 +22,7 @@ from RetestDialog import RetestDialog
 from settings import PreviewSettings, Settings, UserData
 from SettingsWindow import SettingsWindow
 from StartDialog import Ui_StartDialog
-from TrajectoryDialog import Ui_TrajectoryDialog
+from TrajectoryDialog import TrajectoryDialog
 from utils import Utilities as utils
 
 
@@ -586,37 +586,6 @@ class MainWindow(QMainWindow):
             heater.turn_off()
         except:
             pass
-
-class TrajectoryDialog(QDialog):
-    # Сигналы
-    direction_selected = Signal(str)
-    retest_requested = Signal()
-    preview_requested = Signal()
-    finish_requested = Signal()
-    
-    def __init__(self):
-        super().__init__()
-        self.ui = Ui_TrajectoryDialog()
-        self.ui.setupUi(self)
-
-        # Подключаем сигналы кнопок
-        self.ui.TrajectoryRightButton.clicked.connect(lambda: self.direction_selected.emit('right'))
-        self.ui.TrajectoryLeftButton.clicked.connect(lambda: self.direction_selected.emit('left'))
-        self.ui.TrajectoryUpButton.clicked.connect(lambda: self.direction_selected.emit('up'))
-        self.ui.TrajectoryDownButton.clicked.connect(lambda: self.direction_selected.emit('down'))
-        self.ui.TrajectoryRepeatButton.clicked.connect(self.retest_requested.emit)
-        self.ui.TrajectoryPreviewButton.clicked.connect(self.preview_requested.emit)
-        self.ui.TrajectoryFinishButton.clicked.connect(self.finish_requested.emit)
-        
-        # Флаг разрешения на закрытие
-        self.allow_close = False
-
-    def closeEvent(self, event):
-        """Переопределяем событие закрытия окна"""
-        if self.allow_close:
-            event.accept()
-        else:
-            event.ignore()
 
 
 if __name__ == '__main__':
