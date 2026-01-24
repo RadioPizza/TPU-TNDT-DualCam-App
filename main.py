@@ -637,12 +637,6 @@ if __name__ == '__main__':
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
     
-    # Установка пути к файлу стилей
-    stylesheet_path = "LightStyle.qss"
-    
-    # Установка стиля приложения из файла QSS
-    app.setStyleSheet(Path(stylesheet_path).read_text())
-    
     # Создание и отображение главного окна приложения
     StartWindow = StartWindow()
     StartWindow.show()
