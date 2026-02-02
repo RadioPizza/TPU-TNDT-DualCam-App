@@ -1,50 +1,30 @@
 """
-Модуль диалогового окна для подтверждения повторного контроля зоны
-Содержит класс RetestDialog для взаимодействия с пользователем
+Модуль диалогового окна для подтверждения повторного контроля последней зоны
 """
 
-from PySide6.QtCore import Qt as QtCore, Signal
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
-    QDialog, QFrame, QLabel, QPushButton,
-    QVBoxLayout, QHBoxLayout, QSizePolicy
+    QDialog, QFrame, QLabel, QDialogButtonBox,
+    QVBoxLayout
 )
+from PySide6.QtGui import QFont
 
 
 class RetestDialog(QDialog):
-    """
-    Диалоговое окно для подтверждения или отмены повторного контроля зоны
+    BUTTON_SIZE = QSize(120, 45)
     
-    Attributes:
-        yes_clicked (Signal): Сигнал при выборе "Да"
-        no_clicked (Signal): Сигнал при выборе "Нет"
-    """
-    
-    # Сигналы для обработки ответов пользователя
-    yes_clicked = Signal()
-    no_clicked = Signal()
-    
-    def __init__(self, zone_number="1,1", parent=None):
-        """
-        Инициализация диалогового окна
-        
-        Args:
-            zone_number (str): Координаты зоны в формате "x,y"
-            parent (QWidget, optional): Родительский виджет
-        """
+    def __init__(self, x: int, y: int, parent=None):
         super().__init__(parent)
-        self._zone_number = zone_number  # Строка формата "x,y"
-        
+        self.x = x
+        self.y = y
         self._setup_window_properties()
         self._create_widgets()
         self._setup_layout()
-        self._connect_signals()
         
     def _setup_window_properties(self):
-        """Настройка основных параметров окна"""
-        self.setWindowTitle("Повторный контроль зоны")
-        self.setFixedSize(500, 300)
         self.setModal(True)
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.setWindowTitle("Повторный контроль зоны")
+        self.setFixedSize(450, 300)
         
         # Центрирование окна относительно родителя
         if self.parent():
@@ -52,140 +32,50 @@ class RetestDialog(QDialog):
             self.move(parent_geometry.center() - self.rect().center())
     
     def _create_widgets(self):
-        """Создание виджетов диалогового окна"""
-        # Основной фрейм
+        title_font = QFont("Segoe UI")
+        title_font.setPointSize(16)
+        title_font.setWeight(QFont.DemiBold)
+        
+        subtitle_font = QFont("Segoe UI")
+        subtitle_font.setPointSize(10)
+        subtitle_font.setWeight(QFont.Normal)
+        
         self._frame = QFrame()
-        self._frame.setObjectName("RetestFrame")
-        self._frame.setMinimumSize(400, 200)
-        self._frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
+        self._frame.setFrameShape(QFrame.StyledPanel)
         
-        # Заголовок с координатами зоны
-        self._title_label = QLabel()
-        self._title_label.setObjectName("RetestTitle")
-        self._title_label.setMinimumSize(336, 80)
-        self._title_label.setAlignment(QtCore.AlignLeft | QtCore.AlignTop)
-        self._title_label.setWordWrap(True)
-        self._update_title_text()
+        self._title_label = QLabel(f"Зона ({self.x}, {self.y})")
+        self._title_label.setFont(title_font)
         
-        # Кнопки
-        self._no_button = QPushButton("Нет")
-        self._no_button.setObjectName("RetestNoButton")
-        self._no_button.setMinimumSize(120, 40)
-        self._no_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self._subtitle_label = QLabel(
+            "Вы хотите повторить контроль этой зоны? Старые данные текущей зоны будут удалены")
+        self._subtitle_label.setFont(subtitle_font)
+        self._subtitle_label.setWordWrap(True)
         
-        self._yes_button = QPushButton("Да")
-        self._yes_button.setObjectName("RetestYesButton")
-        self._yes_button.setMinimumSize(120, 40)
-        self._yes_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-    
-    def _update_title_text(self):
-        """Обновление текста заголовка с координатами зоны"""
-        # Форматируем координаты в математическом формате (x, y)
-        if ',' in self._zone_number:
-            try:
-                x, y = self._zone_number.split(',')
-                x = x.strip()
-                y = y.strip()
-                coordinates = f"({x}, {y})"
-            except ValueError:
-                coordinates = self._zone_number
-        else:
-            coordinates = self._zone_number
-            
-        html_text = f"""
-        <html>
-        <head/>
-        <body>
-            <p>
-                <span style="font-size:24px; font-weight:600; color:#252525;">
-                    Зона {coordinates}<br/>
-                </span>
-                <br/>
-                <span style="font-size:14px; color:#252525;">
-                    Вы хотите повторить контроль этой зоны? Старые данные текущей зоны будут удалены<br/>
-                </span>
-            </p>
-        </body>
-        </html>
-        """
-        self._title_label.setText(html_text)
+        self._button_box = QDialogButtonBox(
+            QDialogButtonBox.Yes | QDialogButtonBox.No, self)
+        self._button_box.button(QDialogButtonBox.Yes).setText("Да")
+        self._button_box.button(QDialogButtonBox.No).setText("Нет")
+        self._button_box.button(QDialogButtonBox.Yes).setMinimumSize(self.BUTTON_SIZE)
+        self._button_box.button(QDialogButtonBox.No).setMinimumSize(self.BUTTON_SIZE)
+        self._button_box.button(QDialogButtonBox.No).setDefault(True)
+        self._button_box.accepted.connect(self.accept)
+        self._button_box.rejected.connect(self.reject)
     
     def _setup_layout(self):
-        """Настройка компоновки элементов интерфейса"""
-        # Основной layout окна
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(25, 25, 25, 25)
-        main_layout.setSpacing(0)
-        
-        # Layout фрейма
+        main_layout.setContentsMargins(30, 30, 30, 30)
+
         frame_layout = QVBoxLayout(self._frame)
-        frame_layout.setContentsMargins(32, 40, 32, 40)
-        frame_layout.setSpacing(30)
-        
-        # Добавление заголовка
+        frame_layout.setContentsMargins(30, 30, 30, 30)
+        frame_layout.setSpacing(3)
+
         frame_layout.addWidget(self._title_label)
+        frame_layout.addSpacing(10)
+        frame_layout.addWidget(self._subtitle_label)
         frame_layout.addStretch()
+        frame_layout.addWidget(self._button_box)
         
-        # Layout для кнопок
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(32)
-        
-        buttons_layout.addWidget(self._no_button)
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(self._yes_button)
-        
-        frame_layout.addLayout(buttons_layout)
         main_layout.addWidget(self._frame)
-    
-    def _connect_signals(self):
-        """Подключение сигналов к слотам"""
-        self._no_button.clicked.connect(self._on_no_clicked)
-        self._yes_button.clicked.connect(self._on_yes_clicked)
-    
-    def _on_no_clicked(self):
-        """Обработчик нажатия кнопки 'Нет'"""
-        self.no_clicked.emit()
-        self.accept()
-    
-    def _on_yes_clicked(self):
-        """Обработчик нажатия кнопки 'Да'"""
-        self.yes_clicked.emit()
-        self.accept()
-    
-    def set_zone_number(self, zone_number):
-        """
-        Установка координат зоны для отображения
-        
-        Args:
-            zone_number (str): Координаты зоны в формате "x,y"
-        """
-        self._zone_number = str(zone_number)
-        self._update_title_text()
-    
-    def get_zone_number(self):
-        """
-        Получение текущих координат зоны
-        
-        Returns:
-            str: Координаты зоны в формате "x,y"
-        """
-        return self._zone_number
-    
-    def keyPressEvent(self, event):
-        """
-        Обработка нажатий клавиш
-        
-        Args:
-            event (QKeyEvent): Событие нажатия клавиши
-        """
-        # Закрытие окна по Escape
-        if event.key() == QtCore.Key_Escape:
-            self.reject()
-        # Обработка Enter/Return как "Да"
-        elif event.key() in (QtCore.Key_Return, QtCore.Key_Enter):
-            self._on_yes_clicked()
-        else:
-            super().keyPressEvent(event)
 
 
 if __name__ == "__main__":
@@ -195,15 +85,14 @@ if __name__ == "__main__":
     
     app = QApplication(sys.argv)
     
-    # Тестовый вызов
-    dialog = RetestDialog(zone_number="0,4")
+    dialog = RetestDialog(0, 2)
     
-    # Подключение сигналов для тестирования
-    dialog.yes_clicked.connect(lambda: print("Выбрано: Да"))
-    dialog.no_clicked.connect(lambda: print("Выбрано: Нет"))
-    
-    # Показ диалога
+    # Просто проверяем результат
     result = dialog.exec()
-    print(f"Диалог закрыт с кодом: {result}")
+    
+    if result == QDialog.Accepted:
+        print("Пользователь выбрал: Да")
+    else:
+        print("Пользователь выбрал: Нет")
     
     sys.exit(app.exec())

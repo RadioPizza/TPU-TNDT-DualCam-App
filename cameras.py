@@ -1,3 +1,7 @@
+"""
+Модуль для работы с камерами и тепловизорами
+"""
+
 import cv2
 import logging
 from abc import ABC, abstractmethod

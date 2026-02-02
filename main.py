@@ -1,29 +1,22 @@
 # Стандартные библиотеки
 import logging
 import sys, os
-from pathlib import Path
 
 # Сторонние библиотеки
 import numpy as np
-from PySide6.QtCore import QEvent, QObject, Qt, QTimer, Signal, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtWidgets import (QApplication, QDialog, QFileDialog,
-                               QGraphicsPixmapItem, QGraphicsScene, QLineEdit,
-                               QMainWindow, QMessageBox)
-from serial_communicator import SerialCommunicator as com
+from PySide6.QtCore import QTimer, QPropertyAnimation, QEasingCurve
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox
 
 # Локальные модули
-from cameras import CameraFactory, CameraManager, get_available_cameras
+from cameras import CameraFactory, CameraManager
 from FinishDialog import FinishDialog
 from heater_interface import Heater
 from MainWindow import Ui_MainWindow
-from osk import OnScreenKeyboard as osk
 from RetestDialog import RetestDialog
 from settings import PreviewSettings, Settings, UserData
 from SettingsWindow import SettingsWindow
-from StartDialog import StartWindow
+from StartDialog import StartDialog
 from TrajectoryDialog import TrajectoryDialog
-from utils import Utilities as utils
 
 # Настройка базового конфигуратора логирования
 logging.basicConfig(
@@ -339,21 +332,22 @@ class MainWindow(QMainWindow):
             self.trajectory_dialog.close()
         
         # Создаем диалог повторного контроля
-        zone_num = f"{self.current_position[0]},{self.current_position[1]}"
-        self.retest_dialog = RetestDialog(zone_number=zone_num, parent=self)
+        self.retest_dialog = RetestDialog(
+            x=self.current_position[0], 
+            y=self.current_position[1], 
+            parent=self
+        )
         
-        # Подключаем сигналы с новыми именами (по вашей рекомендации)
-        self.retest_dialog.yes_clicked.connect(self.handle_retest_confirm)
-        self.retest_dialog.no_clicked.connect(self.handle_retest_cancel)
+        # Просто проверяем результат диалога
+        result = self.retest_dialog.exec()
         
-        self.retest_dialog.exec()
+        if result == QDialog.Accepted:
+            self.handle_retest_confirm()
+        else:
+            self.handle_retest_cancel()
 
     def handle_retest_confirm(self):
         """Обрабатывает подтверждение повторного контроля текущей зоны."""
-        # Закрываем диалог повторного контроля
-        if hasattr(self, 'retest_dialog') and self.retest_dialog:
-            self.retest_dialog.close()
-        
         # Удаляем записанные файлы текущей зоны
         self.delete_current_zone_files()
         
@@ -368,11 +362,7 @@ class MainWindow(QMainWindow):
         # Контроль должно начинаться ТОЛЬКО по нажатию оператором на кнопку старт
 
     def handle_retest_cancel(self):
-        """Обрабатывает отмену повторного контроля текущей зоны."""
-        # Закрываем диалог повторного контроля
-        if hasattr(self, 'retest_dialog') and self.retest_dialog:
-            self.retest_dialog.close()
-        
+        """Обрабатывает отмену повторного контроля текущей зоны."""        
         # Открываем диалог выбора траектории (trajectory_dialog НЕ должен существовать сейчас)
         self.open_trajectory_dialog()
     
@@ -395,16 +385,22 @@ class MainWindow(QMainWindow):
     
     def open_finish_dialog(self):
         """Открывает финальное диалоговое окно."""
-        # Закрываем диалог выбора траектории СРАЗУ при переходе
+        # Закрываем диалог выбора траектории
         if hasattr(self, 'trajectory_dialog') and self.trajectory_dialog:
             self.trajectory_dialog.allow_close = True
             self.trajectory_dialog.close()
         
         # Создаем финальный диалог
         self.finish_dialog = FinishDialog(parent=self)
-        self.finish_dialog.accepted.connect(self.handle_finish_accepted)
-        self.finish_dialog.rejected.connect(self.handle_finish_rejected)
-        self.finish_dialog.exec()
+        self.finish_dialog.set_save_path(self.save_path)
+        
+        # Проверяем результат
+        result = self.finish_dialog.exec()
+        
+        if result == QDialog.Accepted:
+            self.handle_finish_accepted()
+        else:
+            self.handle_finish_rejected()
 
     def handle_finish_accepted(self):
         """Обрабатывает принятие финального диалога."""
@@ -484,9 +480,17 @@ if __name__ == '__main__':
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
     
-    # Создание и отображение главного окна приложения
-    start_window = StartWindow()
-    start_window.showMaximized()
-      
+    start_window = StartDialog()
+    result = start_window.exec()
+    
+    if result == QDialog.Accepted:
+        # Пользователь нажал "Начать"
+        main_window = MainWindow()
+        main_window.show()
+        sys.exit(app.exec())
+    else:
+        # Пользователь нажал "Выход" или закрыл окно
+        sys.exit(0)
+    
     # Запуск главного цикла приложения и выход при завершении
     sys.exit(app.exec())

@@ -1,3 +1,7 @@
+"""
+Модуль для работы с экранной клавиатурой Windows
+"""
+
 import os
 import psutil
 

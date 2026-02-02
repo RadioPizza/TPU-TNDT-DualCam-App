@@ -1,9 +1,7 @@
 """
-Модуль настроек приложения с графическим интерфейсом
-Содержит классы для работы с настройками камер, тепловизора и интерфейса
+Модуль окна настроек приложения
 """
 
-# Импорты с псевдонимами для лучшей читаемости и избежания конфликтов
 from PySide6.QtCore import Qt as QtCore
 from PySide6.QtWidgets import (
     QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame,
