@@ -5,10 +5,27 @@
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtWidgets import (
     QDialog, QFrame, QLabel, QPushButton,
-    QVBoxLayout, QHBoxLayout, QSizePolicy
+    QVBoxLayout, QHBoxLayout, QSizePolicy,
+    QApplication
 )
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtGui import QFont, QIcon, QPalette
 import res_rs
+
+
+def is_dark_theme():
+    """Проверяет, используется ли тёмная тема"""
+    app = QApplication.instance()
+    if not app:
+        return False
+    
+    bg_color = app.palette().color(QPalette.Window)
+    
+    # Определяем яркость цвета (0-255)
+    # Формула для воспринимаемой яркости
+    brightness = 0.299 * bg_color.red() + 0.587 * bg_color.green() + 0.114 * bg_color.blue()
+    
+    # Если фон темный (яркость < 128) - это тёмная тема
+    return brightness < 128
 
 
 class TrajectoryDialog(QDialog): 
@@ -52,6 +69,8 @@ class TrajectoryDialog(QDialog):
         self._subtitle_label.setFont(subtitle_font)
         self._subtitle_label.setAlignment(Qt.AlignCenter)
         
+        self._icon_suffix = "_black" if not is_dark_theme() else "_white"
+        
         self._left_button = self._create_arrow_button('left')
         self._up_button = self._create_arrow_button('up')
         self._down_button = self._create_arrow_button('down')
@@ -74,7 +93,9 @@ class TrajectoryDialog(QDialog):
     
     def _create_arrow_button(self, direction):
         button = QPushButton()
-        button.setIcon(QIcon(f":/icons/icons/arrow_{direction}.svg"))
+        # Используем соответствующий суффикс для иконки
+        icon_path = f":/icons/icons/arrow_{direction}{self._icon_suffix}.svg"
+        button.setIcon(QIcon(icon_path))
         button.setIconSize(QSize(50, 50))
         button.setFixedSize(80, 60)
         return button
