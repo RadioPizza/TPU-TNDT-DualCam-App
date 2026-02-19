@@ -342,7 +342,7 @@ class MainWindow(QMainWindow):
 
     def open_settings_window(self):
         """Открывает окно настроек"""
-        self._settings_window = SettingsWindow()
+        self._settings_window = SettingsWindow(settings=self.settings, parent=self)
         self._settings_window.exec()
 
     def closeEvent(self, event):
