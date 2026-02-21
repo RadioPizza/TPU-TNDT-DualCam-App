@@ -287,9 +287,9 @@ class SettingsWindow(QMainWindow):
         container_layout.addWidget(main_group)
 
         # Параметры записи с камеры видимого спектра
-        record_group = self._create_group_box("Параметры записи с камеры видимого спектра", font)
-        record_layout = QVBoxLayout(record_group)
-        record_layout.setSpacing(self.LAYOUT_SPACING_LARGE)
+        visible_record_group = self._create_group_box("Параметры записи с камеры видимого спектра", font)
+        visible_record_layout = QVBoxLayout(visible_record_group)
+        visible_record_layout.setSpacing(self.LAYOUT_SPACING_LARGE)
 
         recording_fps = getattr(self._settings, 'recording_fps', 30)
 
@@ -298,7 +298,7 @@ class SettingsWindow(QMainWindow):
         self._visible_record_checkbox.setChecked(
             getattr(self._settings, 'visible_camera_record', True)
         )
-        record_layout.addWidget(self._visible_record_checkbox)
+        visible_record_layout.addWidget(self._visible_record_checkbox)
 
         format_layout, self._visible_record_format_combo = self._create_combo_row(
             "Формат записи видео:",
@@ -306,7 +306,7 @@ class SettingsWindow(QMainWindow):
             "AVI",
             font
         )
-        record_layout.addLayout(format_layout)
+        visible_record_layout.addLayout(format_layout)
 
         fps_layout, self._visible_record_fps_combo = self._create_combo_row(
             "Частота записи видео:",
@@ -314,39 +314,39 @@ class SettingsWindow(QMainWindow):
             f"{recording_fps} FPS",
             font
         )
-        record_layout.addLayout(fps_layout)
+        visible_record_layout.addLayout(fps_layout)
 
-        container_layout.addWidget(record_group)
+        container_layout.addWidget(visible_record_group)
 
         # Параметры записи с тепловизора
-        record2_group = self._create_group_box("Параметры записи с тепловизора", font)
-        record2_layout = QVBoxLayout(record2_group)
-        record2_layout.setSpacing(self.LAYOUT_SPACING_LARGE)
+        thermal_record_group = self._create_group_box("Параметры записи с тепловизора", font)
+        thermal_record_layout = QVBoxLayout(thermal_record_group)
+        thermal_record_layout.setSpacing(self.LAYOUT_SPACING_LARGE)
 
         self._thermal_record_checkbox = QCheckBox("Записывать с тепловизора")
         self._thermal_record_checkbox.setFont(font)
         self._thermal_record_checkbox.setChecked(
             getattr(self._settings, 'thermal_camera_record', True)
         )
-        record2_layout.addWidget(self._thermal_record_checkbox)
+        thermal_record_layout.addWidget(self._thermal_record_checkbox)
 
-        format2_layout, self._thermal_record_format_combo = self._create_combo_row(
+        thermal_format_layout, self._thermal_record_format_combo = self._create_combo_row(
             "Формат записи видео:",
             ["AVI", "MP4", "MKV"],
             "AVI",
             font
         )
-        record2_layout.addLayout(format2_layout)
+        thermal_record_layout.addLayout(thermal_format_layout)
 
-        fps2_layout, self._thermal_record_fps_combo = self._create_combo_row(
+        thermal_fps_layout, self._thermal_record_fps_combo = self._create_combo_row(
             "Частота записи видео:",
             ["30 FPS", "25 FPS", "15 FPS", "10 FPS"],
             f"{recording_fps} FPS",
             font
         )
-        record2_layout.addLayout(fps2_layout)
+        thermal_record_layout.addLayout(thermal_fps_layout)
 
-        container_layout.addWidget(record2_group)
+        container_layout.addWidget(thermal_record_group)
         container_layout.addStretch()
 
         scroll = QScrollArea()
@@ -401,29 +401,29 @@ class SettingsWindow(QMainWindow):
         thermal_layout = QVBoxLayout(thermal_group)
         thermal_layout.setSpacing(self.LAYOUT_SPACING_LARGE)
 
-        dev_th_layout, self._thermal_device_combo = self._create_combo_row(
+        thermal_device_layout, self._thermal_device_combo = self._create_combo_row(
             "Устройство:",
             ["Optris PI 640", "Камера 2", "Камера 3"],
             "Камера 1",
             font
         )
-        thermal_layout.addLayout(dev_th_layout)
+        thermal_layout.addLayout(thermal_device_layout)
 
-        res_th_layout, self._thermal_resolution_combo = self._create_combo_row(
+        thermal_resolution_layout, self._thermal_resolution_combo = self._create_combo_row(
             "Разрешение:",
             ["640×480", "320×240", "160×120"],
             "640×480",
             font
         )
-        thermal_layout.addLayout(res_th_layout)
+        thermal_layout.addLayout(thermal_resolution_layout)
 
-        fps_th_layout, self._thermal_preview_fps_combo = self._create_combo_row(
+        thermal_preview_fps_layout, self._thermal_preview_fps_combo = self._create_combo_row(
             "Частота предварительного просмотра видео:",
             ["32 FPS", "30 FPS", "15 FPS", "9 FPS"],
             "32 FPS",
             font
         )
-        thermal_layout.addLayout(fps_th_layout)
+        thermal_layout.addLayout(thermal_preview_fps_layout)
 
         palette_layout, self._thermal_palette_combo = self._create_combo_row(
             "Цветовая палитра:",
