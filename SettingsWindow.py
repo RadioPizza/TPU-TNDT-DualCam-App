@@ -293,6 +293,13 @@ class SettingsWindow(QMainWindow):
 
         recording_fps = getattr(self._settings, 'recording_fps', 30)
 
+        self._visible_record_checkbox = QCheckBox("Записывать с камеры видимого спектра")
+        self._visible_record_checkbox.setFont(font)
+        self._visible_record_checkbox.setChecked(
+            getattr(self._settings, 'visible_camera_record', True)
+        )
+        record_layout.addWidget(self._visible_record_checkbox)
+
         format_layout, self._visible_record_format_combo = self._create_combo_row(
             "Формат записи видео:",
             ["AVI", "MP4", "MKV"],
@@ -315,6 +322,13 @@ class SettingsWindow(QMainWindow):
         record2_group = self._create_group_box("Параметры записи с тепловизора", font)
         record2_layout = QVBoxLayout(record2_group)
         record2_layout.setSpacing(self.LAYOUT_SPACING_LARGE)
+
+        self._thermal_record_checkbox = QCheckBox("Записывать с тепловизора")
+        self._thermal_record_checkbox.setFont(font)
+        self._thermal_record_checkbox.setChecked(
+            getattr(self._settings, 'thermal_camera_record', True)
+        )
+        record2_layout.addWidget(self._thermal_record_checkbox)
 
         format2_layout, self._thermal_record_format_combo = self._create_combo_row(
             "Формат записи видео:",
