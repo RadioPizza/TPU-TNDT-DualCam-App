@@ -54,8 +54,7 @@ class Settings(QObject):
     
     duration_of_testing: int = 10
     heating_duration: int = 3
-    language: str = 'EN'
-    theme: str = 'Light'
+    language: str = 'Русский'
     
     # Общие настройки камеры (видимой)
     visible_camera_index: int = 1  # Индекс камеры видимого диапазона
