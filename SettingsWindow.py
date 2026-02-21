@@ -542,8 +542,7 @@ class SettingsWindow(QMainWindow):
         warning_layout.setSpacing(self.LAYOUT_SPACING_SMALL)
 
         warning_label = QLabel(
-            "⚠️ Не направляйте прибор на людей и легковоспламеняющиеся предметы.\n\n"
-            "Нагревательные лампы работают только когда оба предохранительных выключателя нажаты."
+            "⚠️ Не направляйте прибор на людей и легковоспламеняющиеся предметы!"
         )
         warning_label.setFont(font)
         warning_label.setWordWrap(True)
