@@ -14,7 +14,6 @@ from settings import Settings
 
 class SettingsWindow(QMainWindow):
     """Окно настроек приложения"""
-
     WIDGET_SPACING = 20
     FIELD_WIDTH = 250
     FIELD_HEIGHT = 32
@@ -81,7 +80,7 @@ class SettingsWindow(QMainWindow):
         QTabBar::tab:selected {
             border-bottom: 3px solid palette(highlight);
             background-color: palette(base);
-        } 
+        }
         QTabBar::tab:hover {
             background-color: palette(button);
         }
@@ -119,7 +118,7 @@ class SettingsWindow(QMainWindow):
         self._create_heater_tab(form_label_font)
         self._create_interface_tab(form_label_font)
 
-        self._save_button = QPushButton("Сохранить")
+        self._save_button = QPushButton("Применить")
         self._save_button.setMinimumSize(self.BUTTON_SIZE)
         self._save_button.setDefault(True)
 
@@ -227,13 +226,15 @@ class SettingsWindow(QMainWindow):
         return layout, combo
 
     def _create_info_row(self, label_text, value_text, font):
-        """Создаёт горизонтальный layout с меткой и информационным полем (только для чтения)."""
+        """
+        Создаёт горизонтальный layout с меткой и информационным полем (только для чтения).
+        Возвращает layout и label значения для последующего обновления.
+        """
         layout = QHBoxLayout()
         layout.setSpacing(self.LAYOUT_SPACING)
 
         label = QLabel(label_text)
         label.setFont(font)
-
         layout.addWidget(label)
         layout.addStretch()
 
@@ -241,9 +242,9 @@ class SettingsWindow(QMainWindow):
         value_label.setFont(font)
         value_label.setStyleSheet(f"QLabel {{ padding-left: {self.INFO_LABEL_PADDING}px; }}")
         value_label.setFixedWidth(self.FIELD_WIDTH)
-
         layout.addWidget(value_label)
-        return layout
+        
+        return layout, value_label
 
     def _create_testing_tab(self, font):
         tab = QWidget()
@@ -257,31 +258,31 @@ class SettingsWindow(QMainWindow):
         main_layout = QVBoxLayout(main_group)
         main_layout.setSpacing(self.LAYOUT_SPACING_LARGE)
 
-        heating_layout, self._heating_duration_spin = self._create_spinbox_row(
-            "Длительность нагрева, секунд:",
-            getattr(self._settings, 'heating_duration', 60),
+        total_layout, self._total_duration_spin = self._create_spinbox_row(
+            "Полная длительность контроля зоны, с",
+            getattr(self._settings, 'duration_of_testing', 120),
             1, 300, font
+        )
+        main_layout.addLayout(total_layout)
+        
+        heating_layout, self._heating_duration_spin = self._create_spinbox_row(
+            "Длительность импульса нагрева, с:",
+            getattr(self._settings, 'heating_duration', 6),
+            1, 12, font
         )
         main_layout.addLayout(heating_layout)
 
-        cooling_default = (
+        cooling_duration = (
             getattr(self._settings, 'duration_of_testing', 120) -
             getattr(self._settings, 'heating_duration', 60)
         )
-        cooling_layout, self._cooling_duration_spin = self._create_spinbox_row(
-            "Длительность естественного охлаждения, секунд:",
-            cooling_default,
-            1, 300, font
+        
+        cooling_layout, self._cooling_duration_info = self._create_info_row(
+            "Длительность естественного охлаждения, с:",
+            str(cooling_duration),
+            font
         )
         main_layout.addLayout(cooling_layout)
-
-        main_layout.addLayout(
-            self._create_info_row(
-                "Полная длительность контроля зоны, секунд:",
-                f"{getattr(self._settings, 'duration_of_testing')}",
-                font
-            )
-        )
 
         container_layout.addWidget(main_group)
 
@@ -514,18 +515,25 @@ class SettingsWindow(QMainWindow):
         info_layout = QVBoxLayout(info_group)
         info_layout.setSpacing(self.LAYOUT_SPACING_SMALL)
 
-        info_layout.addLayout(
-            self._create_info_row("Ревизия нагревательного узла:", "Rev. 2", font)
+        rev_layout, self._heater_revision_info = self._create_info_row(
+            "Ревизия нагревательного узла:", "Rev. 2", font
         )
-        info_layout.addLayout(
-            self._create_info_row("Количество нагревательных элементов (ламп):", "4", font)
+        info_layout.addLayout(rev_layout)
+
+        lamps_layout, self._heater_lamps_info = self._create_info_row(
+            "Количество нагревательных элементов (ламп):", "4", font
         )
-        info_layout.addLayout(
-            self._create_info_row("Общая мощность нагревателя:", "2000 Вт", font)
+        info_layout.addLayout(lamps_layout)
+
+        power_layout, self._heater_power_info = self._create_info_row(
+            "Общая мощность нагревателя:", "2000 Вт", font
         )
-        info_layout.addLayout(
-            self._create_info_row("Версия прошивки контроллера нагревателя:", "0.1.0", font)
+        info_layout.addLayout(power_layout)
+
+        firmware_layout, self._heater_firmware_info = self._create_info_row(
+            "Версия прошивки контроллера нагревателя:", "0.1.0", font
         )
+        info_layout.addLayout(firmware_layout)
 
         container_layout.addWidget(info_group)
 
@@ -561,7 +569,7 @@ class SettingsWindow(QMainWindow):
             self._heater_test_indicator,
             self.INDICATOR_OFF
         )
-        
+
         test_status_row_layout.addWidget(self._heater_test_indicator)
 
         self._heater_test_status = QLabel("Выключен")
@@ -574,7 +582,7 @@ class SettingsWindow(QMainWindow):
 
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(self.WIDGET_SPACING)
-        
+
         buttons_layout.addStretch()
 
         self._heater_power_off_button = QPushButton("Выключить нагрев")
