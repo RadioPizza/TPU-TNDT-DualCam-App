@@ -83,13 +83,13 @@ class StartDialog(QDialog):
         form_label_font.setPointSize(9)
         form_label_font.setWeight(QFont.Normal)
         
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._scroll_area = QScrollArea()
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         
-        self.scroll_content = QWidget()
-        self.scroll_area.setWidget(self.scroll_content)
+        self._scroll_content = QWidget()
+        self._scroll_area.setWidget(self._scroll_content)
         
         self._main_frame = QFrame()
         self._main_frame.setFrameShape(QFrame.StyledPanel)
@@ -153,9 +153,9 @@ class StartDialog(QDialog):
     
     def _setup_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.addWidget(self.scroll_area)
+        main_layout.addWidget(self._scroll_area)
         
-        scroll_layout = QVBoxLayout(self.scroll_content)
+        scroll_layout = QVBoxLayout(self._scroll_content)
         scroll_layout.addSpacing(20)
         
         center_widget = QWidget()
@@ -211,11 +211,11 @@ class StartDialog(QDialog):
         self._adjust_scroll_height()
     
     def _adjust_scroll_height(self):
-        if hasattr(self, 'scroll_content'):
+        if hasattr(self, '_scroll_content'):
             window_height = self.height()
             form_height = self._main_frame.minimumSizeHint().height()
             scroll_height = form_height + int(window_height * 0.7)
-            self.scroll_content.setMinimumHeight(scroll_height)
+            self._scroll_content.setMinimumHeight(scroll_height)
     
     def resizeEvent(self, event):
         super().resizeEvent(event)
