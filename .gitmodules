@@ -1,0 +1,3 @@
+[submodule "thermograms"]
+	path = thermograms
+	url = https://github.com/RenderAlien/thermograms
