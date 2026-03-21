@@ -37,7 +37,8 @@ if settings.mock_heater:
     heater = MockHeater(settings.heater_COM_port_number, settings.heater_baud_rate)
 else:
     heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
-    
+
+
 if __name__ == "__main__":
     # Диагностика PySpin и камер FLIR
     try:
