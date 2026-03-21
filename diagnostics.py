@@ -1,13 +1,10 @@
 import logging
-import PySpin
-from typing import Tuple, Optional
 
 logger = logging.getLogger(__name__)
 
-
-
 def run_flir_diagnostics():
     try:
+        import PySpin
         logger.info("PySpin успешно импортирован")
         # Быстрая проверка камер без длительного удержания ресурсов
         system = PySpin.System.GetInstance()
@@ -33,8 +30,3 @@ def run_flir_diagnostics():
 
     except Exception as e:
         logger.error(f"Диагностика PySpin не удалась: {e}")
-
-if __name__ == '__main__':
-    # Для отладки при прямом запуске diagnostics.py
-    logging.basicConfig(level=logging.INFO)
-    run_flir_diagnostics()

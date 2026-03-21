@@ -10,7 +10,8 @@ from heater_interface import Heater
 from MainWindow import MainWindow
 from settings import PreviewSettings, Settings, UserData
 from StartDialog import StartDialog
-from diagnostics import run_flir_diagnostics
+import diagnostics
+from heater import MockHeater, Heater
 
 # Настройка базового конфигуратора логирования
 logging.basicConfig(
@@ -30,24 +31,21 @@ settings = Settings.load_from_file()
 user_data = UserData.get_instance()
 preview_settings = PreviewSettings.get_instance()
 
+
 # Инициализация нагревателя
 if settings.mock_heater:
-    class MockHeater:
-        def turn_on(self):
-            logger.info("СИМУЛЯЦИЯ: Нагреватель включен")
-        
-        def turn_off(self):
-            logger.info("СИМУЛЯЦИЯ: Нагреватель выключен")
-    
-    heater = MockHeater()
+    heater = MockHeater(settings.heater_COM_port_number, settings.heater_baud_rate)
 else:
     heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
-
+    
+if __name__ == "__main__":
     # Диагностика PySpin и камер FLIR
-if __name__ == '__main__':
-    success, camera_count = run_flir_diagnostics()
-    if not success or camera_count == 0:
-        logger.warning("Внимание: Активных камер FLIR нет.")
+    try:
+        camera_count = diagnostics.run_flir_diagnostics()
+        if camera_count == 0:
+            logger.warning("Внимание: Активных камер FLIR нет.")
+    except Exception as e:
+        logger.error(f"Ошибка при вызове диагностики: {e}")
     
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
