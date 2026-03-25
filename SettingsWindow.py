@@ -86,6 +86,13 @@ class SettingsWindow(QMainWindow):
         }
     """
 
+
+    CHECKBOX_STYLE = """
+        QCheckBox {
+            spacing: 10px;
+        }
+    """
+
     def __init__(self, settings: Settings, parent=None):
         super().__init__(parent)
         self._settings = settings
@@ -99,6 +106,7 @@ class SettingsWindow(QMainWindow):
     def _setup_window_properties(self):
         self.setWindowTitle("Настройки")
         self.setMinimumSize(*self.WINDOW_MIN_SIZE)
+        self.setStyleSheet(self.CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
 
     def _create_widgets(self):
         tab_font = QFont("Segoe UI", 11, QFont.Medium)
