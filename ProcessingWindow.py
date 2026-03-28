@@ -412,7 +412,7 @@ class ProcessingWindow(QMainWindow):
 
 class PipelineManager:
     def __init__(self):
-        self.stages = []  # [(method_idx, params)]
+        self.stages = []  # [[method_idx, params, applied]]
         self.methods = [ # self.methods[method_idx] = {'name', 'params': [(name, variable name, default value)], 'req_series', 'Timage', 'Tseries'}
             {
                 'name': 'Медианное размытие',
@@ -495,11 +495,13 @@ class PipelineManager:
         ]
 
     def add_stage(self, method_idx: str, params: Dict[str, Any]):
-        self.stages.append((method_idx, params))
+        self.stages.append([method_idx, params, False])
 
     def remove_stage(self, index: int):
         if 0 <= index < len(self.stages):
             del self.stages[index]
+        for i in range(len(self.stages)):
+            self.stages[i][2] = False
 
     def clear(self):
         self.stages.clear()
@@ -508,9 +510,10 @@ class PipelineManager:
         """Применить все этапы к одному кадру (пример)."""
         result = frame
         
-        for method_idx, params in self.stages:
-            if self.methods[method_idx]['req_series']: return Timage(array=need_to_apply)
-            result = self.methods[method_idx]['Timage'](result, *params)
+        for method_idx, params, applied in self.stages:
+            if not applied:
+                if self.methods[method_idx]['req_series']: return Timage(array=need_to_apply)
+                result = self.methods[method_idx]['Timage'](result, *params)
         
         return result
 
@@ -518,8 +521,10 @@ class PipelineManager:
         """Применить пайплайн ко всем кадрам."""
         result = frames
 
-        for method_idx, params in self.stages:
-            result = self.methods[method_idx]['Tseries'](result, *params)
+        for i, (method_idx, params, applied) in enumerate(self.stages):
+            if not applied:
+                result = self.methods[method_idx]['Tseries'](result, *params)
+            self.stages[i][2] = True
 
         return result
 
@@ -578,6 +583,7 @@ class ProcessingPresenter(QObject):
     figsize_scale = 4
     _preprocessed_output = None
     _data = Tseries(array=np.zeros((1, 1, 1), dtype=np.float32))
+    _path = ''
     colorbar = False
 
     _is_playing = False
@@ -691,15 +697,11 @@ class ProcessingPresenter(QObject):
         if self._pipeline.stages:
             self.status_message.emit("Применение пайплайна...")
             QApplication.processEvents()
-            try:
-                # Применить ко всем кадрам
-                self._data = self._pipeline.apply_to_series(self._data)
-                self._update_ui_from_model()
-                self.status_message.emit("Пайплайн применён ко всей серии")
-            except Exception as e:
-                self.status_message.emit(f"Ошибка применения пайплайна: {e}")
-            finally:
-                self.processing_finished.emit()
+
+            # Применить ко всем кадрам
+            self._data = self._pipeline.apply_to_series(self._data)
+            self._update_ui_from_model()
+            self.status_message.emit("Пайплайн применён ко всей серии")
 
     @Slot()
     def on_export_clicked(self):
@@ -740,6 +742,7 @@ class ProcessingPresenter(QObject):
                 return
             
             self._data = Tseries(array=frames)
+            self._path = file_path
 
             self._update_ui_from_model()
 
@@ -885,13 +888,12 @@ class ProcessingPresenter(QObject):
                 widget.deleteLater()
 
         # Добавить этапы из модели
-        for idx, (method_idx, params) in enumerate(self._pipeline.stages):
-            stage_widget = self._create_stage_widget(idx, self._pipeline.methods[method_idx]['name'], self._pipeline.methods[method_idx]['params'])
+        for idx, (method_idx, params, applied) in enumerate(self._pipeline.stages):
+            stage_widget = self._create_stage_widget(idx, self._pipeline.methods[method_idx]['name'], self._pipeline.methods[method_idx]['params'], applied)
             layout.insertWidget(layout.count() - 1, stage_widget)
 
-    def _create_stage_widget(self, index: int, stage_type: str, params: Dict) -> QWidget:
+    def _create_stage_widget(self, index: int, stage_type: str, params: Dict, applied: bool) -> QWidget:
         """Создаёт виджет для отображения одного этапа обработки."""
-        from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QToolButton
 
         widget = QWidget()
         layout = QHBoxLayout(widget)
@@ -907,11 +909,29 @@ class ProcessingPresenter(QObject):
         delete_btn.clicked.connect(lambda: self._remove_stage(index))
         layout.addWidget(delete_btn)
 
+        if applied: widget.setStyleSheet("background-color: #f0f0ff;")
+
         return widget
 
     def _remove_stage(self, index: int):
         """Удалить этап обработки по индексу."""
         self._pipeline.remove_stage(index)
+        frames = loadfile(self._path)
+
+        if isinstance(frames, dict):
+            for possible_key in frames.keys():
+                if isinstance(frames[possible_key], np.ndarray):
+                    frames = frames[possible_key]
+                    break
+        
+        if isinstance(frames, dict):
+            raise ValueError('This dict has no array to be series')
+        
+        if frames is None or frames.size == 0:
+            QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
+            return
+        
+        self._data = Tseries(array=frames)
         self._update_pipeline_ui()
         self.status_message.emit(f"Этап {index+1} удалён")
 
