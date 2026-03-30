@@ -18,7 +18,11 @@ from ui_constants import (
     CONTENT_MAX_WIDTH, 
     CONTENT_MIN_WIDTH, 
     INDICATOR_SIZE, 
-    LAYOUT_SPACING)
+    LAYOUT_SPACING,
+    GROUP_BOX_STYLE,
+    TAB_BAR_STYLE,
+    CHECKBOX_STYLE
+    )
 
 class SettingsWindow(QMainWindow):
     """Окно настроек приложения"""
@@ -32,7 +36,6 @@ class SettingsWindow(QMainWindow):
 
     HEATER_BUTTON_SIZE = QSize(FIELD_WIDTH, 55)
 
-    #LAYOUT_SPACING = 12
     LAYOUT_SPACING_SMALL = 10
     LAYOUT_SPACING_LARGE = 15
     CONTENT_WRAPPER_MARGINS = (0, 5, 0, 25)
@@ -58,44 +61,6 @@ class SettingsWindow(QMainWindow):
         INDICATOR_HEATING: "#e74c3c",
     }
 
-    GROUP_BOX_STYLE = """
-        QGroupBox {
-            font-weight: 600;
-            margin-top: 9px;
-            padding: 16px;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            left: 20px;
-            padding: 0 5px;
-        }
-    """
-
-    TAB_BAR_STYLE = """
-        QTabBar::tab {
-            padding: 16px 46px;
-            margin-right: 4px;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-            min-width: 100px;
-            border-bottom: 1px solid palette(button);
-        }
-        QTabBar::tab:selected {
-            border-bottom: 3px solid palette(highlight);
-            background-color: palette(base);
-        }
-        QTabBar::tab:hover {
-            background-color: palette(button);
-        }
-    """
-
-
-    CHECKBOX_STYLE = """
-        QCheckBox {
-            spacing: 10px;
-        }
-    """
-
     def __init__(self, settings: Settings, parent=None):
         super().__init__(parent)
         self._settings = settings
@@ -109,7 +74,7 @@ class SettingsWindow(QMainWindow):
     def _setup_window_properties(self):
         self.setWindowTitle("Настройки")
         self.setMinimumSize(WINDOW_MIN_SIZE)
-        self.setStyleSheet(self.CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
+        self.setStyleSheet(CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
 
     def _create_widgets(self):
         tab_font = QFont("Segoe UI", 11, QFont.Medium)
@@ -122,7 +87,7 @@ class SettingsWindow(QMainWindow):
         self._tab_widget.setDocumentMode(True)
         self._tab_widget.setMovable(False)
         self._tab_widget.setFont(tab_font)
-        self._tab_widget.setStyleSheet(self.TAB_BAR_STYLE)
+        self._tab_widget.setStyleSheet(TAB_BAR_STYLE)
 
         self._create_testing_tab(form_label_font)
         self._create_cameras_tab(form_label_font)
@@ -196,7 +161,7 @@ class SettingsWindow(QMainWindow):
     def _create_spinbox_row(self, label_text, default_value, min_val, max_val, font):
         """Создаёт горизонтальный layout с меткой и спинбоксом, возвращает layout и спинбокс."""
         layout = QHBoxLayout()
-        layout.setSpacing(self.LAYOUT_SPACING)
+        layout.setSpacing(LAYOUT_SPACING)
 
         label = QLabel(label_text)
         label.setFont(font)
@@ -216,7 +181,7 @@ class SettingsWindow(QMainWindow):
     def _create_combo_row(self, label_text, items, default_text, font):
         """Создаёт горизонтальный layout с меткой и комбобоксом, возвращает layout и комбобокс."""
         layout = QHBoxLayout()
-        layout.setSpacing(self.LAYOUT_SPACING)
+        layout.setSpacing(LAYOUT_SPACING)
 
         label = QLabel(label_text)
         label.setFont(font)
@@ -242,7 +207,7 @@ class SettingsWindow(QMainWindow):
         Возвращает layout и label значения для последующего обновления.
         """
         layout = QHBoxLayout()
-        layout.setSpacing(self.LAYOUT_SPACING)
+        layout.setSpacing(LAYOUT_SPACING)
 
         label = QLabel(label_text)
         label.setFont(font)
@@ -691,7 +656,7 @@ class SettingsWindow(QMainWindow):
     def _create_group_box(self, title, font):
         group = QGroupBox(title)
         group.setFont(font)
-        group.setStyleSheet(self.GROUP_BOX_STYLE)
+        group.setStyleSheet(GROUP_BOX_STYLE)
         return group
 
     def _load_settings(self):

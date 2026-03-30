@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont, QIcon, QPalette
 import res_rs
+from ui_constants import CONTENT_MARGINS, BUTTON_SIZE
 
 
 def is_dark_theme():
@@ -80,8 +81,6 @@ class TrajectoryDialog(QDialog):
         self._action_label.setFont(subtitle_font)
         self._action_label.setAlignment(Qt.AlignCenter)
         
-        BUTTON_SIZE = QSize(336, 45)
-        
         self._preview_button = QPushButton("Предпросмотр результата")
         self._preview_button.setFixedSize(BUTTON_SIZE)
         
@@ -102,10 +101,10 @@ class TrajectoryDialog(QDialog):
     
     def _setup_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setContentsMargins(*CONTENT_MARGINS)
         
         frame_layout = QVBoxLayout(self._frame)
-        frame_layout.setContentsMargins(30, 30, 30, 30)
+        frame_layout.setContentsMargins(*CONTENT_MARGINS)
         frame_layout.addWidget(self._title_label)
         frame_layout.addSpacing(20)
         frame_layout.addWidget(self._subtitle_label)

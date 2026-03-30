@@ -10,36 +10,11 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QSizePolicy, QFileDialog, 
     QMessageBox, QDialogButtonBox
 )
-from ui_constants import LABEL_MARGINS, BUTTON_HEIGHT, BUTTON_SIZE, LINE_HEIGHT
+from ui_constants import LABEL_MARGINS, BUTTON_HEIGHT, BUTTON_SIZE, LINE_HEIGHT,LINE_DEFAULT_STYLE, LINE_ERROR_STYLE, LINE_WARNING_STYLE
 from PySide6.QtGui import QFont
 
 
 class FinishDialog(QDialog):
-    
-    LINE_DEFAULT_STYLE = """
-        QLineEdit {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-    """
-    
-    LINE_ERROR_STYLE = """
-        QLineEdit {
-            border: 1px solid #e74c3c;
-            border-radius: 4px;
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-    """
-    
-    LINE_WARNING_STYLE = """
-        QLineEdit {
-            border: 1px solid #f39c12;
-            border-radius: 4px;
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-    """
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -91,7 +66,7 @@ class FinishDialog(QDialog):
         self._path_line_edit = QLineEdit()
         self._path_line_edit.setMinimumHeight(LINE_HEIGHT)
         self._path_line_edit.setPlaceholderText("Нажмите 'Обзор...' для выбора пути")
-        self._path_line_edit.setStyleSheet(self.LINE_DEFAULT_STYLE)
+        self._path_line_edit.setStyleSheet(LINE_DEFAULT_STYLE)
         self._path_line_edit.setReadOnly(True)
         
         self._change_path_button = QPushButton("Обзор...")
@@ -156,7 +131,7 @@ class FinishDialog(QDialog):
         path = self.get_save_path()
         
         # Сбрасываем стиль
-        self._path_line_edit.setStyleSheet(self.LINE_DEFAULT_STYLE)
+        self._path_line_edit.setStyleSheet(LINE_DEFAULT_STYLE)
         self._button_box.button(QDialogButtonBox.Yes).setEnabled(True)
         
         if not path:
@@ -206,7 +181,7 @@ class FinishDialog(QDialog):
     
     def _show_path_error(self, message: str):
         """Показывает ошибку пути"""
-        self._path_line_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+        self._path_line_edit.setStyleSheet(LINE_ERROR_STYLE)
         self._button_box.button(QDialogButtonBox.Yes).setEnabled(False)
         
         # Показываем всплывающую подсказку
@@ -224,7 +199,7 @@ class FinishDialog(QDialog):
     
     def _show_path_warning(self, message: str):
         """Показывает предупреждение о пути"""
-        self._path_line_edit.setStyleSheet(self.LINE_WARNING_STYLE)
+        self._path_line_edit.setStyleSheet(LINE_WARNING_STYLE)
         self._path_line_edit.setToolTip(message)
         # Не блокируем кнопку при предупреждении
         self._button_box.button(QDialogButtonBox.Yes).setEnabled(True)

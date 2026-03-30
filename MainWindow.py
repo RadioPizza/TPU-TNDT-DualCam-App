@@ -19,20 +19,12 @@ from RetestDialog import RetestDialog
 from settings import Settings, UserData
 from SettingsWindow import SettingsWindow
 from TrajectoryDialog import TrajectoryDialog
-from ui_constants import BUTTON_SIZE, CONTENT_MARGINS, WINDOW_MIN_SIZE, WINDOW_FIXED_SIZE, INDICATOR_SIZE
+from ui_constants import BUTTON_SIZE, CONTENT_MARGINS, WINDOW_MIN_SIZE, WINDOW_FIXED_SIZE, INDICATOR_SIZE, VIDEO_STYLE
 
 logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
-    
-    VIDEO_STYLE = """
-        QGraphicsView {
-            background-color: #333333;
-            border: 2px solid #3c3c3c;
-            border-radius: 8px;
-        }
-    """
 
     def __init__(self, heater: Heater, settings: Settings, parent=None):
         super().__init__(parent)
@@ -87,7 +79,7 @@ class MainWindow(QMainWindow):
         self._visible_video = QGraphicsView()
         self._visible_video.setMinimumSize(WINDOW_MIN_SIZE)
         self._visible_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._visible_video.setStyleSheet(self.VIDEO_STYLE)
+        self._visible_video.setStyleSheet(VIDEO_STYLE)
         
         self._thermal_label = QLabel("Тепловизор")
         self._thermal_label.setFont(title_font)
@@ -95,7 +87,7 @@ class MainWindow(QMainWindow):
         self._thermal_video = QGraphicsView()
         self._thermal_video.setMinimumSize(WINDOW_MIN_SIZE)
         self._thermal_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._thermal_video.setStyleSheet(self.VIDEO_STYLE)
+        self._thermal_video.setStyleSheet(VIDEO_STYLE)
         
         self._process_status_label = QLabel("Готов к началу")
         self._process_status_label.setFont(process_status_font)

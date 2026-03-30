@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 from settings import Settings, UserData
 from osk import OnScreenKeyboard as osk
-from ui_constants import BUTTON_HEIGHT, LINE_HEIGHT, LABEL_MARGINS, CONTENT_MARGINS, SETTINGS_WINDOW_SIZE
+from ui_constants import BUTTON_HEIGHT, LINE_HEIGHT, LABEL_MARGINS, CONTENT_MARGINS, SETTINGS_WINDOW_SIZE, LINE_DEFAULT_STYLE, LINE_ERROR_STYLE
 
 
 class FocusWatcher(QObject):
@@ -34,22 +34,6 @@ class FocusWatcher(QObject):
 
 
 class StartDialog(QDialog):
-    
-    LINE_DEFAULT_STYLE = """
-        QLineEdit {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-    """
-    
-    LINE_ERROR_STYLE = """
-        QLineEdit {
-            border: 1px solid #e74c3c;
-            border-radius: 4px;
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-    """
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -145,7 +129,7 @@ class StartDialog(QDialog):
     def _apply_default_style(self):
         for field in [self._name_edit, self._surname_edit, 
                      self._object_edit, self._path_edit]:
-            field.setStyleSheet(self.LINE_DEFAULT_STYLE)
+            field.setStyleSheet(LINE_DEFAULT_STYLE)
     
     def _setup_layout(self):
         main_layout = QVBoxLayout(self)
@@ -276,39 +260,39 @@ class StartDialog(QDialog):
         
         if not user_name:
             errors.append("Имя не может быть пустым.")
-            self._name_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._name_edit.setStyleSheet(LINE_ERROR_STYLE)
         elif not user_name.isalpha():
             errors.append("Имя должно содержать только буквы.")
-            self._name_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._name_edit.setStyleSheet(LINE_ERROR_STYLE)
         elif len(user_name) == 1:
             errors.append("Имя не может состоять из одной буквы.")
-            self._name_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._name_edit.setStyleSheet(LINE_ERROR_STYLE)
         
         if not user_surname:
             errors.append("Фамилия не может быть пустой.")
-            self._surname_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._surname_edit.setStyleSheet(LINE_ERROR_STYLE)
         elif not user_surname.isalpha():
             errors.append("Фамилия должна содержать только буквы.")
-            self._surname_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._surname_edit.setStyleSheet(LINE_ERROR_STYLE)
         elif len(user_surname) == 1:
             errors.append("Фамилия не может состоять из одной буквы.")
-            self._surname_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._surname_edit.setStyleSheet(LINE_ERROR_STYLE)
         
         if not object_of_testing:
             errors.append("Объект контроля не может быть пустым.")
-            self._object_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._object_edit.setStyleSheet(LINE_ERROR_STYLE)
         
         if not save_path or save_path == '...':
             errors.append("Необходимо выбрать путь сохранения.")
-            self._path_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+            self._path_edit.setStyleSheet(LINE_ERROR_STYLE)
         else:
             try:
                 if not Path(save_path).exists():
                     errors.append("Указанный путь сохранения недействителен.")
-                    self._path_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+                    self._path_edit.setStyleSheet(LINE_ERROR_STYLE)
             except (OSError, ValueError):
                 errors.append("Указанный путь сохранения недействителен.")
-                self._path_edit.setStyleSheet(self.LINE_ERROR_STYLE)
+                self._path_edit.setStyleSheet(LINE_ERROR_STYLE)
         
         if errors:
             QMessageBox.critical(self, "Ошибка заполнения формы", "\n".join(errors))

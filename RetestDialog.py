@@ -11,7 +11,6 @@ from PySide6.QtGui import QFont
 from ui_constants import BUTTON_SIZE, CONTENT_MARGINS, RETEST_DIALOG_SIZE, LAYOUT_SPACING
 
 class RetestDialog(QDialog):
-    #BUTTON_SIZE = QSize(120, 45)
     
     def __init__(self, x: int, y: int, parent=None):
         super().__init__(parent)
