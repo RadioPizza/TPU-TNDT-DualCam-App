@@ -10,18 +10,21 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont
 from settings import Settings
-
+from ui_constants import (
+    BUTTON_HEIGHT, 
+    BUTTON_SIZE, 
+    WINDOW_MIN_SIZE, 
+    WINDOW_MIN_SIZE, 
+    CONTENT_MAX_WIDTH, 
+    CONTENT_MIN_WIDTH, 
+    INDICATOR_SIZE, 
+    LAYOUT_SPACING)
 
 class SettingsWindow(QMainWindow):
     """Окно настроек приложения"""
     WIDGET_SPACING = 20
     FIELD_WIDTH = 250
     FIELD_HEIGHT = 32
-    BUTTON_HEIGHT = FIELD_HEIGHT + 3
-    BUTTON_SIZE = QSize(120, BUTTON_HEIGHT)
-    WINDOW_MIN_SIZE = (850, 425)
-    CONTENT_MIN_WIDTH = 800
-    CONTENT_MAX_WIDTH = 1200
 
     INDICATOR_BORDER_RADIUS = 6
     INDICATOR_BORDER_DIAMETER = INDICATOR_BORDER_RADIUS * 2
@@ -29,7 +32,7 @@ class SettingsWindow(QMainWindow):
 
     HEATER_BUTTON_SIZE = QSize(FIELD_WIDTH, 55)
 
-    LAYOUT_SPACING = 12
+    #LAYOUT_SPACING = 12
     LAYOUT_SPACING_SMALL = 10
     LAYOUT_SPACING_LARGE = 15
     CONTENT_WRAPPER_MARGINS = (0, 5, 0, 25)
@@ -105,7 +108,7 @@ class SettingsWindow(QMainWindow):
 
     def _setup_window_properties(self):
         self.setWindowTitle("Настройки")
-        self.setMinimumSize(*self.WINDOW_MIN_SIZE)
+        self.setMinimumSize(WINDOW_MIN_SIZE)
         self.setStyleSheet(self.CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
 
     def _create_widgets(self):
@@ -127,14 +130,14 @@ class SettingsWindow(QMainWindow):
         self._create_interface_tab(form_label_font)
 
         self._save_button = QPushButton("Применить")
-        self._save_button.setMinimumSize(self.BUTTON_SIZE)
+        self._save_button.setMinimumSize(BUTTON_SIZE)
         self._save_button.setDefault(True)
 
         self._cancel_button = QPushButton("Отмена")
-        self._cancel_button.setMinimumSize(self.BUTTON_SIZE)
+        self._cancel_button.setMinimumSize(BUTTON_SIZE)
 
         self._reset_button = QPushButton("Сбросить")
-        self._reset_button.setMinimumSize(self.BUTTON_SIZE)
+        self._reset_button.setMinimumSize(BUTTON_SIZE)
         self._reset_button.setEnabled(False)
 
     def _setup_layout(self):
@@ -158,8 +161,8 @@ class SettingsWindow(QMainWindow):
         footer_layout.addWidget(self._save_button)
         content_wrapper_layout.addLayout(footer_layout)
 
-        content_wrapper.setMinimumWidth(self.CONTENT_MIN_WIDTH)
-        content_wrapper.setMaximumWidth(self.CONTENT_MAX_WIDTH)
+        content_wrapper.setMinimumWidth(CONTENT_MIN_WIDTH)
+        content_wrapper.setMaximumWidth(CONTENT_MAX_WIDTH)
 
         center_layout.addWidget(content_wrapper)
         center_layout.addStretch(1)

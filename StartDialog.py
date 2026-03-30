@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 )
 from settings import Settings, UserData
 from osk import OnScreenKeyboard as osk
+from ui_constants import BUTTON_HEIGHT, LINE_HEIGHT, LABEL_MARGINS, CONTENT_MARGINS, SETTINGS_WINDOW_SIZE
 
 
 class FocusWatcher(QObject):
@@ -33,11 +34,6 @@ class FocusWatcher(QObject):
 
 
 class StartDialog(QDialog):
-    LABEL_MARGINS = (5, 0, 0, 0)  # left, top, right, bottom
-    
-    LINE_HEIGHT = 32
-    
-    BUTTON_HEIGHT = LINE_HEIGHT + 3
     
     LINE_DEFAULT_STYLE = """
         QLineEdit {
@@ -67,8 +63,8 @@ class StartDialog(QDialog):
     def _setup_window_properties(self):
         self.setModal(True)
         self.setWindowTitle("TPU-TNDT-DualCam-App")
-        self.resize(800, 600)
-        self.setMinimumSize(600, 400)
+        self.resize(800, 600) #???
+        self.setMinimumSize(SETTINGS_WINDOW_SIZE)
     
     def _create_widgets(self):
         title_font = QFont("Segoe UI")
@@ -102,44 +98,44 @@ class StartDialog(QDialog):
         
         self._name_label = QLabel("Имя")
         self._name_label.setFont(form_label_font)
-        self._name_label.setContentsMargins(*self.LABEL_MARGINS)
+        self._name_label.setContentsMargins(*LABEL_MARGINS)
         
         self._name_edit = QLineEdit()
-        self._name_edit.setMinimumHeight(self.LINE_HEIGHT)
+        self._name_edit.setMinimumHeight(LINE_HEIGHT)
         
         self._surname_label = QLabel("Фамилия")
         self._surname_label.setFont(form_label_font)
-        self._surname_label.setContentsMargins(*self.LABEL_MARGINS)
+        self._surname_label.setContentsMargins(*LABEL_MARGINS)
         
         self._surname_edit = QLineEdit()
-        self._surname_edit.setMinimumHeight(self.LINE_HEIGHT)
+        self._surname_edit.setMinimumHeight(LINE_HEIGHT)
         
         self._object_label = QLabel("Объект контроля")
         self._object_label.setFont(form_label_font)
-        self._object_label.setContentsMargins(*self.LABEL_MARGINS)
+        self._object_label.setContentsMargins(*LABEL_MARGINS)
         
         self._object_edit = QLineEdit()
-        self._object_edit.setMinimumHeight(self.LINE_HEIGHT)
+        self._object_edit.setMinimumHeight(LINE_HEIGHT)
         
         self._path_label = QLabel("Путь сохранения файлов")
         self._path_label.setFont(form_label_font)
-        self._path_label.setContentsMargins(*self.LABEL_MARGINS)
+        self._path_label.setContentsMargins(*LABEL_MARGINS)
         
         self._path_edit = QLineEdit()
         self._path_edit.setReadOnly(True)
-        self._path_edit.setMinimumHeight(self.LINE_HEIGHT)
+        self._path_edit.setMinimumHeight(LINE_HEIGHT)
         self._path_edit.setText("...")
         
         self._change_path_button = QPushButton("Обзор...")
-        self._change_path_button.setMinimumHeight(self.BUTTON_HEIGHT)
+        self._change_path_button.setMinimumHeight(BUTTON_HEIGHT)
         
         self._start_button = QPushButton("Начать")
-        self._start_button.setMinimumHeight(self.BUTTON_HEIGHT)
+        self._start_button.setMinimumHeight(BUTTON_HEIGHT)
         self._start_button.setMinimumWidth(120)
         self._start_button.setDefault(True)
 
         self._exit_button = QPushButton("Выход")
-        self._exit_button.setMinimumHeight(self.BUTTON_HEIGHT)
+        self._exit_button.setMinimumHeight(BUTTON_HEIGHT)
         self._exit_button.setMinimumWidth(120)
         
         self._input_fields = [self._name_edit, self._surname_edit, self._object_edit]
@@ -175,7 +171,7 @@ class StartDialog(QDialog):
         scroll_layout.addStretch()
         
         frame_layout = QVBoxLayout(self._main_frame)
-        frame_layout.setContentsMargins(30, 30, 30, 30)
+        frame_layout.setContentsMargins(*CONTENT_MARGINS)
         frame_layout.setSpacing(3)
         
         frame_layout.addWidget(self._auth_title_label)

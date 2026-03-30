@@ -19,12 +19,12 @@ from RetestDialog import RetestDialog
 from settings import Settings, UserData
 from SettingsWindow import SettingsWindow
 from TrajectoryDialog import TrajectoryDialog
+from ui_constants import BUTTON_SIZE, CONTENT_MARGINS, WINDOW_MIN_SIZE, WINDOW_FIXED_SIZE, INDICATOR_SIZE
 
 logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
-    BUTTON_SIZE = QSize(120, 40)
     
     VIDEO_STYLE = """
         QGraphicsView {
@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
 
     def _setup_window_properties(self):
         self.setWindowTitle("TPU-TNDT-DualCam-App")
-        self.setMinimumSize(1280, 720)
+        self.setMinimumSize(WINDOW_FIXED_SIZE)
         self.showMaximized()
 
     def _create_widgets(self):
@@ -79,13 +79,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._central_widget)
         
         self._main_layout = QVBoxLayout(self._central_widget)
-        self._main_layout.setContentsMargins(30, 60, 30, 60)
+        self._main_layout.setContentsMargins(*CONTENT_MARGINS)
         
         self._visible_label = QLabel("Камера видимого спектра")
         self._visible_label.setFont(title_font)
         
         self._visible_video = QGraphicsView()
-        self._visible_video.setMinimumSize(400, 200)
+        self._visible_video.setMinimumSize(WINDOW_MIN_SIZE)
         self._visible_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._visible_video.setStyleSheet(self.VIDEO_STYLE)
         
@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
         self._thermal_label.setFont(title_font)
         
         self._thermal_video = QGraphicsView()
-        self._thermal_video.setMinimumSize(400, 200)
+        self._thermal_video.setMinimumSize(WINDOW_MIN_SIZE)
         self._thermal_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._thermal_video.setStyleSheet(self.VIDEO_STYLE)
         
@@ -108,15 +108,15 @@ class MainWindow(QMainWindow):
         self._progress_bar.setMinimumHeight(20)
         
         self._play_button = QPushButton("Старт")
-        self._play_button.setMinimumSize(self.BUTTON_SIZE)
+        self._play_button.setMinimumSize(BUTTON_SIZE)
         self._play_button.setDefault(True)
         
         self._stop_button = QPushButton("Стоп")
-        self._stop_button.setMinimumSize(self.BUTTON_SIZE)
+        self._stop_button.setMinimumSize(BUTTON_SIZE)
         self._stop_button.setEnabled(False)
         
         self._settings_button = QPushButton("Настройки")
-        self._settings_button.setMinimumSize(self.BUTTON_SIZE)
+        self._settings_button.setMinimumSize(BUTTON_SIZE)
 
     def _setup_layout(self):
         visible_layout = QVBoxLayout()
@@ -572,7 +572,7 @@ class MainWindow(QMainWindow):
         self.lbl_disk = QLabel("Диск: вычисление...")
 
         for label in [self.lbl_position, self.lbl_heater, self.lbl_cam_vis, self.lbl_fps_vis, self.lbl_cam_therm, self.lbl_fps_therm, self.lbl_recording]:
-            label.setStyleSheet("padding: 0 5px;")
+            label.setFixedSize(INDICATOR_SIZE) # Для всех одинаковый размер
 
 
         self.status_bar.addWidget(self.lbl_position)

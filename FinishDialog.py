@@ -10,17 +10,11 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QSizePolicy, QFileDialog, 
     QMessageBox, QDialogButtonBox
 )
+from ui_constants import LABEL_MARGINS, BUTTON_HEIGHT, BUTTON_SIZE, LINE_HEIGHT
 from PySide6.QtGui import QFont
 
 
 class FinishDialog(QDialog):
-    LABEL_MARGINS = (5, 0, 0, 0)  # left, top, right, bottom
-    
-    LINE_HEIGHT = 32
-    
-    BUTTON_HEIGHT = LINE_HEIGHT + 3
-    
-    BUTTON_SIZE = QSize(120, 45)
     
     LINE_DEFAULT_STYLE = """
         QLineEdit {
@@ -92,16 +86,16 @@ class FinishDialog(QDialog):
         
         self._path_label = QLabel("Путь сохранения файлов")
         self._path_label.setFont(form_label_font)
-        self._path_label.setContentsMargins(*self.LABEL_MARGINS)
+        self._path_label.setContentsMargins(*LABEL_MARGINS)
         
         self._path_line_edit = QLineEdit()
-        self._path_line_edit.setMinimumHeight(self.LINE_HEIGHT)
+        self._path_line_edit.setMinimumHeight(LINE_HEIGHT)
         self._path_line_edit.setPlaceholderText("Нажмите 'Обзор...' для выбора пути")
         self._path_line_edit.setStyleSheet(self.LINE_DEFAULT_STYLE)
         self._path_line_edit.setReadOnly(True)
         
         self._change_path_button = QPushButton("Обзор...")
-        self._change_path_button.setFixedSize(80, self.BUTTON_HEIGHT)
+        self._change_path_button.setFixedSize(80, BUTTON_HEIGHT)
         
         self._button_box = QDialogButtonBox(
             QDialogButtonBox.Yes | QDialogButtonBox.No,
@@ -109,8 +103,8 @@ class FinishDialog(QDialog):
         )
         self._button_box.button(QDialogButtonBox.Yes).setText("Завершить")
         self._button_box.button(QDialogButtonBox.No).setText("Отмена")
-        self._button_box.button(QDialogButtonBox.Yes).setMinimumSize(self.BUTTON_SIZE)
-        self._button_box.button(QDialogButtonBox.No).setMinimumSize(self.BUTTON_SIZE)
+        self._button_box.button(QDialogButtonBox.Yes).setMinimumSize(BUTTON_SIZE)
+        self._button_box.button(QDialogButtonBox.No).setMinimumSize(BUTTON_SIZE)
         self._button_box.button(QDialogButtonBox.No).setDefault(True)
     
     def _setup_layout(self):
