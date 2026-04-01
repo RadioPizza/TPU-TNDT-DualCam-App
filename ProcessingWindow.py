@@ -10,13 +10,15 @@ from PySide6.QtWidgets import (
     QListWidget, QListWidgetItem, QCheckBox, QMenuBar,
     QMenu, QStatusBar, QScrollArea, QGroupBox, QSpacerItem,
     QSizePolicy, QToolButton, QButtonGroup, QFileDialog, QMessageBox, QDoubleSpinBox,
-    QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QSpinBox
+    QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QSpinBox, QApplication
 )
 from PySide6.QtGui import QAction, QFont, QImage, QPixmap
 from thermograms.thermograms import loadfile, Timage, Tseries, CAM_K
 import numpy as np
 import cv2
 from typing import List, Optional, Tuple, Dict, Any
+from scipy.io import savemat
+from pickle import dump as pickle_dump, load as pickle_load
 
 # Импорт единых шрифтов и констант (предполагается наличие модулей)
 try:
@@ -297,26 +299,6 @@ class ProcessingWindow(QMainWindow):
 
         return panel
 
-    def _add_demo_stage(self, number: int, name: str, checked: bool):
-        """Вспомогательный метод для добавления демо-этапа пайплайна."""
-        stage_widget = QWidget()
-        stage_layout = QHBoxLayout(stage_widget)
-        stage_layout.setContentsMargins(0, 0, 0, 0)
-        stage_layout.setSpacing(5)
-
-        # Порядковый номер
-        number_label = QLabel(f"{number}. {name}")
-        number_label.setAlignment(Qt.AlignLeft)
-        number_label.setFont(fonts['regular'])
-        stage_layout.addWidget(number_label)
-
-        # Кнопка удаления
-        delete_button = QToolButton()
-        delete_button.setText("✕")
-        stage_layout.addWidget(delete_button)
-
-        self._stages_layout.insertWidget(self._stages_layout.count() - 1, stage_widget)
-
     def _setup_layout(self):
         """Размещение главного сплиттера в центральном виджете."""
         main_layout = QVBoxLayout(self._central_widget)
@@ -423,14 +405,14 @@ class PipelineManager:
             },
             {
                 'name': 'Размытие по Гауссу',
-                'params': [('Радиус', 3), ('Ст. отклонение', 1)],
+                'params': [('Радиус', 3), ('Ст. отклонение', 1.0)],
                 'req_series': False,
                 'Timage': lambda t, radius, stddev: t.gaussian_blur(stddev, radius),
                 'Tseries': lambda t, radius, stddev: t.gaussian_blur(stddev, radius),
             },
             {
                 'name': 'Увеличение резкости',
-                'params': [('Радиус', 3), ('Ст. отклонение', 1)],
+                'params': [('Радиус', 3), ('Ст. отклонение', 1.0)],
                 'req_series': False,
                 'Timage': lambda t, radius, stddev: t.sharpness(radius, stddev),
                 'Tseries': lambda t, radius, stddev: t.sharpness(radius, stddev),
@@ -439,15 +421,15 @@ class PipelineManager:
                 'name': 'Исправление искажений',
                 'params': [],
                 'req_series': False,
-                'Timage': lambda t, radius: t.distorted(self, CAM_K, scale=1.15),
-                'Tseries': lambda t, radius: t.distorted(self, CAM_K, scale=1.15),
+                'Timage': lambda t: t.distorted(CAM_K, scale=1.15)[17:-17, 6:-6],
+                'Tseries': lambda t: t.distorted(CAM_K, scale=1.15)[17:-17, 6:-6],
             },
             #{
             #    'name': 'Аффинные преобразования',
             #    'params': [],
             #    'req_series': False,
-            #    'Timage': lambda t, radius: t.median_blur(radius),
-            #    'Tseries': lambda t, radius: t.median_blur(radius),
+            #    'Timage': lambda t: t.median_blur(radius),
+            #    'Tseries': lambda t: t.median_blur(radius),
             #},
             {
                 'name': 'Обрезка',
@@ -498,10 +480,10 @@ class PipelineManager:
         self.stages.append([method_idx, params, False])
 
     def remove_stage(self, index: int):
-        if 0 <= index < len(self.stages):
-            del self.stages[index]
-        for i in range(len(self.stages)):
-            self.stages[i][2] = False
+        if self.stages[index][2]:
+            for i in range(len(self.stages)):
+                self.stages[i][2] = False
+        del self.stages[index]
 
     def clear(self):
         self.stages.clear()
@@ -527,6 +509,10 @@ class PipelineManager:
             self.stages[i][2] = True
 
         return result
+    
+    def not_applied(self):
+        for i in range(len(self.stages)):
+            self.stages[i][2] = False # not applied
 
 
 class ParameterDialog(QDialog):
@@ -638,6 +624,10 @@ class ProcessingPresenter(QObject):
         self._view.open_action.triggered.connect(self.on_open_file)
         self._view.preprocess_action.triggered.connect(self.on_preprocess)
         self._view.toggle_colorbar_action.toggled.connect(self.on_toggle_colorbar)
+        self._view.export_npy_action.triggered.connect(self.on_export_npy_action)
+        self._view.export_mat_action.triggered.connect(self.on_export_mat_action)
+        self._view.export_pipeline_action.triggered.connect(self.on_export_pipeline_action)
+        self._view.import_pipeline_action.triggered.connect(self.on_import_pipeline_action)
 
     # ---------- Слоты для пользовательских действий ----------
     @Slot(str)
@@ -717,7 +707,7 @@ class ProcessingPresenter(QObject):
             self._view,
             "Открыть файл термограмм",
             "",
-            "Все поддерживаемые файлы (*.npy *.mat);;NumPy файлы (*.npy);;MATLAB файлы (*.mat);;Все файлы (*)"
+            "Все поддерживаемые файлы (*.npy *.mat *.ravi);;NumPy файлы (*.npy);;MATLAB файлы (*.mat);;RAVI файлы (*.ravi);;Все файлы (*)"
         )
         if not file_path:
             return  # Пользователь отменил выбор
@@ -745,6 +735,9 @@ class ProcessingPresenter(QObject):
             self._path = file_path
 
             self._update_ui_from_model()
+
+            self._pipeline.not_applied()
+            self._update_pipeline_ui()
 
             self.status_message.emit('Готов к обработке')
 
@@ -827,6 +820,95 @@ class ProcessingPresenter(QObject):
         # Обновляем UI
         self._update_pipeline_ui()
         self.status_message.emit(f"Добавлен этап: {method['name']}")
+    
+    @Slot()
+    def on_export_npy_action(self):
+        """Экспорт данных в формате .npy."""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self._view,
+            "Сохранить как .npy",
+            "",
+            "NumPy files (*.npy)"
+        )
+        if not file_path:
+            return
+
+        try:
+            self.status_message.emit(f"Экспорт данных в {file_path}")
+            QApplication.processEvents()
+            np.save(file_path, self._data.array)
+            self.status_message.emit(f"Данные экспортированы в {file_path}")
+        except Exception as e:
+            QMessageBox.critical(self._view, "Ошибка экспорта", f"Не удалось экспортировать данные:\n{str(e)}")
+            self.status_message.emit("Ошибка экспорта")
+    
+    @Slot()
+    def on_export_mat_action(self):
+        """Экспорт данных в формате .mat."""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self._view,
+            "Сохранить как .mat",
+            "",
+            "MatLab files (*.mat)"
+        )
+        if not file_path:
+            return
+
+        try:
+            self.status_message.emit(f"Экспорт данных в {file_path}")
+            QApplication.processEvents()
+            savemat(file_path, {'data': self._data.array})
+            self.status_message.emit(f"Данные экспортированы в {file_path}")
+        except Exception as e:
+            QMessageBox.critical(self._view, "Ошибка экспорта", f"Не удалось экспортировать данные:\n{str(e)}")
+            self.status_message.emit("Ошибка экспорта")
+    
+    @Slot()
+    def on_export_pipeline_action(self):
+        """Экспорт пайплайна"""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self._view,
+            "Сохранить как .pickle",
+            "",
+            "Pickle files (*.pickle)"
+        )
+        if not file_path:
+            return
+
+        try:
+            self.status_message.emit(f"Экспорт данных в {file_path}")
+            QApplication.processEvents()
+            with open(file_path, 'wb') as file:
+                pickle_dump([[method_idx, params, False] for method_idx, params, applied in self._pipeline.stages], file)
+            self.status_message.emit(f"Данные экспортированы в {file_path}")
+        except Exception as e:
+            QMessageBox.critical(self._view, "Ошибка экспорта", f"Не удалось экспортировать данные:\n{str(e)}")
+            self.status_message.emit("Ошибка экспорта")
+    
+    @Slot()
+    def on_import_pipeline_action(self):
+        """Экспорт пайплайна"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self._view,
+            "Открыть файл пайплайна",
+            "",
+            "Pickle files (*.pickle)"
+        )
+        if not file_path:
+            return
+
+        try:
+            self.status_message.emit(f"Импорт пайплайна из {file_path}")
+            QApplication.processEvents()
+            with open(file_path, 'rb') as file:
+                self._pipeline.stages = pickle_load(file)
+            self._preprocessed_output = None
+            self._update_ui_from_model()
+            self.status_message.emit(f"Пайплайн импортирован")
+        except Exception as e:
+            QMessageBox.critical(self._view, "Ошибка импорта", f"Не удалось импортировать пайплайн:\n{str(e)}")
+            self.status_message.emit("Ошибка импорта")
+        
 
     # ---------- Внутренние методы ----------
     def _on_playback_timer(self):
@@ -889,7 +971,12 @@ class ProcessingPresenter(QObject):
 
         # Добавить этапы из модели
         for idx, (method_idx, params, applied) in enumerate(self._pipeline.stages):
-            stage_widget = self._create_stage_widget(idx, self._pipeline.methods[method_idx]['name'], self._pipeline.methods[method_idx]['params'], applied)
+            stage_widget = self._create_stage_widget(
+                idx,
+                self._pipeline.methods[method_idx]['name'],
+                [(param_name, param_value) for (param_value, (param_name, _)) in zip(params, self._pipeline.methods[method_idx]['params'])],
+                applied
+            )
             layout.insertWidget(layout.count() - 1, stage_widget)
 
     def _create_stage_widget(self, index: int, stage_type: str, params: Dict, applied: bool) -> QWidget:
@@ -900,7 +987,12 @@ class ProcessingPresenter(QObject):
         layout.setContentsMargins(0, 0, 0, 0)
 
         # Метка с номером и названием
-        label = QLabel(f"{index+1}. {stage_type}")
+        label = f"{index+1}. {stage_type}"
+
+        for param_name, param_value in params:
+            label += f'\n{param_name}={param_value}'
+
+        label = QLabel(label)
         layout.addWidget(label)
 
         # Кнопка удаления
@@ -909,31 +1001,34 @@ class ProcessingPresenter(QObject):
         delete_btn.clicked.connect(lambda: self._remove_stage(index))
         layout.addWidget(delete_btn)
 
-        if applied: widget.setStyleSheet("background-color: #f0f0ff;")
+        if applied: widget.setStyleSheet("background-color: #e0e0ff;")
 
         return widget
 
     def _remove_stage(self, index: int):
         """Удалить этап обработки по индексу."""
-        self._pipeline.remove_stage(index)
-        frames = loadfile(self._path)
+        stage_name = self._pipeline.methods[self._pipeline.stages[index][0]]['name']
+        self.status_message.emit(f'Удаление этапа обработки: {index+1}. {stage_name}')
+        QApplication.processEvents()
 
-        if isinstance(frames, dict):
-            for possible_key in frames.keys():
-                if isinstance(frames[possible_key], np.ndarray):
-                    frames = frames[possible_key]
-                    break
+        if self._pipeline.stages[index][2]:
+            frames = loadfile(self._path)
+            if isinstance(frames, dict):
+                for possible_key in frames.keys():
+                    if isinstance(frames[possible_key], np.ndarray):
+                        frames = frames[possible_key]
+                        break
+            if isinstance(frames, dict):
+                raise ValueError('This dict has no array to be series')
+            if frames is None or frames.size == 0:
+                QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
+                return
+            self._data = Tseries(array=frames)
+
+        self._pipeline.remove_stage(index)
         
-        if isinstance(frames, dict):
-            raise ValueError('This dict has no array to be series')
-        
-        if frames is None or frames.size == 0:
-            QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
-            return
-        
-        self._data = Tseries(array=frames)
-        self._update_pipeline_ui()
-        self.status_message.emit(f"Этап {index+1} удалён")
+        self._update_ui_from_model()
+        self.status_message.emit(f"Этап {index+1}. {stage_name} удалён")
 
     # ---------- Вспомогательные методы для интеграции с view ----------
     def show(self):
@@ -941,7 +1036,6 @@ class ProcessingPresenter(QObject):
         self._view.show()
 
     # ---------- Методы для обновления отображения кадра ----------
-    # В реальном приложении нужно конвертировать numpy в QPixmap и обновлять _monitor_label
     @Slot(np.ndarray)
     def on_frame_updated(self, img: np.ndarray):
         """Слот для отображения кадра. Вызывается по сигналу frame_updated."""
@@ -956,7 +1050,6 @@ class ProcessingPresenter(QObject):
         self._view._monitor_label.setPixmap(pixmap)
 
 if __name__ == '__main__':
-    from PySide6.QtWidgets import QApplication
     import sys
 
     app = QApplication(sys.argv)
