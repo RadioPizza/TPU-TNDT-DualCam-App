@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QSpinBox, QApplication
 )
 from PySide6.QtGui import QAction, QFont, QImage, QPixmap
-from thermograms.thermograms import loadfile, Timage, Tseries, CAM_K
+from thermograms.thermograms import loadfile, Timage, Tseries, CAM_K, WB_PALETTE, IRON_PALETTE
 import numpy as np
 import cv2
 from typing import List, Optional, Tuple, Dict, Any
@@ -68,7 +68,7 @@ x = (need_to_apply.shape[1] - text_w) // 2
 y = (need_to_apply.shape[0] + text_h) // 2
 # Наносим текст
 cv2.putText(need_to_apply, text, (x, y), font, font_scale, color, thickness)
-need_to_apply = need_to_apply[..., 0]
+need_to_apply = need_to_apply[..., 0].astype('float16')
 
 FPS = 30 # TODO
 
@@ -214,9 +214,10 @@ class ProcessingWindow(QMainWindow):
 
         # Метки времени (начало/конец)
         time_labels_layout = QHBoxLayout()
-        self._start_time_label = QLabel("0 %")
+        self._start_time_label = QLabel("0")
         self._start_time_label.setFont(fonts['small'])
-        self._end_time_label = QLabel("100 %")
+        self._start_time_label.setAlignment(Qt.AlignLeft)
+        self._end_time_label = QLabel("1")
         self._end_time_label.setFont(fonts['small'])
         self._end_time_label.setAlignment(Qt.AlignRight)
 
@@ -565,6 +566,7 @@ class ProcessingPresenter(QObject):
     pipeline_changed = Signal(list)              # список этапов для отображения
     status_message = Signal(str)                 # сообщение в строку состояния
     processing_finished = Signal()
+    palette = WB_PALETTE
 
     figsize_scale = 4
     _preprocessed_output = None
@@ -628,6 +630,9 @@ class ProcessingPresenter(QObject):
         self._view.export_mat_action.triggered.connect(self.on_export_mat_action)
         self._view.export_pipeline_action.triggered.connect(self.on_export_pipeline_action)
         self._view.import_pipeline_action.triggered.connect(self.on_import_pipeline_action)
+        self._view.palette_default.triggered.connect(self.on_palette_default)
+        self._view.palette_gray.triggered.connect(self.on_palette_gray)
+        self._view.palette_iron.triggered.connect(self.on_palette_iron)
 
     # ---------- Слоты для пользовательских действий ----------
     @Slot(str)
@@ -733,11 +738,9 @@ class ProcessingPresenter(QObject):
             
             self._data = Tseries(array=frames)
             self._path = file_path
+            self._pipeline.not_applied()
 
             self._update_ui_from_model()
-
-            self._pipeline.not_applied()
-            self._update_pipeline_ui()
 
             self.status_message.emit('Готов к обработке')
 
@@ -747,11 +750,13 @@ class ProcessingPresenter(QObject):
         
     @Slot()
     def on_preprocess(self):
-        img = self._data[0].imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
+        #img = self._data[0].imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
+        img = self._data[0].show(palette=self.palette)
         self._preprocessed_output = np.zeros(shape=(self._data.shape[2], *img.shape), dtype=img.dtype)
 
         for i in range(self._data.shape[2]):
-            self._preprocessed_output[i] = self._data[i].imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
+            #self._preprocessed_output[i] = self._data[i].imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
+            self._preprocessed_output[i] = self._data[i].show(palette=self.palette)
             self.status_message.emit(f'Предзагрузка изображения {i}/{self._data.shape[2]-1}...')
             QApplication.processEvents() # чтобы успела появиться надпись 'Предзагрузка изображений...' 
 
@@ -818,7 +823,7 @@ class ProcessingPresenter(QObject):
         self._pipeline.add_stage(method_idx, param_values)
 
         # Обновляем UI
-        self._update_pipeline_ui()
+        self._update_ui_from_model()
         self.status_message.emit(f"Добавлен этап: {method['name']}")
     
     @Slot()
@@ -908,6 +913,27 @@ class ProcessingPresenter(QObject):
         except Exception as e:
             QMessageBox.critical(self._view, "Ошибка импорта", f"Не удалось импортировать пайплайн:\n{str(e)}")
             self.status_message.emit("Ошибка импорта")
+    
+    @Slot()
+    def on_palette_default(self):
+        """Установка палитры по умолчанию"""
+        self.palette = WB_PALETTE
+        self._preprocessed_output = None
+        self.set_current_frame(self._current_frame_index)
+    
+    @Slot()
+    def on_palette_gray(self):
+        """Установка палитры градации серого"""
+        self.palette = WB_PALETTE
+        self._preprocessed_output = None
+        self.set_current_frame(self._current_frame_index)
+    
+    @Slot()
+    def on_palette_iron(self):
+        """Установка палитры каления железа"""
+        self.palette = IRON_PALETTE
+        self._preprocessed_output = None
+        self.set_current_frame(self._current_frame_index)
         
 
     # ---------- Внутренние методы ----------
@@ -928,7 +954,8 @@ class ProcessingPresenter(QObject):
         self._current_frame = self._data[index]
         if self._preprocessed_output is None or self._pipeline.stages:
             self.frame_updated.emit(
-                self._pipeline.apply_to_frame(self._current_frame).imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
+                #self._pipeline.apply_to_frame(self._current_frame).imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
+                self._pipeline.apply_to_frame(self._current_frame).show(palette=self.palette)
             )
         else:
             self.frame_updated.emit(self._preprocessed_output[index])
@@ -951,6 +978,8 @@ class ProcessingPresenter(QObject):
         # Установить метки времени
         duration = frame_count / FPS if frame_count > 0 else 0.0
         self.time_range_changed.emit(0.0, duration)
+        self._view._end_time_label.setText(str(frame_count))
+        QApplication.processEvents()
 
         # Отобразить первый кадр
         if frame_count > 0:
@@ -1041,7 +1070,7 @@ class ProcessingPresenter(QObject):
         """Слот для отображения кадра. Вызывается по сигналу frame_updated."""
 
         h, w, _ = img.shape
-        qimage = QImage(img, w, h, w*4, QImage.Format.Format_RGBA8888)
+        qimage = QImage(img.astype('uint8'), w, h, w*3, QImage.Format.Format_RGB888)
 
         pixmap = QPixmap.fromImage(qimage)
         # Масштабировать под размер метки
