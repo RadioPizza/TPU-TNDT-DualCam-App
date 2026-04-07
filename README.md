@@ -192,39 +192,6 @@ _Здесь будет описана ключевая структура пап
    python main.py
    ```
 
-### 🎨 Работа с .ui файлами в Qt Designer
-
-На начальных этапах разработки интерфейс разрабатывался в Qt Designer с последующей конвертацией в Python-код. На текущий момент такой подход уже не применяется для окна настроек, в планах отказаться от этого подхода и для всех остальных окон - либо сделать аналогично текущей реализации SettingsWindow.py, либо перейти на QML (см. Issue [#21](https://github.com/RadioPizza/TPU-TNDT-DualCam-App/issues/21)).
-
-#### Запуск Qt Designer
-
-```bash
-pyside6-designer
-```
-
-#### Рабочий процесс
-
-После редактирования .ui файлов выполните:
-
-```bash
-# Конвертация окон
-pyside6-uic ui/StartDialog.ui -o StartDialog.py
-pyside6-uic ui/MainWindow.ui -o MainWindow.py
-pyside6-uic ui/TrajectoryDialog.ui -o TrajectoryDialog.py
-pyside6-uic ui/FinishDialog.ui -o FinishDialog.py
-
-# Конвертация ресурсов
-pyside6-rcc res_rs.qrc -o res_rs.py
-```
-
-**Важно:**
-- Уже сконвертированные файлы не следует редактировать, т.к. все изменения будут стёрты при следующей конвертации из ui-файла. 
-- После конвертации исправьте импорт ресурсов (в каждом сгенерированном файле нужно заменить `import res-rs_rc` на `import res_rs`): <!-- TODO: Это старая ошибка, надо бы исправить -->
-
-```bash
-sed -i 's/import res-rs_rc/import res_rs/g' *.py
-```
-
 ### 📝 Conventional Commits
 
 Используем [Conventional Commits](https://www.conventionalcommits.org/):
