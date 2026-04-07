@@ -128,9 +128,21 @@
 
 ### Окно настроек
 
-![Снимок окна настроек 1](screenshots/settings1.png)
+#### Вкладка 1
 
-![Снимок окна настроек 2](screenshots/settings2.png)
+![Снимок окна настроек - вкладка 1](screenshots/dark/SettingsWindow_tab1.png)
+
+#### Вкладка 2
+
+![Снимок окна настроек - вкладка 2](screenshots/dark/SettingsWindow_tab2.png)
+
+#### Вкладка 3
+
+![Снимок окна настроек - вкладка 3](screenshots/dark/SettingsWindow_tab3.png)
+
+#### Вкладка 4
+
+![Снимок окна настроек - вкладка 4](screenshots/dark/SettingsWindow_tab4.png)
 
 ### Окно предпросмотра
 
