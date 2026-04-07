@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QDialog, QFrame, QLabel, QDialogButtonBox,
     QVBoxLayout
 )
-from PySide6.QtGui import QFont
+from ui_fonts import TITLE_FONT, SUBTITLE_FONT, FORM_LABEL_FONT
 
 
 class RetestDialog(QDialog):
@@ -32,23 +32,15 @@ class RetestDialog(QDialog):
             self.move(parent_geometry.center() - self.rect().center())
     
     def _create_widgets(self):
-        title_font = QFont("Segoe UI")
-        title_font.setPointSize(16)
-        title_font.setWeight(QFont.DemiBold)
-        
-        subtitle_font = QFont("Segoe UI")
-        subtitle_font.setPointSize(10)
-        subtitle_font.setWeight(QFont.Normal)
-        
         self._frame = QFrame()
         self._frame.setFrameShape(QFrame.StyledPanel)
         
         self._title_label = QLabel(f"Зона ({self.x}, {self.y})")
-        self._title_label.setFont(title_font)
+        self._title_label.setFont(TITLE_FONT)
         
         self._subtitle_label = QLabel(
             "Вы хотите повторить контроль этой зоны? Старые данные текущей зоны будут удалены")
-        self._subtitle_label.setFont(subtitle_font)
+        self._subtitle_label.setFont(SUBTITLE_FONT)
         self._subtitle_label.setWordWrap(True)
         
         self._button_box = QDialogButtonBox(

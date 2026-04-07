@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QSizePolicy, QFileDialog, 
     QMessageBox, QDialogButtonBox
 )
-from PySide6.QtGui import QFont
+from ui_fonts import TITLE_FONT, SUBTITLE_FONT, FORM_LABEL_FONT
 
 
 class FinishDialog(QDialog):
@@ -66,32 +66,20 @@ class FinishDialog(QDialog):
             parent_geometry = self.parent().geometry()
             self.move(parent_geometry.center() - self.rect().center())
     
-    def _create_widgets(self):
-        title_font = QFont("Segoe UI")
-        title_font.setPointSize(16)
-        title_font.setWeight(QFont.DemiBold)
-        
-        subtitle_font = QFont("Segoe UI")
-        subtitle_font.setPointSize(10)
-        subtitle_font.setWeight(QFont.Normal)
-        
-        form_label_font = QFont("Segoe UI")
-        form_label_font.setPointSize(9)
-        form_label_font.setWeight(QFont.Normal)
-        
+    def _create_widgets(self):    
         self._frame = QFrame()
         self._frame.setFrameShape(QFrame.StyledPanel)
         
         self._title_label = QLabel("Завершить тепловой контроль?")
-        self._title_label.setFont(title_font)
+        self._title_label.setFont(TITLE_FONT)
         self._title_label.setAlignment(Qt.AlignCenter)
 
         self._subtitle_label = QLabel("Проверьте путь сохранения")
-        self._subtitle_label.setFont(subtitle_font)
+        self._subtitle_label.setFont(SUBTITLE_FONT)
         self._subtitle_label.setAlignment(Qt.AlignCenter)
         
         self._path_label = QLabel("Путь сохранения файлов")
-        self._path_label.setFont(form_label_font)
+        self._path_label.setFont(FORM_LABEL_FONT)
         self._path_label.setContentsMargins(*self.LABEL_MARGINS)
         
         self._path_line_edit = QLineEdit()
