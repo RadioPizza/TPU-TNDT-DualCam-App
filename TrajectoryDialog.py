@@ -8,7 +8,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QSizePolicy,
     QApplication
 )
-from PySide6.QtGui import QFont, QIcon, QPalette
+from PySide6.QtGui import QIcon, QPalette
+from ui_fonts import TITLE_FONT, SUBTITLE_FONT, FORM_LABEL_FONT
 import res_rs
 
 
@@ -47,26 +48,23 @@ class TrajectoryDialog(QDialog):
         self.setWindowTitle("Выбор траектории")
         self.setFixedSize(450, 450)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+        # Центрирование относительно родительского окна
+        if self.parent():
+            parent_geometry = self.parent().geometry()
+            self.move(parent_geometry.center() - self.rect().center())
     
     def _create_widgets(self):
-        title_font = QFont("Segoe UI")
-        title_font.setPointSize(16)
-        title_font.setWeight(QFont.DemiBold)
-        
-        subtitle_font = QFont("Segoe UI")
-        subtitle_font.setPointSize(10)
-        subtitle_font.setWeight(QFont.Normal)
-        
         self._frame = QFrame()
         self._frame.setMinimumSize(400, 400)
         self._frame.setFrameShape(QFrame.StyledPanel)
         
         self._title_label = QLabel("Контроль зоны завершён!")
-        self._title_label.setFont(title_font)
+        self._title_label.setFont(TITLE_FONT)
         self._title_label.setAlignment(Qt.AlignCenter)
         
         self._subtitle_label = QLabel("Выберите расположение следующей зоны контроля")
-        self._subtitle_label.setFont(subtitle_font)
+        self._subtitle_label.setFont(SUBTITLE_FONT)
         self._subtitle_label.setAlignment(Qt.AlignCenter)
         
         self._icon_suffix = "_black" if not is_dark_theme() else "_white"

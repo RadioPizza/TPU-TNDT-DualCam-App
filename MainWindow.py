@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QLabel, QPushButton, QProgressBar, QSizePolicy,
     QGraphicsView, QMessageBox, QDialog
 )
-from PySide6.QtGui import QFont
+from ui_fonts import TITLE_FONT, SUBTITLE_FONT
 from cameras import CameraFactory, CameraManager
 from FinishDialog import FinishDialog
 from heater_interface import Heater
@@ -64,14 +64,6 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
     def _create_widgets(self):
-        title_font = QFont("Segoe UI")
-        title_font.setPointSize(16)
-        title_font.setWeight(QFont.DemiBold)
-        
-        process_status_font = QFont("Segoe UI")
-        process_status_font.setPointSize(10)
-        process_status_font.setWeight(QFont.Normal)
-        
         self._central_widget = QWidget()
         self.setCentralWidget(self._central_widget)
         
@@ -79,7 +71,7 @@ class MainWindow(QMainWindow):
         self._main_layout.setContentsMargins(30, 60, 30, 60)
         
         self._visible_label = QLabel("Камера видимого спектра")
-        self._visible_label.setFont(title_font)
+        self._visible_label.setFont(TITLE_FONT)
         
         self._visible_video = QGraphicsView()
         self._visible_video.setMinimumSize(400, 200)
@@ -87,7 +79,7 @@ class MainWindow(QMainWindow):
         self._visible_video.setStyleSheet(self.VIDEO_STYLE)
         
         self._thermal_label = QLabel("Тепловизор")
-        self._thermal_label.setFont(title_font)
+        self._thermal_label.setFont(TITLE_FONT)
         
         self._thermal_video = QGraphicsView()
         self._thermal_video.setMinimumSize(400, 200)
@@ -95,7 +87,7 @@ class MainWindow(QMainWindow):
         self._thermal_video.setStyleSheet(self.VIDEO_STYLE)
         
         self._process_status_label = QLabel("Готов к началу")
-        self._process_status_label.setFont(process_status_font)
+        self._process_status_label.setFont(SUBTITLE_FONT)
         self._process_status_label.setAlignment(Qt.AlignLeft)
         
         self._progress_bar = QProgressBar()
