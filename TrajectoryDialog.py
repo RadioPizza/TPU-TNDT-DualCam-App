@@ -47,6 +47,11 @@ class TrajectoryDialog(QDialog):
         self.setWindowTitle("Выбор траектории")
         self.setFixedSize(450, 450)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        
+        # Центрирование относительно родительского окна
+        if self.parent():
+            parent_geometry = self.parent().geometry()
+            self.move(parent_geometry.center() - self.rect().center())
     
     def _create_widgets(self):
         title_font = QFont("Segoe UI")
