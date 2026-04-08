@@ -3,14 +3,14 @@
 Содержит только интерфейс, без логики.
 """
 
-from PySide6.QtCore import Qt, QSize, QObject, Signal, Slot, QTimer
+from PySide6.QtCore import Qt, QSize, QObject, Signal, Slot, QTimer, QEvent
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QFrame, QSplitter, QSlider,
     QListWidget, QListWidgetItem, QCheckBox, QMenuBar,
     QMenu, QStatusBar, QScrollArea, QGroupBox, QSpacerItem,
     QSizePolicy, QToolButton, QButtonGroup, QFileDialog, QMessageBox, QDoubleSpinBox,
-    QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QSpinBox, QApplication
+    QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QSpinBox, QApplication, QToolTip,
 )
 from PySide6.QtGui import QAction, QFont, QImage, QPixmap
 from thermograms.thermograms import loadfile, Timage, Tseries, CAM_K, WB_PALETTE, IRON_PALETTE
@@ -220,8 +220,13 @@ class ProcessingWindow(QMainWindow):
         self._end_time_label = QLabel("1")
         self._end_time_label.setFont(fonts['small'])
         self._end_time_label.setAlignment(Qt.AlignRight)
+        self.frame_index_label = QLabel("0")
+        self.frame_index_label.setFont(fonts['small'])
+        self.frame_index_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         time_labels_layout.addWidget(self._start_time_label)
+        time_labels_layout.addStretch()
+        time_labels_layout.addWidget(self.frame_index_label)
         time_labels_layout.addStretch()
         time_labels_layout.addWidget(self._end_time_label)
 
@@ -332,6 +337,11 @@ class ProcessingWindow(QMainWindow):
         self.export_pipeline_action = QAction("Экспортировать пайплайн обработки", self)
         file_menu.addAction(self.export_pipeline_action)
 
+        self.keep_initial_data_action = QAction("Хранение исходных данных в оперативной памяти", self)
+        self.keep_initial_data_action.setCheckable(True)
+        self.keep_initial_data_action.setChecked(False)
+        file_menu.addAction(self.keep_initial_data_action)
+
         # ----- Меню "Изменить" -----
         edit_menu = menubar.addMenu("Изменить")
 
@@ -356,6 +366,11 @@ class ProcessingWindow(QMainWindow):
 
         self.preprocess_action = QAction("Предзагрузка изображений", self)
         view_menu.addAction(self.preprocess_action)
+
+        self.toggle_on_mouse_value_action = QAction("Показывать значение при наведении курсора", self)
+        self.toggle_on_mouse_value_action.setCheckable(True)
+        self.toggle_on_mouse_value_action.setChecked(False)
+        view_menu.addAction(self.toggle_on_mouse_value_action)
 
         # ----- Меню "Окно" -----
         window_menu = menubar.addMenu("Окно")
@@ -395,6 +410,7 @@ class ProcessingWindow(QMainWindow):
 
 class PipelineManager:
     def __init__(self):
+        self.applied = True
         self.stages = []  # [[method_idx, params, applied]]
         self.methods = [ # self.methods[method_idx] = {'name', 'params': [(name, variable name, default value)], 'req_series', 'Timage', 'Tseries'}
             {
@@ -447,9 +463,9 @@ class PipelineManager:
             },
             {
                 'name': 'Карта отклонений',
-                'params': [],
+                'params': [('Бинаризация', 0)],
                 'req_series': True,
-                'Tseries': lambda t: t.std_map(),
+                'Tseries': lambda t, binarization: Tseries(array=t.std_map(binarization=binarization)[..., np.newaxis]),
             },
             {
                 'name': 'Усреднение по времени',
@@ -479,15 +495,19 @@ class PipelineManager:
 
     def add_stage(self, method_idx: str, params: Dict[str, Any]):
         self.stages.append([method_idx, params, False])
+        self.applied = False
 
     def remove_stage(self, index: int):
         if self.stages[index][2]:
             for i in range(len(self.stages)):
                 self.stages[i][2] = False
         del self.stages[index]
+        if len(self.stages)==0: self.applied = True
+        else: self.applied = False
 
     def clear(self):
         self.stages.clear()
+        self.applied = True
 
     def apply_to_frame(self, frame: Timage) -> Timage:
         """Применить все этапы к одному кадру (пример)."""
@@ -508,12 +528,20 @@ class PipelineManager:
             if not applied:
                 result = self.methods[method_idx]['Tseries'](result, *params)
             self.stages[i][2] = True
+        self.applied = True
 
         return result
     
     def not_applied(self):
         for i in range(len(self.stages)):
             self.stages[i][2] = False # not applied
+        if len(self.stages): self.applied = False
+
+    def change_stage(self, index, params):
+        self.stages[index][1] = params
+        if not self.stages[index][2]: return
+        self.not_applied()
+
 
 
 class ParameterDialog(QDialog):
@@ -562,7 +590,7 @@ class ProcessingPresenter(QObject):
     # Сигналы, которые может эмитировать презентер для уведомления view
     frame_updated = Signal(np.ndarray)           # новый кадр для отображения
     time_range_changed = Signal(float, float)    # начало/конец времени (в секундах)
-    current_time_changed = Signal(float)         # текущее время
+    current_frame_changed = Signal(int)          # текущий кадр
     pipeline_changed = Signal(list)              # список этапов для отображения
     status_message = Signal(str)                 # сообщение в строку состояния
     processing_finished = Signal()
@@ -570,6 +598,7 @@ class ProcessingPresenter(QObject):
 
     figsize_scale = 4
     _preprocessed_output = None
+    initial_data = None
     _data = Tseries(array=np.zeros((1, 1, 1), dtype=np.float32))
     _path = ''
     colorbar = False
@@ -606,6 +635,7 @@ class ProcessingPresenter(QObject):
         # Сигналы
         self.frame_updated.connect(self.on_frame_updated)
         self.status_message.connect(self.status_label_set_text)
+        self.current_frame_changed.connect(self.on_current_frame_changed)
 
         # Кнопки управления
         self._view._play_button.clicked.connect(self.on_play_clicked)
@@ -626,6 +656,8 @@ class ProcessingPresenter(QObject):
         self._view.open_action.triggered.connect(self.on_open_file)
         self._view.preprocess_action.triggered.connect(self.on_preprocess)
         self._view.toggle_colorbar_action.toggled.connect(self.on_toggle_colorbar)
+        self._view.toggle_on_mouse_value_action.toggled.connect(self.on_toggle_on_mouse_value_action)
+        self._view.keep_initial_data_action.toggled.connect(self.on_keep_initial_data_action)
         self._view.export_npy_action.triggered.connect(self.on_export_npy_action)
         self._view.export_mat_action.triggered.connect(self.on_export_mat_action)
         self._view.export_pipeline_action.triggered.connect(self.on_export_pipeline_action)
@@ -634,10 +666,22 @@ class ProcessingPresenter(QObject):
         self._view.palette_gray.triggered.connect(self.on_palette_gray)
         self._view.palette_iron.triggered.connect(self.on_palette_iron)
 
+        self._view._monitor_label.setMouseTracking(False)
+        self._view._monitor_label.installEventFilter(self)
+
+    def eventFilter(self, obj: QObject, event: QEvent):
+        if obj == self._view._monitor_label and event.type() == QEvent.MouseMove:
+            self._show_pixel_value(event.pos())
+        return super().eventFilter(obj, event)
+
     # ---------- Слоты для пользовательских действий ----------
     @Slot(str)
     def status_label_set_text(self, text: str):
         self._view.status_label.setText(text)
+    
+    @Slot(int)
+    def on_current_frame_changed(self, frame_index: int):
+        self._view.frame_index_label.setText(str(frame_index))
 
     @Slot()
     def on_play_clicked(self):
@@ -726,7 +770,7 @@ class ProcessingPresenter(QObject):
             if isinstance(frames, dict):
                 for possible_key in frames.keys():
                     if isinstance(frames[possible_key], np.ndarray):
-                        frames = frames[possible_key]
+                        frames = frames[possible_key].astype('float16')
                         break
             
             if isinstance(frames, dict):
@@ -736,6 +780,8 @@ class ProcessingPresenter(QObject):
                 QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
                 return
             
+            if self.initial_data is not None:
+                self.initial_data = frames
             self._data = Tseries(array=frames)
             self._path = file_path
             self._pipeline.not_applied()
@@ -776,11 +822,53 @@ class ProcessingPresenter(QObject):
 
     @Slot(bool)
     def on_toggle_colorbar(self, checked: bool):
-        """Показать/скрыть колорбар (если есть)."""
+        """Показать/скрыть колорбар."""
         self.colorbar = checked
         self._preprocessed_output = None
         
         self.set_current_frame(self._current_frame_index)
+
+    @Slot(bool)
+    def on_toggle_on_mouse_value_action(self, checked: bool):
+        """Показать/скрыть значение термограммы при наведении мыши."""
+        self._view._monitor_label.setMouseTracking(checked)
+
+    @Slot(bool)
+    def on_keep_initial_data_action(self, checked: bool):
+        """Показать/скрыть значение термограммы при наведении мыши."""
+        if checked:
+            if self._path == '':
+                self.initial_data = np.zeros((1, 1, 1), dtype=np.float32)
+                return
+            try:
+                self.status_message.emit('Загрузка серии...')
+                QApplication.processEvents() # чтобы успела появиться надпись 'Загрузка серии...' 
+                frames = loadfile(self._path)
+
+                if isinstance(frames, dict):
+                    for possible_key in frames.keys():
+                        if isinstance(frames[possible_key], np.ndarray):
+                            frames = frames[possible_key]
+                            break
+                        
+                if isinstance(frames, dict):
+                    raise ValueError('This dict has no array to be series')
+
+                if frames is None or frames.size == 0:
+                    QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
+                    return
+
+                self.initial_data = frames
+
+                self._update_ui_from_model()
+
+                self.status_message.emit('Готов к обработке')
+
+            except Exception as e:
+                QMessageBox.critical(self._view, "Ошибка загрузки", f"Не удалось загрузить файл:\n{str(e)}")
+                self.status_message.emit("Ошибка загрузки файла")
+        else:
+            self.initial_data = None
 
     @Slot()
     def on_about(self):
@@ -965,9 +1053,7 @@ class ProcessingPresenter(QObject):
         self._view._time_slider.setValue(index)
         self._view._time_slider.blockSignals(False)
 
-        # Обновить метки времени
-        time_sec = index / FPS
-        self.current_time_changed.emit(time_sec)
+        self.current_frame_changed.emit(self._current_frame_index)
 
     def _update_ui_from_model(self):
         """Обновить интерфейс в соответствии с текущим состоянием модели."""
@@ -1024,6 +1110,12 @@ class ProcessingPresenter(QObject):
         label = QLabel(label)
         layout.addWidget(label)
 
+        # Кнопка изменения
+        change_btn = QToolButton()
+        change_btn.setText("change")
+        change_btn.clicked.connect(lambda: self._change_stage(index))
+        layout.addWidget(change_btn)
+
         # Кнопка удаления
         delete_btn = QToolButton()
         delete_btn.setText("✕")
@@ -1034,6 +1126,41 @@ class ProcessingPresenter(QObject):
 
         return widget
 
+    def _change_stage(self, index: int):
+        """Изменить этап обработки по индексу."""
+        stage_name = self._pipeline.methods[self._pipeline.stages[index][0]]['name']
+        self.status_message.emit(f'Изменение этапа обработки: {index+1}. {stage_name}')
+        QApplication.processEvents()
+
+        param_dialog = ParameterDialog(
+            [(param_name, param_value) for (param_name, param_default), param_value in zip(self._pipeline.methods[self._pipeline.stages[index][0]]['params'], self._pipeline.stages[index][1])],
+            self._view)
+        if param_dialog.exec() != QDialog.Accepted:
+            return
+        param_values = param_dialog.get_values()
+
+        if self._pipeline.stages[index][2]:
+            if self.initial_data is not None:
+                self._data = Tseries(array=self.initial_data)
+            else:
+                frames = loadfile(self._path)
+                if isinstance(frames, dict):
+                    for possible_key in frames.keys():
+                        if isinstance(frames[possible_key], np.ndarray):
+                            frames = frames[possible_key]
+                            break
+                if isinstance(frames, dict):
+                    raise ValueError('This dict has no array to be series')
+                if frames is None or frames.size == 0:
+                    QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
+                    return
+                self._data = Tseries(array=frames)
+
+        self._pipeline.change_stage(index, param_values)
+        
+        self._update_ui_from_model()
+        self.status_message.emit(f"Этап {index+1}. {stage_name} изменен")
+
     def _remove_stage(self, index: int):
         """Удалить этап обработки по индексу."""
         stage_name = self._pipeline.methods[self._pipeline.stages[index][0]]['name']
@@ -1041,18 +1168,21 @@ class ProcessingPresenter(QObject):
         QApplication.processEvents()
 
         if self._pipeline.stages[index][2]:
-            frames = loadfile(self._path)
-            if isinstance(frames, dict):
-                for possible_key in frames.keys():
-                    if isinstance(frames[possible_key], np.ndarray):
-                        frames = frames[possible_key]
-                        break
-            if isinstance(frames, dict):
-                raise ValueError('This dict has no array to be series')
-            if frames is None or frames.size == 0:
-                QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
-                return
-            self._data = Tseries(array=frames)
+            if self.initial_data is not None:
+                self._data = Tseries(array=self.initial_data)
+            else:
+                frames = loadfile(self._path)
+                if isinstance(frames, dict):
+                    for possible_key in frames.keys():
+                        if isinstance(frames[possible_key], np.ndarray):
+                            frames = frames[possible_key]
+                            break
+                if isinstance(frames, dict):
+                    raise ValueError('This dict has no array to be series')
+                if frames is None or frames.size == 0:
+                    QMessageBox.warning(self._view, "Ошибка загрузки", "Файл не содержит данных")
+                    return
+                self._data = Tseries(array=frames)
 
         self._pipeline.remove_stage(index)
         
@@ -1074,9 +1204,43 @@ class ProcessingPresenter(QObject):
 
         pixmap = QPixmap.fromImage(qimage)
         # Масштабировать под размер метки
-        pixmap = pixmap.scaled(self._view._monitor_frame.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap = pixmap.scaled(self._view._monitor_frame.size() - 0.1 * self._view._monitor_frame.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         self._view._monitor_label.setPixmap(pixmap)
+
+    def _show_pixel_value(self, pos):
+        label = self._view._monitor_label
+        pixmap = label.pixmap()
+        if not pixmap or pixmap.isNull() or not self._pipeline.applied:
+            return
+
+        # Размеры отображаемого pixmap
+        pw, ph = pixmap.width(), pixmap.height()
+        # Размеры метки
+        lw, lh = label.width(), label.height()
+
+        # Смещение из-за выравнивания по центру
+        offset_x = max(0, (lw - pw) // 2)
+        offset_y = max(0, (lh - ph) // 2)
+
+        # Координаты мыши внутри области изображения
+        x = pos.x() - offset_x
+        y = pos.y() - offset_y
+
+        if 0 <= x < pw and 0 <= y < ph:
+            # Масштабирование: координаты в исходном изображении
+            orig_h, orig_w = self._data.shape[:2]
+            scale_x = orig_w / pw
+            scale_y = orig_h / ph
+            ix = int(x * scale_x)
+            iy = int(y * scale_y)
+
+            # Значение температуры (или интенсивности)
+            value = self._data[iy, ix, self._current_frame_index]
+            tooltip_text = f"x={ix}, y={iy}\nvalue={value:.2f}"
+            QToolTip.showText(label.mapToGlobal(pos), tooltip_text, label)
+        else:
+            QToolTip.hideText()
 
 if __name__ == '__main__':
     import sys
