@@ -41,9 +41,9 @@ class MockHeater:
     def turn_on(self) -> None:
         self.state = True
         logging.info("СИМУЛЯЦИЯ: Нагреватель включен")
-        return True
+        
 
     def turn_off(self) -> None:
         self.state = False
         logging.info("СИМУЛЯЦИЯ: Нагреватель выключен")
-        return False
+        

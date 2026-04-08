@@ -28,5 +28,9 @@ def run_flir_diagnostics():
 
         system.ReleaseInstance()
 
+        return num_cameras
+
     except Exception as e:
         logger.error(f"Диагностика PySpin не удалась: {e}")
+
+        return 0
