@@ -11,30 +11,63 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QFont
 from settings import Settings
 from ui_constants import (
-    BUTTON_HEIGHT, 
-    BUTTON_SIZE, 
-    WINDOW_MIN_SIZE, 
-    WINDOW_MIN_SIZE, 
-    CONTENT_MAX_WIDTH, 
-    CONTENT_MIN_WIDTH, 
-    INDICATOR_SIZE, 
+    CONTROL_HEIGHT,
+    CONTROL_WIDTH,
+    BUTTON_SIZE,
     LAYOUT_SPACING,
-    GROUP_BOX_STYLE,
-    TAB_BAR_STYLE,
-    CHECKBOX_STYLE
+    WINDOW_MAIN_MIN,
+    ROUND_INDICATOR_SIZE,
+    CONTENT_WIDTH_MIN, 
+    CONTENT_WIDTH_MAX,
+    INDICATOR_RADIUS
+
     )
 
 class SettingsWindow(QMainWindow):
     """Окно настроек приложения"""
     WIDGET_SPACING = 20
-    FIELD_WIDTH = 250
-    FIELD_HEIGHT = 32
 
-    INDICATOR_BORDER_RADIUS = 6
-    INDICATOR_BORDER_DIAMETER = INDICATOR_BORDER_RADIUS * 2
-    INDICATOR_SIZE = QSize(INDICATOR_BORDER_DIAMETER, INDICATOR_BORDER_DIAMETER)
+    GROUP_BOX_STYLE = """
+        QGroupBox {
+            font-weight: 600;
+            margin-top: 9px;
+            padding: 16px;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 20px;
+            padding: 0 5px;
+        }
+    """
 
-    HEATER_BUTTON_SIZE = QSize(FIELD_WIDTH, 55)
+
+
+    TAB_BAR_STYLE = """
+            QTabBar::tab {
+                padding: 16px 46px;
+                margin-right: 4px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                min-width: 100px;
+                border-bottom: 1px solid palette(button);
+            }
+            QTabBar::tab:selected {
+                border-bottom: 3px solid palette(highlight);
+                background-color: palette(base);
+            }
+            QTabBar::tab:hover {
+                background-color: palette(button);
+            }
+            """
+
+
+    CHECKBOX_STYLE = """
+            QCheckBox {
+                spacing: 10px;
+            }
+        """
+
+    HEATER_BUTTON_SIZE = QSize(CONTROL_WIDTH, 55)
 
     LAYOUT_SPACING_SMALL = 10
     LAYOUT_SPACING_LARGE = 15
@@ -73,8 +106,8 @@ class SettingsWindow(QMainWindow):
 
     def _setup_window_properties(self):
         self.setWindowTitle("Настройки")
-        self.setMinimumSize(WINDOW_MIN_SIZE)
-        self.setStyleSheet(CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
+        self.setMinimumSize(WINDOW_MAIN_MIN)
+        self.setStyleSheet(self.CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
 
     def _create_widgets(self):
         tab_font = QFont("Segoe UI", 11, QFont.Medium)
@@ -87,7 +120,7 @@ class SettingsWindow(QMainWindow):
         self._tab_widget.setDocumentMode(True)
         self._tab_widget.setMovable(False)
         self._tab_widget.setFont(tab_font)
-        self._tab_widget.setStyleSheet(TAB_BAR_STYLE)
+        self._tab_widget.setStyleSheet(self.TAB_BAR_STYLE)
 
         self._create_testing_tab(form_label_font)
         self._create_cameras_tab(form_label_font)
@@ -126,8 +159,8 @@ class SettingsWindow(QMainWindow):
         footer_layout.addWidget(self._save_button)
         content_wrapper_layout.addLayout(footer_layout)
 
-        content_wrapper.setMinimumWidth(CONTENT_MIN_WIDTH)
-        content_wrapper.setMaximumWidth(CONTENT_MAX_WIDTH)
+        content_wrapper.setMinimumWidth(CONTENT_WIDTH_MIN)
+        content_wrapper.setMaximumWidth(CONTENT_WIDTH_MAX)
 
         center_layout.addWidget(content_wrapper)
         center_layout.addStretch(1)
@@ -144,7 +177,7 @@ class SettingsWindow(QMainWindow):
         return f"""
             QFrame {{
                 background-color: {color};
-                border-radius: {self.INDICATOR_BORDER_RADIUS}px;
+                border-radius: {INDICATOR_RADIUS}px;
             }}
         """
 
@@ -154,7 +187,7 @@ class SettingsWindow(QMainWindow):
 
     def _create_indicator(self) -> QFrame:
         indicator = QFrame()
-        indicator.setFixedSize(self.INDICATOR_SIZE)
+        indicator.setFixedSize(ROUND_INDICATOR_SIZE)
         indicator.setStyleSheet(self._get_indicator_style(self.INDICATOR_DISCONNECTED))
         return indicator
 
@@ -169,8 +202,8 @@ class SettingsWindow(QMainWindow):
         layout.addStretch()
 
         spinbox = QSpinBox()
-        spinbox.setFixedHeight(self.FIELD_HEIGHT)
-        spinbox.setFixedWidth(self.FIELD_WIDTH)
+        spinbox.setFixedHeight(CONTROL_HEIGHT)
+        spinbox.setFixedWidth(CONTROL_WIDTH)
         spinbox.setRange(min_val, max_val)
         spinbox.setValue(default_value)
         spinbox.setStyleSheet(f"QSpinBox {{ padding-left: {self.SPINBOX_PADDING}px; }}")
@@ -189,8 +222,8 @@ class SettingsWindow(QMainWindow):
         layout.addStretch()
 
         combo = QComboBox()
-        combo.setFixedHeight(self.FIELD_HEIGHT)
-        combo.setFixedWidth(self.FIELD_WIDTH)
+        combo.setFixedHeight(CONTROL_HEIGHT)
+        combo.setFixedWidth(CONTROL_WIDTH)
         combo.setStyleSheet(f"QComboBox {{ padding-left: {self.COMBOBOX_PADDING}px; }}")
         combo.addItems(items)
 
@@ -217,7 +250,7 @@ class SettingsWindow(QMainWindow):
         value_label = QLabel(value_text)
         value_label.setFont(font)
         value_label.setStyleSheet(f"QLabel {{ padding-left: {self.INFO_LABEL_PADDING}px; }}")
-        value_label.setFixedWidth(self.FIELD_WIDTH)
+        value_label.setFixedWidth(CONTROL_WIDTH)
         layout.addWidget(value_label)
         
         return layout, value_label
@@ -419,8 +452,8 @@ class SettingsWindow(QMainWindow):
         thermal_btn_layout.addStretch()
 
         calib_button = QPushButton("Ручная калибровка")
-        calib_button.setFixedWidth(self.FIELD_WIDTH)
-        calib_button.setFixedHeight(self.FIELD_HEIGHT)
+        calib_button.setFixedWidth(CONTROL_WIDTH)
+        calib_button.setFixedHeight(CONTROL_HEIGHT)
 
         thermal_btn_layout.addWidget(calib_button)
         thermal_layout.addLayout(thermal_btn_layout)
@@ -492,8 +525,8 @@ class SettingsWindow(QMainWindow):
         status_row_layout.addStretch()
 
         self._heater_connect_button = QPushButton("Подключить")
-        self._heater_connect_button.setFixedHeight(self.FIELD_HEIGHT)
-        self._heater_connect_button.setFixedWidth(self.FIELD_WIDTH)
+        self._heater_connect_button.setFixedHeight(CONTROL_HEIGHT)
+        self._heater_connect_button.setFixedWidth(CONTROL_WIDTH)
         self._heater_connect_button.setEnabled(False)
         status_row_layout.addWidget(self._heater_connect_button)
 
@@ -656,7 +689,7 @@ class SettingsWindow(QMainWindow):
     def _create_group_box(self, title, font):
         group = QGroupBox(title)
         group.setFont(font)
-        group.setStyleSheet(GROUP_BOX_STYLE)
+        group.setStyleSheet(self.GROUP_BOX_STYLE)
         return group
 
     def _load_settings(self):

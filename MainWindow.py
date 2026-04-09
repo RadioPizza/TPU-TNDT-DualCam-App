@@ -19,12 +19,20 @@ from RetestDialog import RetestDialog
 from settings import Settings, UserData
 from SettingsWindow import SettingsWindow
 from TrajectoryDialog import TrajectoryDialog
-from ui_constants import BUTTON_SIZE, CONTENT_MARGINS, WINDOW_MIN_SIZE, WINDOW_FIXED_SIZE, INDICATOR_SIZE, VIDEO_STYLE
-
+from ui_constants import BUTTON_SIZE, WINDOW_MARGINS, WINDOW_MAIN_MIN, STATUS_BAR_LABEL_SIZE
 logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
+
+
+    VIDEO_STYLE = """
+        QGraphicsView {
+            background-color: #333333;
+            border: 2px solid #3c3c3c;
+            border-radius: 8px;
+        }
+    """
 
     def __init__(self, heater: Heater, settings: Settings, parent=None):
         super().__init__(parent)
@@ -55,7 +63,7 @@ class MainWindow(QMainWindow):
 
     def _setup_window_properties(self):
         self.setWindowTitle("TPU-TNDT-DualCam-App")
-        self.setMinimumSize(WINDOW_FIXED_SIZE)
+        self.setMinimumSize(WINDOW_MAIN_MIN)
         self.showMaximized()
 
     def _create_widgets(self):
@@ -71,23 +79,23 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._central_widget)
         
         self._main_layout = QVBoxLayout(self._central_widget)
-        self._main_layout.setContentsMargins(*CONTENT_MARGINS)
+        self._main_layout.setContentsMargins(*WINDOW_MARGINS)
         
         self._visible_label = QLabel("Камера видимого спектра")
         self._visible_label.setFont(title_font)
         
         self._visible_video = QGraphicsView()
-        self._visible_video.setMinimumSize(WINDOW_MIN_SIZE)
+        self._visible_video.setMinimumSize(QSize(400, 300))
         self._visible_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._visible_video.setStyleSheet(VIDEO_STYLE)
+        self._visible_video.setStyleSheet(self.VIDEO_STYLE)
         
         self._thermal_label = QLabel("Тепловизор")
         self._thermal_label.setFont(title_font)
         
         self._thermal_video = QGraphicsView()
-        self._thermal_video.setMinimumSize(WINDOW_MIN_SIZE)
+        self._thermal_video.setMinimumSize(QSize(400, 300))
         self._thermal_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._thermal_video.setStyleSheet(VIDEO_STYLE)
+        self._thermal_video.setStyleSheet(self.VIDEO_STYLE)
         
         self._process_status_label = QLabel("Готов к началу")
         self._process_status_label.setFont(process_status_font)
@@ -564,7 +572,7 @@ class MainWindow(QMainWindow):
         self.lbl_disk = QLabel("Диск: вычисление...")
 
         for label in [self.lbl_position, self.lbl_heater, self.lbl_cam_vis, self.lbl_fps_vis, self.lbl_cam_therm, self.lbl_fps_therm, self.lbl_recording]:
-            label.setFixedSize(INDICATOR_SIZE) # Для всех одинаковый размер
+            label.setFixedSize(STATUS_BAR_LABEL_SIZE) # Для всех одинаковый размер
 
 
         self.status_bar.addWidget(self.lbl_position)

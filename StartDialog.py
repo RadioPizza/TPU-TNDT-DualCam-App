@@ -13,8 +13,7 @@ from PySide6.QtWidgets import (
 )
 from settings import Settings, UserData
 from osk import OnScreenKeyboard as osk
-from ui_constants import BUTTON_HEIGHT, LINE_HEIGHT, LABEL_MARGINS, CONTENT_MARGINS, SETTINGS_WINDOW_SIZE, LINE_DEFAULT_STYLE, LINE_ERROR_STYLE
-
+from ui_constants import WINDOW_MARGINS, LINE_ERROR_STYLE, LABEL_MARGINS, DIALOG_LARGE, CONTROL_HEIGHT, LINE_DEFAULT_STYLE, DIALOG_MEDIUM
 
 class FocusWatcher(QObject):
     """Отслеживает фокус для показа/скрытия экранной клавиатуры"""
@@ -47,8 +46,8 @@ class StartDialog(QDialog):
     def _setup_window_properties(self):
         self.setModal(True)
         self.setWindowTitle("TPU-TNDT-DualCam-App")
-        self.resize(800, 600) #???
-        self.setMinimumSize(SETTINGS_WINDOW_SIZE)
+        self.resize(DIALOG_LARGE)
+        self.setMinimumSize(DIALOG_MEDIUM)
     
     def _create_widgets(self):
         title_font = QFont("Segoe UI")
@@ -85,21 +84,21 @@ class StartDialog(QDialog):
         self._name_label.setContentsMargins(*LABEL_MARGINS)
         
         self._name_edit = QLineEdit()
-        self._name_edit.setMinimumHeight(LINE_HEIGHT)
+        self._name_edit.setMinimumHeight(CONTROL_HEIGHT)
         
         self._surname_label = QLabel("Фамилия")
         self._surname_label.setFont(form_label_font)
         self._surname_label.setContentsMargins(*LABEL_MARGINS)
         
         self._surname_edit = QLineEdit()
-        self._surname_edit.setMinimumHeight(LINE_HEIGHT)
+        self._surname_edit.setMinimumHeight(CONTROL_HEIGHT)
         
         self._object_label = QLabel("Объект контроля")
         self._object_label.setFont(form_label_font)
         self._object_label.setContentsMargins(*LABEL_MARGINS)
         
         self._object_edit = QLineEdit()
-        self._object_edit.setMinimumHeight(LINE_HEIGHT)
+        self._object_edit.setMinimumHeight(CONTROL_HEIGHT)
         
         self._path_label = QLabel("Путь сохранения файлов")
         self._path_label.setFont(form_label_font)
@@ -107,19 +106,19 @@ class StartDialog(QDialog):
         
         self._path_edit = QLineEdit()
         self._path_edit.setReadOnly(True)
-        self._path_edit.setMinimumHeight(LINE_HEIGHT)
+        self._path_edit.setMinimumHeight(CONTROL_HEIGHT)
         self._path_edit.setText("...")
         
         self._change_path_button = QPushButton("Обзор...")
-        self._change_path_button.setMinimumHeight(BUTTON_HEIGHT)
+        self._change_path_button.setMinimumHeight(CONTROL_HEIGHT)
         
         self._start_button = QPushButton("Начать")
-        self._start_button.setMinimumHeight(BUTTON_HEIGHT)
+        self._start_button.setMinimumHeight(CONTROL_HEIGHT)
         self._start_button.setMinimumWidth(120)
         self._start_button.setDefault(True)
 
         self._exit_button = QPushButton("Выход")
-        self._exit_button.setMinimumHeight(BUTTON_HEIGHT)
+        self._exit_button.setMinimumHeight(CONTROL_HEIGHT)
         self._exit_button.setMinimumWidth(120)
         
         self._input_fields = [self._name_edit, self._surname_edit, self._object_edit]
@@ -155,7 +154,7 @@ class StartDialog(QDialog):
         scroll_layout.addStretch()
         
         frame_layout = QVBoxLayout(self._main_frame)
-        frame_layout.setContentsMargins(*CONTENT_MARGINS)
+        frame_layout.setContentsMargins(*WINDOW_MARGINS)
         frame_layout.setSpacing(3)
         
         frame_layout.addWidget(self._auth_title_label)

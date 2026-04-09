@@ -10,11 +10,20 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QSizePolicy, QFileDialog, 
     QMessageBox, QDialogButtonBox
 )
-from ui_constants import LABEL_MARGINS, BUTTON_HEIGHT, BUTTON_SIZE, LINE_HEIGHT,LINE_DEFAULT_STYLE, LINE_ERROR_STYLE, LINE_WARNING_STYLE
+from ui_constants import DIALOG_MEDIUM, WINDOW_MARGINS, BUTTON_SIZE, CONTROL_HEIGHT, LINE_DEFAULT_STYLE, LINE_ERROR_STYLE, LABEL_MARGINS
 from PySide6.QtGui import QFont
 
 
 class FinishDialog(QDialog):
+    
+    LINE_WARNING_STYLE = """
+    QLineEdit {
+        border: 1px solid #f39c12;
+        border-radius: 4px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    """
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -27,7 +36,7 @@ class FinishDialog(QDialog):
     def _setup_window_properties(self):
         self.setModal(True)
         self.setWindowTitle("Завершение теплового контроля")
-        self.setFixedSize(600, 400)
+        self.setFixedSize(DIALOG_MEDIUM)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         
         # Центрирование окна относительно родителя
@@ -64,13 +73,13 @@ class FinishDialog(QDialog):
         self._path_label.setContentsMargins(*LABEL_MARGINS)
         
         self._path_line_edit = QLineEdit()
-        self._path_line_edit.setMinimumHeight(LINE_HEIGHT)
+        self._path_line_edit.setMinimumHeight(CONTROL_HEIGHT)
         self._path_line_edit.setPlaceholderText("Нажмите 'Обзор...' для выбора пути")
         self._path_line_edit.setStyleSheet(LINE_DEFAULT_STYLE)
         self._path_line_edit.setReadOnly(True)
         
         self._change_path_button = QPushButton("Обзор...")
-        self._change_path_button.setFixedSize(80, BUTTON_HEIGHT)
+        self._change_path_button.setFixedSize(80, CONTROL_HEIGHT)
         
         self._button_box = QDialogButtonBox(
             QDialogButtonBox.Yes | QDialogButtonBox.No,
@@ -84,10 +93,10 @@ class FinishDialog(QDialog):
     
     def _setup_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setContentsMargins(*WINDOW_MARGINS)
         
         frame_layout = QVBoxLayout(self._frame)
-        frame_layout.setContentsMargins(30, 30, 30, 30)
+        frame_layout.setContentsMargins(*WINDOW_MARGINS)
         frame_layout.setSpacing(3)
         frame_layout.addWidget(self._title_label)
         frame_layout.addSpacing(10)
@@ -199,7 +208,7 @@ class FinishDialog(QDialog):
     
     def _show_path_warning(self, message: str):
         """Показывает предупреждение о пути"""
-        self._path_line_edit.setStyleSheet(LINE_WARNING_STYLE)
+        self._path_line_edit.setStyleSheet(self.LINE_WARNING_STYLE)
         self._path_line_edit.setToolTip(message)
         # Не блокируем кнопку при предупреждении
         self._button_box.button(QDialogButtonBox.Yes).setEnabled(True)

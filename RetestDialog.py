@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout
 )
 from PySide6.QtGui import QFont
-from ui_constants import BUTTON_SIZE, CONTENT_MARGINS, RETEST_DIALOG_SIZE, LAYOUT_SPACING
+from ui_constants import DIALOG_SMALL, WINDOW_MARGINS, BUTTON_SIZE
 
 class RetestDialog(QDialog):
     
@@ -23,7 +23,7 @@ class RetestDialog(QDialog):
     def _setup_window_properties(self):
         self.setModal(True)
         self.setWindowTitle("Повторный контроль зоны")
-        self.setFixedSize(RETEST_DIALOG_SIZE)
+        self.setFixedSize(DIALOG_SMALL)
         
         # Центрирование окна относительно родителя
         if self.parent():
@@ -62,10 +62,10 @@ class RetestDialog(QDialog):
     
     def _setup_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*CONTENT_MARGINS)
+        main_layout.setContentsMargins(*WINDOW_MARGINS)
 
         frame_layout = QVBoxLayout(self._frame)
-        frame_layout.setContentsMargins(*CONTENT_MARGINS)
+        frame_layout.setContentsMargins(*WINDOW_MARGINS)
         frame_layout.setSpacing(3)
 
         frame_layout.addWidget(self._title_label)

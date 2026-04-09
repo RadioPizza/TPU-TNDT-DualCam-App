@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont, QIcon, QPalette
 import res_rs
-from ui_constants import CONTENT_MARGINS, BUTTON_SIZE
+from ui_constants import WINDOW_MARGINS, BUTTON_SIZE, DIALOG_MEDIUM
 
 
 def is_dark_theme():
@@ -46,7 +46,7 @@ class TrajectoryDialog(QDialog):
     def _setup_window_properties(self):
         self.setModal(True)
         self.setWindowTitle("Выбор траектории")
-        self.setFixedSize(450, 450)
+        self.setFixedSize(DIALOG_MEDIUM)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
     
     def _create_widgets(self):
@@ -101,10 +101,10 @@ class TrajectoryDialog(QDialog):
     
     def _setup_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*CONTENT_MARGINS)
+        main_layout.setContentsMargins(*WINDOW_MARGINS)
         
         frame_layout = QVBoxLayout(self._frame)
-        frame_layout.setContentsMargins(*CONTENT_MARGINS)
+        frame_layout.setContentsMargins(*WINDOW_MARGINS)
         frame_layout.addWidget(self._title_label)
         frame_layout.addSpacing(20)
         frame_layout.addWidget(self._subtitle_label)
