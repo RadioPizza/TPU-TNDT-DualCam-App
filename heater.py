@@ -1,3 +1,4 @@
+import logging
 from serial_communicator import SerialCommunicator
 
 class Heater(SerialCommunicator):
