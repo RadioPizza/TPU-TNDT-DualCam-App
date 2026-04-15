@@ -1,8 +1,3 @@
-"""
-Модуль окна обработки термограмм (View).
-Содержит только интерфейс, без логики.
-"""
-
 from PySide6.QtCore import Qt, QSize, QObject, Signal, Slot, QTimer, QEvent
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -13,6 +8,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QSpinBox, QApplication, QToolTip,
 )
 from PySide6.QtGui import QAction, QFont, QImage, QPixmap
+# Tseries, Timage - model
 from thermograms.thermograms import loadfile, Timage, Tseries, CAM_K, WB_PALETTE, IRON_PALETTE
 import numpy as np
 import cv2
@@ -25,7 +21,7 @@ try:
     from ui_fonts import fonts  # словарь с QFont, например fonts['regular'], fonts['small']
     from ui_constants import (
         LAYOUT_SPACING, WIDGET_SPACING, FIELD_HEIGHT,
-        BUTTON_SIZE, GROUP_BOX_STYLE, TAB_BAR_STYLE
+        BUTTON_SIZE, GROUP_BOX_STYLE
     )
 except ImportError:
     # Заглушки на случай отсутствия модулей (для автономной работы примера)
@@ -51,7 +47,6 @@ except ImportError:
             padding: 0 5px;
         }
     """
-    TAB_BAR_STYLE = ""
 
 
 need_to_apply = np.zeros((1080, 1920, 3), dtype=np.uint8)
@@ -68,10 +63,10 @@ x = (need_to_apply.shape[1] - text_w) // 2
 y = (need_to_apply.shape[0] + text_h) // 2
 # Наносим текст
 cv2.putText(need_to_apply, text, (x, y), font, font_scale, color, thickness)
-need_to_apply = need_to_apply[..., 0].astype('float16')
+need_to_apply = need_to_apply[..., 0].astype('float64')
 
-FPS = 30 # TODO
 
+# view
 class ProcessingWindow(QMainWindow):
     """Окно постобработки термограмм (только интерфейс)."""
 
@@ -129,21 +124,62 @@ class ProcessingWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(WIDGET_SPACING)
 
-        # ----- Верх: область предпросмотра (Monitor panel) -----
+        # ----- Область предпросмотра (Monitor panel) -----
         self._monitor_frame = QFrame()
         self._monitor_frame.setFrameShape(QFrame.Box)
         self._monitor_frame.setLineWidth(1)
-        self._monitor_frame.setMinimumHeight(300)
-        self._monitor_frame.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
-        )
+        self._monitor_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # Внутри можно разместить заглушку
-        monitor_layout = QVBoxLayout(self._monitor_frame)
+        # Горизонтальный макет внутри фрейма
+        monitor_hbox = QHBoxLayout(self._monitor_frame)
+        monitor_hbox.setContentsMargins(2, 0.3, 2, 0.3)
+        monitor_hbox.setSpacing(2)
+
+        # Растяжка слева (чтобы блок изображение+шкала центрировался по горизонтали)
+        monitor_hbox.addStretch()
+
+        # ----- Изображение -----
         self._monitor_label = QLabel("Область предпросмотра")
-        self._monitor_label.setAlignment(Qt.AlignCenter)
+        self._monitor_label.setAlignment(Qt.AlignRight)
         self._monitor_label.setFont(fonts['large'])
-        monitor_layout.addWidget(self._monitor_label)
+        self._monitor_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        monitor_hbox.addWidget(self._monitor_label)
+
+        monitor_hbox.setSpacing(70)
+
+        # ----- Контейнер для колорбара и подписей -----
+        colorbar_container = QWidget()
+        colorbar_layout = QHBoxLayout(colorbar_container)
+        colorbar_layout.setContentsMargins(0, 0, 0, 0)
+        colorbar_layout.setSpacing(2)
+
+        # Колорбар (вертикальный)
+        self._colorbar_label = QLabel()
+        self._colorbar_label.setAlignment(Qt.AlignLeft)
+        self._colorbar_label.setFixedWidth(25)
+        self._colorbar_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        colorbar_layout.addWidget(self._colorbar_label)
+
+        # Вертикальные подписи справа от колорбара
+        self._colorbar_marks = QWidget()
+        marks_layout = QVBoxLayout(self._colorbar_marks)
+        marks_layout.setContentsMargins(0, 0, 0, 0)
+        marks_layout.setSpacing(0)
+        self._colorbar_max_label = QLabel("0")
+        self._colorbar_max_label.setAlignment(Qt.AlignCenter)
+        self._colorbar_max_label.setFont(fonts['small'])
+        self._colorbar_min_label = QLabel("0")
+        self._colorbar_min_label.setAlignment(Qt.AlignCenter)
+        self._colorbar_min_label.setFont(fonts['small'])
+        marks_layout.addWidget(self._colorbar_max_label)
+        marks_layout.addStretch()
+        marks_layout.addWidget(self._colorbar_min_label)
+        colorbar_layout.addWidget(self._colorbar_marks)
+
+        monitor_hbox.addWidget(colorbar_container)
+
+        # Растяжка справа
+        monitor_hbox.addStretch()
 
         layout.addWidget(self._monitor_frame, stretch=3)
 
@@ -184,17 +220,17 @@ class ProcessingWindow(QMainWindow):
 
         toolbar_layout.addStretch()
 
-        self.scale_label = QLabel("Масштаб:")
-        self.scale_label.setFont(fonts['small'])
-        self.scale_spinbox = QDoubleSpinBox()
-        self.scale_spinbox.setRange(0.5, 10.0)
-        self.scale_spinbox.setSingleStep(0.5)
-        self.scale_spinbox.setValue(4.0) # начальное значение, синхронизируется с presenter
-        self.scale_spinbox.setFixedWidth(80)
-        self.scale_spinbox.setFont(fonts['small'])
+        self.fps_label = QLabel("Кадров в секунду:")
+        self.fps_label.setFont(fonts['small'])
+        self.fps_spinbox = QSpinBox()
+        self.fps_spinbox.setRange(1, 120)
+        self.fps_spinbox.setSingleStep(1)
+        self.fps_spinbox.setValue(10) # начальное значение, синхронизируется с presenter
+        self.fps_spinbox.setFixedWidth(80)
+        self.fps_spinbox.setFont(fonts['small'])
         toolbar_layout.addStretch()
-        toolbar_layout.addWidget(self.scale_label)
-        toolbar_layout.addWidget(self.scale_spinbox)
+        toolbar_layout.addWidget(self.fps_label)
+        toolbar_layout.addWidget(self.fps_spinbox)
 
         layout.addWidget(self._toolbar_frame, stretch=0)
 
@@ -207,7 +243,7 @@ class ProcessingWindow(QMainWindow):
 
         # Ползунок времени
         self._time_slider = QSlider(Qt.Horizontal)
-        self._time_slider.setRange(0, 100)
+        self._time_slider.setRange(0, 0)
         self._time_slider.setValue(0)
         self._time_slider.setTickPosition(QSlider.TicksBelow)
         self._time_slider.setTickInterval(1)
@@ -364,9 +400,6 @@ class ProcessingWindow(QMainWindow):
         palette_menu.addAction(self.palette_gray)
         palette_menu.addAction(self.palette_iron)
 
-        self.preprocess_action = QAction("Предзагрузка изображений", self)
-        view_menu.addAction(self.preprocess_action)
-
         self.toggle_on_mouse_value_action = QAction("Показывать значение при наведении курсора", self)
         self.toggle_on_mouse_value_action.setCheckable(True)
         self.toggle_on_mouse_value_action.setChecked(False)
@@ -374,11 +407,6 @@ class ProcessingWindow(QMainWindow):
 
         # ----- Меню "Окно" -----
         window_menu = menubar.addMenu("Окно")
-
-        self.toggle_timeline_action = QAction("Таймлайн", self)
-        self.toggle_timeline_action.setCheckable(True)
-        self.toggle_timeline_action.setChecked(True)
-        window_menu.addAction(self.toggle_timeline_action)
 
         self.toggle_colorbar_action = QAction("Колорбар", self)
         self.toggle_colorbar_action.setCheckable(True)
@@ -465,7 +493,7 @@ class PipelineManager:
                 'name': 'Карта отклонений',
                 'params': [('Бинаризация', 0)],
                 'req_series': True,
-                'Tseries': lambda t, binarization: Tseries(array=t.std_map(binarization=binarization)[..., np.newaxis]),
+                'Tseries': lambda t, binarization: Tseries(array=t.std_map(binarization=binarization if binarization!=0 else 'otsu')[..., np.newaxis]),
             },
             {
                 'name': 'Усреднение по времени',
@@ -580,7 +608,8 @@ class ParameterDialog(QDialog):
         """Возвращает список введённых значений"""
         return [spin.value() for spin in self.inputs]
     
-
+    
+#presenter
 class ProcessingPresenter(QObject):
     """
     Презентер для окна обработки термограмм.
@@ -589,15 +618,15 @@ class ProcessingPresenter(QObject):
 
     # Сигналы, которые может эмитировать презентер для уведомления view
     frame_updated = Signal(np.ndarray)           # новый кадр для отображения
-    time_range_changed = Signal(float, float)    # начало/конец времени (в секундах)
     current_frame_changed = Signal(int)          # текущий кадр
     pipeline_changed = Signal(list)              # список этапов для отображения
     status_message = Signal(str)                 # сообщение в строку состояния
     processing_finished = Signal()
     palette = WB_PALETTE
+    default_fps = 30
+    fps = default_fps
 
-    figsize_scale = 4
-    _preprocessed_output = None
+    #figsize_scale = 4
     initial_data = None
     _data = Tseries(array=np.zeros((1, 1, 1), dtype=np.float32))
     _path = ''
@@ -619,14 +648,14 @@ class ProcessingPresenter(QObject):
 
         # Таймер для воспроизведения
         self._playback_timer = QTimer()
-        self._playback_timer.setInterval(1000 // FPS)
+        self._playback_timer.setInterval(1000 // self.fps)
         self._playback_timer.timeout.connect(self._on_playback_timer)
 
         # Инициализация соединений и начального состояния
         self._connect_signals()
-        self._view.scale_spinbox.blockSignals(True)
-        self._view.scale_spinbox.setValue(self.figsize_scale)
-        self._view.scale_spinbox.blockSignals(False)
+        self._view.fps_spinbox.blockSignals(True)
+        self._view.fps_spinbox.setValue(self.default_fps)
+        self._view.fps_spinbox.blockSignals(False)
         self._update_ui_from_model()
 
     # ---------- Инициализация соединений ----------
@@ -643,7 +672,7 @@ class ProcessingPresenter(QObject):
         self._view._stop_button.clicked.connect(self.on_stop_clicked)
         self._view._step_forward_button.clicked.connect(self.on_step_forward)
         self._view._step_backward_button.clicked.connect(self.on_step_backward)
-        self._view.scale_spinbox.valueChanged.connect(self.on_scale_changed)
+        self._view.fps_spinbox.valueChanged.connect(self.on_fps_changed)
         self._view._add_stage_button.clicked.connect(self.on_add_stage_clicked)
 
         # Ползунок времени
@@ -654,7 +683,6 @@ class ProcessingPresenter(QObject):
         self._view._export_button.clicked.connect(self.on_export_clicked)
 
         self._view.open_action.triggered.connect(self.on_open_file)
-        self._view.preprocess_action.triggered.connect(self.on_preprocess)
         self._view.toggle_colorbar_action.toggled.connect(self.on_toggle_colorbar)
         self._view.toggle_on_mouse_value_action.toggled.connect(self.on_toggle_on_mouse_value_action)
         self._view.keep_initial_data_action.toggled.connect(self.on_keep_initial_data_action)
@@ -761,16 +789,18 @@ class ProcessingPresenter(QObject):
         if not file_path:
             return  # Пользователь отменил выбор
         
-        self._preprocessed_output = None
         try:
             self.status_message.emit('Загрузка серии...')
             QApplication.processEvents() # чтобы успела появиться надпись 'Загрузка серии...' 
             frames = loadfile(file_path)
+            self.fps = None
 
             if isinstance(frames, dict):
+                if 'frequency' in frames:
+                    self.fps = frames['frequency']
                 for possible_key in frames.keys():
                     if isinstance(frames[possible_key], np.ndarray):
-                        frames = frames[possible_key].astype('float16')
+                        frames = frames[possible_key].astype('float64')
                         break
             
             if isinstance(frames, dict):
@@ -784,6 +814,10 @@ class ProcessingPresenter(QObject):
                 self.initial_data = frames
             self._data = Tseries(array=frames)
             self._path = file_path
+            if self.fps is None:
+                self.fps = self._view.fps_spinbox.value()
+            else:
+                self.on_fps_changed(self.fps)
             self._pipeline.not_applied()
 
             self._update_ui_from_model()
@@ -793,25 +827,11 @@ class ProcessingPresenter(QObject):
         except Exception as e:
             QMessageBox.critical(self._view, "Ошибка загрузки", f"Не удалось загрузить файл:\n{str(e)}")
             self.status_message.emit("Ошибка загрузки файла")
-        
-    @Slot()
-    def on_preprocess(self):
-        #img = self._data[0].imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
-        img = self._data[0].show(palette=self.palette)
-        self._preprocessed_output = np.zeros(shape=(self._data.shape[2], *img.shape), dtype=img.dtype)
-
-        for i in range(self._data.shape[2]):
-            #self._preprocessed_output[i] = self._data[i].imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
-            self._preprocessed_output[i] = self._data[i].show(palette=self.palette)
-            self.status_message.emit(f'Предзагрузка изображения {i}/{self._data.shape[2]-1}...')
-            QApplication.processEvents() # чтобы успела появиться надпись 'Предзагрузка изображений...' 
-
-        self.status_message.emit('Готов к обработке')
     
     @Slot(float)
-    def on_scale_changed(self, value: float):
-        self.figsize_scale = value
-        self._preprocessed_output = None
+    def on_fps_changed(self, value: int):
+        self.fps = value
+        self._playback_timer.setInterval(1000 // self.fps)
         
         self.set_current_frame(self._current_frame_index)
 
@@ -824,7 +844,6 @@ class ProcessingPresenter(QObject):
     def on_toggle_colorbar(self, checked: bool):
         """Показать/скрыть колорбар."""
         self.colorbar = checked
-        self._preprocessed_output = None
         
         self.set_current_frame(self._current_frame_index)
 
@@ -995,7 +1014,6 @@ class ProcessingPresenter(QObject):
             QApplication.processEvents()
             with open(file_path, 'rb') as file:
                 self._pipeline.stages = pickle_load(file)
-            self._preprocessed_output = None
             self._update_ui_from_model()
             self.status_message.emit(f"Пайплайн импортирован")
         except Exception as e:
@@ -1006,22 +1024,19 @@ class ProcessingPresenter(QObject):
     def on_palette_default(self):
         """Установка палитры по умолчанию"""
         self.palette = WB_PALETTE
-        self._preprocessed_output = None
-        self.set_current_frame(self._current_frame_index)
+        self._update_ui_from_model()
     
     @Slot()
     def on_palette_gray(self):
         """Установка палитры градации серого"""
         self.palette = WB_PALETTE
-        self._preprocessed_output = None
-        self.set_current_frame(self._current_frame_index)
+        self._update_ui_from_model()
     
     @Slot()
     def on_palette_iron(self):
         """Установка палитры каления железа"""
         self.palette = IRON_PALETTE
-        self._preprocessed_output = None
-        self.set_current_frame(self._current_frame_index)
+        self._update_ui_from_model()
         
 
     # ---------- Внутренние методы ----------
@@ -1039,14 +1054,11 @@ class ProcessingPresenter(QObject):
         if not 0 <= index < self._data.shape[2]:
             return
         self._current_frame_index = index
-        self._current_frame = self._data[index]
-        if self._preprocessed_output is None or self._pipeline.stages:
-            self.frame_updated.emit(
-                #self._pipeline.apply_to_frame(self._current_frame).imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
-                self._pipeline.apply_to_frame(self._current_frame).show(palette=self.palette)
-            )
-        else:
-            self.frame_updated.emit(self._preprocessed_output[index])
+        self._current_frame = self._pipeline.apply_to_frame(self._data[index])
+        self.frame_updated.emit(
+            #self._pipeline.apply_to_frame(self._current_frame).imshow(figsize=(self.figsize_scale, self.figsize_scale*self._data.shape[0]/self._data.shape[1]), return_=True, colorbar=self.colorbar)
+            self._current_frame.show(palette=self.palette)
+        )
 
         # Обновить ползунок без генерации сигнала
         self._view._time_slider.blockSignals(True)
@@ -1062,8 +1074,6 @@ class ProcessingPresenter(QObject):
         self._view._time_slider.setRange(0, frame_count - 1 if frame_count > 0 else 0)
 
         # Установить метки времени
-        duration = frame_count / FPS if frame_count > 0 else 0.0
-        self.time_range_changed.emit(0.0, duration)
         self._view._end_time_label.setText(str(frame_count))
         QApplication.processEvents()
 
@@ -1073,6 +1083,7 @@ class ProcessingPresenter(QObject):
 
         # Заполнить список этапов
         self._update_pipeline_ui()
+
 
     def _update_pipeline_ui(self):
         """Обновить отображение списка этапов в пайплайне."""
@@ -1204,9 +1215,29 @@ class ProcessingPresenter(QObject):
 
         pixmap = QPixmap.fromImage(qimage)
         # Масштабировать под размер метки
-        pixmap = pixmap.scaled(self._view._monitor_frame.size() - 0.1 * self._view._monitor_frame.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap = pixmap.scaled(self._view._monitor_frame.size() * 0.9, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         self._view._monitor_label.setPixmap(pixmap)
+        self.update_colorbar()
+    
+    def update_colorbar(self):
+        colorbar = np.repeat(self.palette[255::-1].reshape(-1, 1, 3), 32, axis=1)
+
+        h, w, _ = colorbar.shape
+        qimage = QImage(colorbar.astype('uint8'), w, h, w*3, QImage.Format.Format_RGB888)
+        
+        pixmap = QPixmap.fromImage(qimage)
+        height = self._view._monitor_label.pixmap().size().height()
+        width = w * height // h
+        pixmap = pixmap.scaled(QSize(width, height), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.SmoothTransformation)
+        
+        self._view._colorbar_label.setPixmap(pixmap)
+
+        max_value = str(  self._current_frame.array.max()  ) + '0'*3
+        min_value = str(  self._current_frame.array.min()  ) + '0'*3
+
+        self._view._colorbar_max_label.setText(max_value[:5])
+        self._view._colorbar_min_label.setText(min_value[:5])
 
     def _show_pixel_value(self, pos):
         label = self._view._monitor_label
