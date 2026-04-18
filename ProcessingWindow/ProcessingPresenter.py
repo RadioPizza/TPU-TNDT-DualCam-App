@@ -1,20 +1,20 @@
 from PySide6.QtCore import Qt, QSize, QObject, Signal, Slot, QTimer, QEvent
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QFrame, QSplitter, QSlider,
-    QListWidget, QListWidgetItem, QCheckBox, QMenuBar,
-    QMenu, QStatusBar, QScrollArea, QGroupBox, QSpacerItem,
-    QSizePolicy, QToolButton, QButtonGroup, QFileDialog, QMessageBox, QDoubleSpinBox,
-    QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QSpinBox, QApplication, QToolTip,
+    QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QToolButton, QFileDialog, QMessageBox, QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QApplication, QToolTip,
 )
-from PySide6.QtGui import QAction, QFont, QImage, QPixmap
+from PySide6.QtGui import QFont, QImage, QPixmap
 # Tseries, Timage - model
-from thermograms.thermograms import loadfile, Timage, Tseries, CAM_K, WB_PALETTE, IRON_PALETTE
+from thermograms.thermograms import loadfile, Tseries, WB_PALETTE, IRON_PALETTE
 import numpy as np
-import cv2
-from typing import List, Optional, Tuple, Dict, Any
+from typing import Dict
 from scipy.io import savemat
 from pickle import dump as pickle_dump, load as pickle_load
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+
+from ProcessingWindow import ParameterDialog, ProcessingWindow
 
 # Импорт единых шрифтов и констант (предполагается наличие модулей)
 try:
@@ -49,566 +49,7 @@ except ImportError:
     """
 
 
-need_to_apply = np.zeros((1080, 1920, 3), dtype=np.uint8)
-# Параметры текста
-text = """You need to apply methods to series first"""
-font = cv2.FONT_HERSHEY_SIMPLEX
-font_scale = 2.5
-color = (255, 255, 255)  # белый
-thickness = 3
-# Размеры текста для центрирования
-(text_w, text_h), baseline = cv2.getTextSize(text, font, font_scale, thickness)
-# Координаты центра
-x = (need_to_apply.shape[1] - text_w) // 2
-y = (need_to_apply.shape[0] + text_h) // 2
-# Наносим текст
-cv2.putText(need_to_apply, text, (x, y), font, font_scale, color, thickness)
-need_to_apply = need_to_apply[..., 0].astype('float64')
 
-
-# view
-class ProcessingWindow(QMainWindow):
-    """Окно постобработки термограмм (только интерфейс)."""
-
-    # Константы размеров (можно дополнить из ui_constants)
-    MIN_WIDTH = 1024
-    MIN_HEIGHT = 600
-    LEFT_PANEL_DEFAULT_RATIO = 65  # %
-    RIGHT_PANEL_DEFAULT_RATIO = 35  # %
-
-    def __init__(self, pipeline, parent=None):
-        super().__init__(parent)
-        self.pipeline = pipeline
-        self._setup_window_properties()
-        self._create_widgets()
-        self._setup_layout()
-        self._setup_menu_bar()
-        self._setup_status_bar()
-
-    def _setup_window_properties(self):
-        """Настройка свойств окна."""
-        self.setWindowTitle("TPU-TNDT-DualCam-App - Обработка")
-        self.setMinimumSize(self.MIN_WIDTH, self.MIN_HEIGHT)
-
-    def _create_widgets(self):
-        """Создание всех виджетов интерфейса."""
-        # Центральный виджет
-        self._central_widget = QWidget()
-        self.setCentralWidget(self._central_widget)
-
-        # Главный сплиттер (левая/правая панели)
-        self._main_splitter = QSplitter(Qt.Horizontal)
-        self._main_splitter.setHandleWidth(2)
-        self._main_splitter.setChildrenCollapsible(False)
-
-        # Левая панель (визуализация + таймлайн)
-        self._left_panel = self._create_left_panel()
-
-        # Правая панель (боковая панель с пайплайном и управлением)
-        self._right_panel = self._create_right_panel()
-
-        # Добавляем панели в сплиттер
-        self._main_splitter.addWidget(self._left_panel)
-        self._main_splitter.addWidget(self._right_panel)
-
-        # Устанавливаем начальные размеры (проценты)
-        total_width = self.width()
-        left_width = int(total_width * self.LEFT_PANEL_DEFAULT_RATIO / 100)
-        right_width = total_width - left_width
-        self._main_splitter.setSizes([left_width, right_width])
-
-    def _create_left_panel(self) -> QWidget:
-        """Создаёт левую панель (монитор, кнопки, таймлайн)."""
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(WIDGET_SPACING)
-
-        # ----- Область предпросмотра (Monitor panel) -----
-        self._monitor_frame = QFrame()
-        self._monitor_frame.setFrameShape(QFrame.Box)
-        self._monitor_frame.setLineWidth(1)
-        self._monitor_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        # Горизонтальный макет внутри фрейма
-        monitor_hbox = QHBoxLayout(self._monitor_frame)
-        monitor_hbox.setContentsMargins(2, 0.3, 2, 0.3)
-        monitor_hbox.setSpacing(2)
-
-        # Растяжка слева (чтобы блок изображение+шкала центрировался по горизонтали)
-        monitor_hbox.addStretch()
-
-        # ----- Изображение -----
-        self._monitor_label = QLabel("Область предпросмотра")
-        self._monitor_label.setAlignment(Qt.AlignRight)
-        self._monitor_label.setFont(fonts['large'])
-        self._monitor_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        monitor_hbox.addWidget(self._monitor_label)
-
-        monitor_hbox.setSpacing(70)
-
-        # ----- Контейнер для колорбара и подписей -----
-        colorbar_container = QWidget()
-        colorbar_layout = QHBoxLayout(colorbar_container)
-        colorbar_layout.setContentsMargins(0, 0, 0, 0)
-        colorbar_layout.setSpacing(2)
-
-        # Колорбар (вертикальный)
-        self._colorbar_label = QLabel()
-        self._colorbar_label.setAlignment(Qt.AlignLeft)
-        self._colorbar_label.setFixedWidth(25)
-        self._colorbar_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        colorbar_layout.addWidget(self._colorbar_label)
-
-        # Вертикальные подписи справа от колорбара
-        self._colorbar_marks = QWidget()
-        marks_layout = QVBoxLayout(self._colorbar_marks)
-        marks_layout.setContentsMargins(0, 0, 0, 0)
-        marks_layout.setSpacing(0)
-        self._colorbar_max_label = QLabel("0")
-        self._colorbar_max_label.setAlignment(Qt.AlignCenter)
-        self._colorbar_max_label.setFont(fonts['small'])
-        self._colorbar_min_label = QLabel("0")
-        self._colorbar_min_label.setAlignment(Qt.AlignCenter)
-        self._colorbar_min_label.setFont(fonts['small'])
-        marks_layout.addWidget(self._colorbar_max_label)
-        marks_layout.addStretch()
-        marks_layout.addWidget(self._colorbar_min_label)
-        colorbar_layout.addWidget(self._colorbar_marks)
-
-        monitor_hbox.addWidget(colorbar_container)
-
-        # Растяжка справа
-        monitor_hbox.addStretch()
-
-        layout.addWidget(self._monitor_frame, stretch=3)
-
-        # ----- Середина: панель инструментов (Buttons panel) -----
-        self._toolbar_frame = QFrame()
-        self._toolbar_frame.setFrameShape(QFrame.NoFrame)
-        toolbar_layout = QHBoxLayout(self._toolbar_frame)
-        toolbar_layout.setContentsMargins(5, 5, 5, 5)
-        toolbar_layout.setSpacing(LAYOUT_SPACING)
-
-        # Кнопки управления воспроизведением (пример)
-        self._play_button = QToolButton()
-        self._play_button.setText("▶")
-        self._play_button.setFixedSize(BUTTON_SIZE)
-
-        self._pause_button = QToolButton()
-        self._pause_button.setText("⏸")
-        self._pause_button.setFixedSize(BUTTON_SIZE)
-
-        self._stop_button = QToolButton()
-        self._stop_button.setText("⏹")
-        self._stop_button.setFixedSize(BUTTON_SIZE)
-
-        self._step_forward_button = QToolButton()
-        self._step_forward_button.setText("⏩")
-        self._step_forward_button.setFixedSize(BUTTON_SIZE)
-
-        self._step_backward_button = QToolButton()
-        self._step_backward_button.setText("⏪")
-        self._step_backward_button.setFixedSize(BUTTON_SIZE)
-
-        # Группируем для удобства
-        toolbar_layout.addWidget(self._play_button)
-        toolbar_layout.addWidget(self._pause_button)
-        toolbar_layout.addWidget(self._stop_button)
-        toolbar_layout.addWidget(self._step_backward_button)
-        toolbar_layout.addWidget(self._step_forward_button)
-
-        toolbar_layout.addStretch()
-
-        self.fps_label = QLabel("Кадров в секунду:")
-        self.fps_label.setFont(fonts['small'])
-        self.fps_spinbox = QSpinBox()
-        self.fps_spinbox.setRange(1, 120)
-        self.fps_spinbox.setSingleStep(1)
-        self.fps_spinbox.setValue(10) # начальное значение, синхронизируется с presenter
-        self.fps_spinbox.setFixedWidth(80)
-        self.fps_spinbox.setFont(fonts['small'])
-        toolbar_layout.addStretch()
-        toolbar_layout.addWidget(self.fps_label)
-        toolbar_layout.addWidget(self.fps_spinbox)
-
-        layout.addWidget(self._toolbar_frame, stretch=0)
-
-        # ----- Низ: панель таймлайна (Timeline panel) -----
-        self._timeline_frame = QFrame()
-        self._timeline_frame.setFrameShape(QFrame.NoFrame)
-        timeline_layout = QVBoxLayout(self._timeline_frame)
-        timeline_layout.setContentsMargins(5, 5, 5, 5)
-        timeline_layout.setSpacing(LAYOUT_SPACING)
-
-        # Ползунок времени
-        self._time_slider = QSlider(Qt.Horizontal)
-        self._time_slider.setRange(0, 0)
-        self._time_slider.setValue(0)
-        self._time_slider.setTickPosition(QSlider.TicksBelow)
-        self._time_slider.setTickInterval(1)
-
-        # Метки времени (начало/конец)
-        time_labels_layout = QHBoxLayout()
-        self._start_time_label = QLabel("0")
-        self._start_time_label.setFont(fonts['small'])
-        self._start_time_label.setAlignment(Qt.AlignLeft)
-        self._end_time_label = QLabel("1")
-        self._end_time_label.setFont(fonts['small'])
-        self._end_time_label.setAlignment(Qt.AlignRight)
-        self.frame_index_label = QLabel("0")
-        self.frame_index_label.setFont(fonts['small'])
-        self.frame_index_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-
-        time_labels_layout.addWidget(self._start_time_label)
-        time_labels_layout.addStretch()
-        time_labels_layout.addWidget(self.frame_index_label)
-        time_labels_layout.addStretch()
-        time_labels_layout.addWidget(self._end_time_label)
-
-        timeline_layout.addWidget(self._time_slider)
-        timeline_layout.addLayout(time_labels_layout)
-
-        layout.addWidget(self._timeline_frame, stretch=1)
-
-        return panel
-
-    def _create_right_panel(self) -> QWidget:
-        """Создаёт правую боковую панель (Pipeline + Control)."""
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(WIDGET_SPACING)
-
-        # ----- Верх: панель пайплайна (Pipeline panel) -----
-        self._pipeline_group = QGroupBox("Пайплайн обработки")
-        self._pipeline_group.setFont(fonts['medium'])
-        self._pipeline_group.setStyleSheet(GROUP_BOX_STYLE)
-
-        pipeline_layout = QVBoxLayout(self._pipeline_group)
-        pipeline_layout.setSpacing(LAYOUT_SPACING)
-
-        # Кнопка добавления нового этапа
-        self._add_stage_button = QPushButton()
-        self._add_stage_button.setText("+ Добавить этап")
-        self._add_stage_button.setFixedSize(QSize(150, FIELD_HEIGHT))
-        self._add_stage_button.setFont(fonts['regular'])
-        pipeline_layout.addWidget(self._add_stage_button)
-
-
-        # Контейнер для списка этапов (скроллируемый)
-        self._stages_scroll = QScrollArea()
-        self._stages_scroll.setWidgetResizable(True)
-        self._stages_scroll.setFrameShape(QFrame.NoFrame)
-
-        self._stages_container = QWidget()
-        self._stages_layout = QVBoxLayout(self._stages_container)
-        self._stages_layout.setContentsMargins(0, 0, 0, 0)
-        self._stages_layout.setSpacing(LAYOUT_SPACING)
-        self._stages_layout.addStretch()  # чтобы элементы прижимались к верху
-
-        self._stages_scroll.setWidget(self._stages_container)
-        pipeline_layout.addWidget(self._stages_scroll)
-
-        layout.addWidget(self._pipeline_group, stretch=1)
-
-        # ----- Низ: панель управления (Control panel) -----
-        self._control_group = QGroupBox("Управление")
-        self._control_group.setFont(fonts['medium'])
-        self._control_group.setStyleSheet(GROUP_BOX_STYLE)
-
-        control_layout = QVBoxLayout(self._control_group)
-        control_layout.setSpacing(LAYOUT_SPACING)
-
-        # Кнопка "Применить ко всей серии" (default)
-        self._apply_button = QPushButton("Применить ко всей серии")
-        self._apply_button.setDefault(True)
-        self._apply_button.setFixedHeight(FIELD_HEIGHT)
-        self._apply_button.setFont(fonts['regular'])
-        control_layout.addWidget(self._apply_button)
-
-        # Кнопка "Экспорт" (изначально неактивна)
-        self._export_button = QPushButton("Экспорт")
-        self._export_button.setEnabled(False)
-        self._export_button.setFixedHeight(FIELD_HEIGHT)
-        self._export_button.setFont(fonts['regular'])
-        control_layout.addWidget(self._export_button)
-
-        # Добавим растяжку сверху, чтобы кнопки были снизу (если группа маленькая)
-        control_layout.addStretch()
-
-        layout.addWidget(self._control_group, stretch=0)
-
-        return panel
-
-    def _setup_layout(self):
-        """Размещение главного сплиттера в центральном виджете."""
-        main_layout = QVBoxLayout(self._central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-        main_layout.addWidget(self._main_splitter)
-
-    def _setup_menu_bar(self):
-        """Создание строки меню."""
-        menubar = self.menuBar()
-
-        # ----- Меню "Файл" -----
-        file_menu = menubar.addMenu("Файл")
-
-        self.open_action = QAction("Открыть", self)
-        self.open_action.setShortcut("Ctrl+O")
-        file_menu.addAction(self.open_action)
-
-        self.import_pipeline_action = QAction("Импортировать пайплайн обработки", self)
-        file_menu.addAction(self.import_pipeline_action)
-
-        file_menu.addSeparator()
-
-        self.export_npy_action = QAction("Экспорт в .npy", self)
-        file_menu.addAction(self.export_npy_action)
-
-        self.export_mat_action = QAction("Экспорт в .mat", self)
-        file_menu.addAction(self.export_mat_action)
-
-        self.export_pipeline_action = QAction("Экспортировать пайплайн обработки", self)
-        file_menu.addAction(self.export_pipeline_action)
-
-        self.keep_initial_data_action = QAction("Хранение исходных данных в оперативной памяти", self)
-        self.keep_initial_data_action.setCheckable(True)
-        self.keep_initial_data_action.setChecked(False)
-        file_menu.addAction(self.keep_initial_data_action)
-
-        # ----- Меню "Изменить" -----
-        edit_menu = menubar.addMenu("Изменить")
-
-        self.undo_action = QAction("Отменить", self)
-        self.undo_action.setShortcut("Ctrl+Z")
-        edit_menu.addAction(self.undo_action)
-
-        self.redo_action = QAction("Повторить", self)
-        edit_menu.addAction(self.redo_action)
-
-        # ----- Меню "Просмотр" -----
-        view_menu = menubar.addMenu("Просмотр")
-
-        palette_menu = view_menu.addMenu("Палитра")
-        self.palette_default = QAction("По умолчанию", self)
-        self.palette_gray = QAction("Градации серого", self)
-        self.palette_iron = QAction("Каление железа", self)
-
-        palette_menu.addAction(self.palette_default)
-        palette_menu.addAction(self.palette_gray)
-        palette_menu.addAction(self.palette_iron)
-
-        self.toggle_on_mouse_value_action = QAction("Показывать значение при наведении курсора", self)
-        self.toggle_on_mouse_value_action.setCheckable(True)
-        self.toggle_on_mouse_value_action.setChecked(False)
-        view_menu.addAction(self.toggle_on_mouse_value_action)
-
-        # ----- Меню "Окно" -----
-        window_menu = menubar.addMenu("Окно")
-
-        self.toggle_colorbar_action = QAction("Колорбар", self)
-        self.toggle_colorbar_action.setCheckable(True)
-        self.toggle_colorbar_action.setChecked(False)
-        window_menu.addAction(self.toggle_colorbar_action)
-
-        # ----- Меню "Справка" -----
-        help_menu = menubar.addMenu("Справка")
-
-        self.about_action = QAction("О программе...", self)
-        help_menu.addAction(self.about_action)
-
-    def _setup_status_bar(self):
-        """Создание строки состояния."""
-        status_bar = QStatusBar()
-        self.setStatusBar(status_bar)
-
-        # Информационная метка
-        self.status_label = QLabel("Готов к обработке")
-        self.status_label.setFont(fonts['small'])
-        status_bar.addWidget(self.status_label, stretch=1)
-
-        # Дополнительная информация о ресурсах (заглушка)
-        self._resources_label = QLabel("CPU: 12% | RAM: 4.2 ГБ")
-        self._resources_label.setFont(fonts['small'])
-        status_bar.addWidget(self._resources_label)
-
-
-
-class PipelineManager:
-    def __init__(self):
-        self.applied = True
-        self.stages = []  # [[method_idx, params, applied]]
-        self.methods = [ # self.methods[method_idx] = {'name', 'params': [(name, variable name, default value)], 'req_series', 'Timage', 'Tseries'}
-            {
-                'name': 'Медианное размытие',
-                'params': [('Радиус', 3)],
-                'req_series': False,
-                'Timage': lambda t, radius: t.median_blur(radius),
-                'Tseries': lambda t, radius: t.median_blur(radius),
-            },
-            {
-                'name': 'Размытие по Гауссу',
-                'params': [('Радиус', 3), ('Ст. отклонение', 1.0)],
-                'req_series': False,
-                'Timage': lambda t, radius, stddev: t.gaussian_blur(stddev, radius),
-                'Tseries': lambda t, radius, stddev: t.gaussian_blur(stddev, radius),
-            },
-            {
-                'name': 'Увеличение резкости',
-                'params': [('Радиус', 3), ('Ст. отклонение', 1.0)],
-                'req_series': False,
-                'Timage': lambda t, radius, stddev: t.sharpness(radius, stddev),
-                'Tseries': lambda t, radius, stddev: t.sharpness(radius, stddev),
-            },
-            {
-                'name': 'Исправление искажений',
-                'params': [],
-                'req_series': False,
-                'Timage': lambda t: t.distorted(CAM_K, scale=1.15)[17:-17, 6:-6],
-                'Tseries': lambda t: t.distorted(CAM_K, scale=1.15)[17:-17, 6:-6],
-            },
-            #{
-            #    'name': 'Аффинные преобразования',
-            #    'params': [],
-            #    'req_series': False,
-            #    'Timage': lambda t: t.median_blur(radius),
-            #    'Tseries': lambda t: t.median_blur(radius),
-            #},
-            {
-                'name': 'Обрезка',
-                'params': [('Строка начала', 0), ('Строка конца (не включ.)', -1), ('Столбец начала', 0), ('Столбец конца (не включ.)', -1)],
-                'req_series': False,
-                'Timage': lambda t, i0, i1, j0, j1: t[i0:i1, j0:j1],
-                'Tseries': lambda t, i0, i1, j0, j1: t[i0:i1, j0:j1],
-            },
-            {
-                'name': 'Обрезка по времени',
-                'params': [('Кадр начала', 0), ('Кадр конца (не включ.)', -1)],
-                'req_series': True,
-                'Tseries': lambda t, frame0, frame1: t[..., frame0: frame1],
-            },
-            {
-                'name': 'Карта отклонений',
-                'params': [('Бинаризация', 0)],
-                'req_series': True,
-                'Tseries': lambda t, binarization: Tseries(array=t.std_map(binarization=binarization if binarization!=0 else 'otsu')[..., np.newaxis]),
-            },
-            {
-                'name': 'Усреднение по времени',
-                'params': [('Кадры', 3)],
-                'req_series': True,
-                'Tseries': lambda t, frames: t.avg_time(frames),
-            },
-            {
-                'name': 'Быстрое преобразование Фурье: вещественная часть',
-                'params': [],
-                'req_series': True,
-                'Tseries': lambda t: Tseries(array=t.fft().real),
-            },
-            {
-                'name': 'Быстрое преобразование Фурье: мнимая часть',
-                'params': [],
-                'req_series': True,
-                'Tseries': lambda t: Tseries(array=t.fft().imag),
-            },
-            {
-                'name': 'Метод главных компонент',
-                'params': [('Количество компонент', 4)],
-                'req_series': True,
-                'Tseries': lambda t, n_components: Tseries(array=t.pca(n_components)),
-            }
-        ]
-
-    def add_stage(self, method_idx: str, params: Dict[str, Any]):
-        self.stages.append([method_idx, params, False])
-        self.applied = False
-
-    def remove_stage(self, index: int):
-        if self.stages[index][2]:
-            for i in range(len(self.stages)):
-                self.stages[i][2] = False
-        del self.stages[index]
-        if len(self.stages)==0: self.applied = True
-        else: self.applied = False
-
-    def clear(self):
-        self.stages.clear()
-        self.applied = True
-
-    def apply_to_frame(self, frame: Timage) -> Timage:
-        """Применить все этапы к одному кадру (пример)."""
-        result = frame
-        
-        for method_idx, params, applied in self.stages:
-            if not applied:
-                if self.methods[method_idx]['req_series']: return Timage(array=need_to_apply)
-                result = self.methods[method_idx]['Timage'](result, *params)
-        
-        return result
-
-    def apply_to_series(self, frames: Tseries) -> Tseries:
-        """Применить пайплайн ко всем кадрам."""
-        result = frames
-
-        for i, (method_idx, params, applied) in enumerate(self.stages):
-            if not applied:
-                result = self.methods[method_idx]['Tseries'](result, *params)
-            self.stages[i][2] = True
-        self.applied = True
-
-        return result
-    
-    def not_applied(self):
-        for i in range(len(self.stages)):
-            self.stages[i][2] = False # not applied
-        if len(self.stages): self.applied = False
-
-    def change_stage(self, index, params):
-        self.stages[index][1] = params
-        if not self.stages[index][2]: return
-        self.not_applied()
-
-
-
-class ParameterDialog(QDialog):
-    def __init__(self, method_params: List[tuple], parent=None):
-        """
-        method_params: список кортежей (имя_параметра, значение_по_умолчанию)
-        """
-        super().__init__(parent)
-        self.setWindowTitle("Параметры этапа")
-        layout = QVBoxLayout(self)
-
-        self.inputs = []
-        for param_name, default in method_params:
-            label = QLabel(param_name)
-            layout.addWidget(label)
-
-            # Определяем тип поля ввода
-            if isinstance(default, int):
-                spin = QSpinBox()
-                spin.setRange(-1000000, 1000000)  # широкий диапазон
-                spin.setValue(default)
-            else:
-                spin = QDoubleSpinBox()
-                spin.setRange(-1e6, 1e6)
-                spin.setValue(default)
-
-            layout.addWidget(spin)
-            self.inputs.append(spin)
-
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
-
-    def get_values(self) -> List[Any]:
-        """Возвращает список введённых значений"""
-        return [spin.value() for spin in self.inputs]
-    
-    
 #presenter
 class ProcessingPresenter(QObject):
     """
@@ -680,7 +121,6 @@ class ProcessingPresenter(QObject):
 
         # Кнопки управления
         self._view._apply_button.clicked.connect(self.on_apply_pipeline)
-        self._view._export_button.clicked.connect(self.on_export_clicked)
 
         self._view.open_action.triggered.connect(self.on_open_file)
         self._view.toggle_colorbar_action.toggled.connect(self.on_toggle_colorbar)
@@ -698,8 +138,11 @@ class ProcessingPresenter(QObject):
         self._view._monitor_label.installEventFilter(self)
 
     def eventFilter(self, obj: QObject, event: QEvent):
-        if obj == self._view._monitor_label and event.type() == QEvent.MouseMove:
-            self._show_pixel_value(event.pos())
+        if obj == self._view._monitor_label:
+            if event.type() == QEvent.Type.MouseMove:
+                self._show_pixel_value(event.pos())
+            elif event.type() == QEvent.Type.MouseButtonPress:
+                self._on_image_clicked(event.pos())
         return super().eventFilter(obj, event)
 
     # ---------- Слоты для пользовательских действий ----------
@@ -769,12 +212,6 @@ class ProcessingPresenter(QObject):
             self._data = self._pipeline.apply_to_series(self._data)
             self._update_ui_from_model()
             self.status_message.emit("Пайплайн применён ко всей серии")
-
-    @Slot()
-    def on_export_clicked(self):
-        """Экспорт данных."""
-        # Открыть диалог сохранения, выбрать формат, сохранить
-        self.status_message.emit("Экспорт выполнен (заглушка)")
 
     @Slot()
     def on_open_file(self):
@@ -1014,6 +451,7 @@ class ProcessingPresenter(QObject):
             QApplication.processEvents()
             with open(file_path, 'rb') as file:
                 self._pipeline.stages = pickle_load(file)
+                self._pipeline.not_applied()
             self._update_ui_from_model()
             self.status_message.emit(f"Пайплайн импортирован")
         except Exception as e:
@@ -1247,24 +685,15 @@ class ProcessingPresenter(QObject):
 
         # Размеры отображаемого pixmap
         pw, ph = pixmap.width(), pixmap.height()
-        # Размеры метки
-        lw, lh = label.width(), label.height()
 
-        # Смещение из-за выравнивания по центру
-        offset_x = max(0, (lw - pw) // 2)
-        offset_y = max(0, (lh - ph) // 2)
-
-        # Координаты мыши внутри области изображения
-        x = pos.x() - offset_x
-        y = pos.y() - offset_y
+        x = pos.x()
+        y = pos.y()
 
         if 0 <= x < pw and 0 <= y < ph:
             # Масштабирование: координаты в исходном изображении
             orig_h, orig_w = self._data.shape[:2]
-            scale_x = orig_w / pw
-            scale_y = orig_h / ph
-            ix = int(x * scale_x)
-            iy = int(y * scale_y)
+            ix = x * orig_w // pw
+            iy = y * orig_h // ph
 
             # Значение температуры (или интенсивности)
             value = self._data[iy, ix, self._current_frame_index]
@@ -1272,12 +701,69 @@ class ProcessingPresenter(QObject):
             QToolTip.showText(label.mapToGlobal(pos), tooltip_text, label)
         else:
             QToolTip.hideText()
+    
+    def _on_image_clicked(self, pos):
+        """Обработка клика по изображению: показать график температуры в точке."""
+        label = self._view._monitor_label
+        pixmap = label.pixmap()
+        if not pixmap or pixmap.isNull() or not self._pipeline.applied:
+            return
+        
+        # Размеры отображаемого pixmap
+        pw, ph = pixmap.width(), pixmap.height()
+        # Размеры метки
+        lw, lh = label.width(), label.height()
+        
+        # Смещение из-за выравнивания по центру
+        offset_x = max(0, (lw - pw) // 2)
+        offset_y = max(0, (lh - ph) // 2)
+        
+        # Координаты внутри области изображения
+        x = pos.x() - offset_x
+        y = pos.y() - offset_y
+        
+        if 0 <= x < pw and 0 <= y < ph:
+            # Масштабирование к исходному разрешению
+            orig_h, orig_w = self._data.shape[:2]
+            scale_x = orig_w / pw
+            scale_y = orig_h / ph
+            ix = int(x * scale_x)
+            iy = int(y * scale_y)
 
-if __name__ == '__main__':
-    import sys
+            # Значение температуры (или интенсивности)
+            self._show_plot(ix, iy)
+        else:
+            return
+    
+    def _show_plot(self, ix, iy):
+        dialog = QDialog(self._view)
+        dialog.setWindowTitle(f"График значений в точке ({ix}, {iy})")
+        dialog.resize(800, 500)
 
-    app = QApplication(sys.argv)
-    window = ProcessingWindow(pipeline=PipelineManager())
-    presenter = ProcessingPresenter(window)   # контроллер подключает сигналы
-    window.show()
-    sys.exit(app.exec())
+        layout = QVBoxLayout(dialog)
+
+        # Создание фигуры и canvas
+        fig = Figure(figsize=(6, 4))
+        canvas = FigureCanvas(fig)
+        layout.addWidget(canvas)
+
+        # Построение графика
+        ax = fig.add_subplot(111)
+        ax.plot(self._data.array[iy, ix], color='red', linewidth=1.5)
+        ax.set_xlabel("Кадр", fontsize=10)
+        ax.set_ylabel("Значение", fontsize=10)
+        ax.set_title(f"Изменение значений в пикселе ({ix}, {iy})", fontsize=12)
+        ax.grid(True, linestyle='--', alpha=0.6)
+
+        # Автоматическое масштабирование осей
+        ax.relim()
+        ax.autoscale_view()
+
+        canvas.draw()
+
+        # Кнопка закрытия
+        button_box = QDialogButtonBox(QDialogButtonBox.Close)
+        button_box.rejected.connect(dialog.reject)
+        layout.addWidget(button_box)
+
+        dialog.exec()
