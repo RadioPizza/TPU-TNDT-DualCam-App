@@ -14,7 +14,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 
-from ProcessingWindow import ParameterDialog, ProcessingWindow
+from Processing import ParameterDialog, ProcessingWindow, PipelineManager
 
 # Импорт единых шрифтов и констант (предполагается наличие модулей)
 try:
