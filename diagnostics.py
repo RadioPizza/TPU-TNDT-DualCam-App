@@ -32,5 +32,3 @@ def run_flir_diagnostics():
 
     except Exception as e:
         logger.error(f"Диагностика PySpin не удалась: {e}")
-
-        return 0

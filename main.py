@@ -40,7 +40,6 @@ else:
 
 
 if __name__ == "__main__":
-    # Диагностика PySpin и камер FLIR
     try:
         camera_count = diagnostics.run_flir_diagnostics()
         if camera_count == 0:

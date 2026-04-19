@@ -7,7 +7,7 @@ from PySide6.QtCore import QSize
 """
 БАЗОВАЯ СЕТКА И ОТСТУПЫ (GRID & SPACING)
 """
-# Все отступы кратны 8 
+
 SPACING_SMALL = 8
 SPACING_MEDIUM = 16
 SPACING_LARGE = 24
@@ -27,7 +27,6 @@ CONTENT_WIDTH_MAX = 1200
 
 BUTTON_SIZE = QSize(200, CONTROL_HEIGHT + 8)
 
-# Специфичные мелкие элементы
 STATUS_BAR_LABEL_SIZE = QSize(120, 30)
 ROUND_INDICATOR_SIZE = QSize(12, 12)
 
@@ -42,10 +41,9 @@ WINDOW_MAIN = QSize(1280, 720)
 WINDOW_MAIN_MIN = QSize(848, 424)
 
 
-# Размеры диалогов (T-Shirt Sizing)
-DIALOG_SMALL = QSize(400, 300)   # Для окон подтверждения (RetestDialog, TrajectoryDialog)
-DIALOG_MEDIUM = QSize(600, 450)  # Для окон с формами (SettingsWindow, FinishDialog)
-DIALOG_LARGE = QSize(800, 600)   # # Для сложных окон (StartDialog)
+DIALOG_SMALL = QSize(400, 300)   #  (RetestDialog, TrajectoryDialog)
+DIALOG_MEDIUM = QSize(600, 450)  #  (SettingsWindow, FinishDialog)
+DIALOG_LARGE = QSize(800, 600)   #  (StartDialog)
 
 """
 Общие стили

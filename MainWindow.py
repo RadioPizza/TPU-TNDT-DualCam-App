@@ -560,15 +560,15 @@ class MainWindow(QMainWindow):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.lbl_position = QLabel("Координаты: (0, 0)")
-        self.lbl_heater = QLabel("Нагреватель: ВЫКЛ")
+        self.lbl_heater = QLabel("Нагреватель: выкл")
         
-        self.lbl_cam_vis = QLabel("Вид.: Ожидание")
+        self.lbl_cam_vis = QLabel("Камера: ожидание")
         self.lbl_fps_vis = QLabel("FPS: 0")
         
-        self.lbl_cam_therm = QLabel("Тепл.: Ожидание")
+        self.lbl_cam_therm = QLabel("Тепл.: ожидание")
         self.lbl_fps_therm = QLabel("FPS: 0")
         
-        self.lbl_recording = QLabel(" Запись: ВЫКЛ")
+        self.lbl_recording = QLabel(" Запись: выкл")
         self.lbl_disk = QLabel("Диск: вычисление...")
 
         for label in [self.lbl_position, self.lbl_heater, self.lbl_cam_vis, self.lbl_fps_vis, self.lbl_cam_therm, self.lbl_fps_therm, self.lbl_recording]:
@@ -587,7 +587,7 @@ class MainWindow(QMainWindow):
 
         self.telemetry_timer = QTimer(self)
         self.telemetry_timer.timeout.connect(self._update_disk_space)
-        self.telemetry_timer.start(5000)  # Опрос каждые 5 секунд
+        self.telemetry_timer.start(500)
         self._update_disk_space()
 
 
@@ -610,27 +610,27 @@ class MainWindow(QMainWindow):
                 self.lbl_disk.setStyleSheet("color: palette(window-text); padding: 0 5px;")
                 
         except Exception as e:
-            self.lbl_disk.setText("Свободно: Ошибка доступа")
+            self.lbl_disk.setText("Свободно: ошибка")
 
     def update_position_status(self, x: int, y: int):
         self.lbl_position.setText(f"Зона: ({x}, {y})")
 
     def update_heater_status(self, is_on: bool, has_error: bool = False):
         if has_error:
-            self.lbl_heater.setText("Нагреватель: ОШИБКА")
+            self.lbl_heater.setText("Нагреватель: ошибка")
             self.lbl_heater.setStyleSheet("color: red; padding: 0 5px;")
         else:
-            state = "ВКЛ" if is_on else "ВЫКЛ"
+            state = "вкл" if is_on else "выкл"
             color = "green" if is_on else "palette(window-text)"
             self.lbl_heater.setText(f"Нагреватель: {state}")
             self.lbl_heater.setStyleSheet(f"color: {color}; padding: 0 5px;")
 
     def update_recording_status(self, is_recording: bool):
         if is_recording:
-            self.lbl_recording.setText("Запись: ИДЕТ")
+            self.lbl_recording.setText("Запись: идет")
             self.lbl_recording.setStyleSheet("color: red; font-weight: bold; padding: 0 5px;")
         else:
-            self.lbl_recording.setText("Запись: ВЫКЛ")
+            self.lbl_recording.setText("Запись: выкл")
             self.lbl_recording.setStyleSheet("color: palette(window-text); padding: 0 5px;")
 
     def update_camera_telemetry(self, cam_type: str, status: str, fps: int = 0):
@@ -639,7 +639,7 @@ class MainWindow(QMainWindow):
         status: 'ОК', 'Ошибка', 'Ожидание'
         """
         if cam_type == 'visible':
-            self.lbl_cam_vis.setText(f"Вид.: {status}")
+            self.lbl_cam_vis.setText(f"Камера: {status}")
             self.lbl_fps_vis.setText(f"FPS: {fps}")
             if status != "ОК":
                 self.lbl_cam_vis.setStyleSheet("color: red; padding: 0 5px;")

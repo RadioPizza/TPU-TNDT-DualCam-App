@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QSizePolicy, QFileDialog, 
     QMessageBox, QDialogButtonBox
 )
-from ui_constants import DIALOG_MEDIUM, WINDOW_MARGINS, BUTTON_SIZE, CONTROL_HEIGHT, LINE_DEFAULT_STYLE, LINE_ERROR_STYLE, LABEL_MARGINS
+from ui_constants import DIALOG_MEDIUM, WINDOW_MARGINS, BUTTON_SIZE, CONTROL_HEIGHT, LINE_DEFAULT_STYLE, LINE_ERROR_STYLE, LABEL_MARGINS 
 from PySide6.QtGui import QFont
 
 
