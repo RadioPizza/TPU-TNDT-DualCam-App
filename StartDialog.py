@@ -68,8 +68,8 @@ class StartDialog(QDialog):
     def _setup_window_properties(self):
         self.setModal(True)
         self.setWindowTitle("TPU-TNDT-DualCam-App")
-        self.resize(800, 600)
-        self.setMinimumSize(600, 400)
+        self.resize(800, 600) # Устанавливает начальные (оптимальные) габариты окна при запуске.
+        self.setMinimumSize(600, 400) # В этом случае пользователь не сможет сжать окно меньше данного размера.
 
     def _create_widgets(self):
         self._scroll_area = QScrollArea()
