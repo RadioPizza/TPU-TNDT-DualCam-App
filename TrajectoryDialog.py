@@ -75,7 +75,7 @@ class TrajectoryDialog(QDialog):
         self._right_button = self._create_arrow_button('right')
         
         self._action_label = QLabel("Либо выберите другое действие")
-        self._action_label.setFont(subtitle_font)
+        self._action_label.setFont(SUBTITLE_FONT)
         self._action_label.setAlignment(Qt.AlignCenter)
         
         BUTTON_SIZE = QSize(336, 45)
