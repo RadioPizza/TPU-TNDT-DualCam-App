@@ -13,6 +13,9 @@ class UserData(QObject):
     object_of_testing:  Optional[str] = None
     save_path:          Optional[str] = None
 
+    use_autoincrement: bool = False
+    current_number: int = 1
+
     _instance = None
 
     data_changed = Signal()
@@ -75,6 +78,9 @@ class Settings(QObject):
     # Настройки нагревателя
     heater_COM_port_number: int = 0
     heater_baud_rate: int = 9600
+
+    use_autoincrement: bool = False
+    current_number: int = 1
 
     _instance = None
 
@@ -164,7 +170,9 @@ class Settings(QObject):
                 defaults = {
                     'use_thermal_camera': False,
                     'thermal_camera_type': 'mock',
-                    'thermal_camera_xml_path': 'generic.xml'
+                    'thermal_camera_xml_path': 'generic.xml',
+                    'use_autoincrement': False,
+                    'current_number': 1
                 }
                 for key, value in defaults.items():
                     if key not in data:

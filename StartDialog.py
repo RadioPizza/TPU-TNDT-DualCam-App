@@ -9,7 +9,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QDialog, QFrame, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QScrollArea,
-    QWidget, QLineEdit, QFileDialog, QMessageBox, QApplication
+    QWidget, QLineEdit, QFileDialog, QMessageBox, QApplication, QCheckBox, QSpinBox
 )
 from settings import Settings, UserData
 from osk import OnScreenKeyboard as osk
@@ -109,6 +109,16 @@ class StartDialog(QDialog):
 
         self._object_edit = QLineEdit()
         self._object_edit.setMinimumHeight(self.LINE_HEIGHT)
+        
+        # Чекбокс служит предохранителем режима серийного контроля.
+        self._autoincrement_checkbox = QCheckBox("Добавлять порядковый номер")
+        self._autoincrement_checkbox.setFont(FORM_LABEL_FONT)
+
+        # Спинбокс задает стартовую точку серии.
+        self._autoincrement_spinbox = QSpinBox()
+        self._autoincrement_spinbox.setMinimumHeight(self.LINE_HEIGHT)
+        self._autoincrement_spinbox.setRange(1, 9999)
+        self._autoincrement_spinbox.setEnabled(False)
 
         self._path_label = QLabel("Путь сохранения файлов")
         self._path_label.setFont(FORM_LABEL_FONT)
@@ -184,6 +194,14 @@ class StartDialog(QDialog):
         frame_layout.addWidget(self._object_edit)
         frame_layout.addSpacing(10)
 
+        increment_layout = QHBoxLayout()
+        increment_layout.addWidget(self._autoincrement_checkbox)
+        increment_layout.addWidget(self._autoincrement_spinbox)
+        increment_layout.addStretch()
+        frame_layout.addLayout(increment_layout)
+
+        frame_layout.addSpacing(10)
+
         frame_layout.addWidget(self._path_label)
         path_layout = QHBoxLayout()
         path_layout.addWidget(self._path_edit)
@@ -214,6 +232,7 @@ class StartDialog(QDialog):
         self._start_button.clicked.connect(self.open_main_window)
         self._exit_button.clicked.connect(self.close)
         self._change_path_button.clicked.connect(self.change_save_path)
+        self._autoincrement_checkbox.toggled.connect(self._autoincrement_spinbox.setEnabled)
 
     def _init_focus_watcher(self):
         self._focus_watcher = FocusWatcher()
@@ -239,6 +258,9 @@ class StartDialog(QDialog):
             self._object_edit.setText("Тестовый объект")
             self._path_edit.setText(os.getcwd())
 
+        self._autoincrement_checkbox.setChecked(getattr(settings, 'use_autoincrement', False))
+        self._autoincrement_spinbox.setValue(getattr(settings, 'current_number', 1))
+
     def change_save_path(self):
         try:
             path = QFileDialog.getExistingDirectory(self, "Выберите папку")
@@ -255,6 +277,10 @@ class StartDialog(QDialog):
             user_data.user_surname = self._surname_edit.text().strip()
             user_data.object_of_testing = self._object_edit.text().strip()
             user_data.save_path = self._path_edit.text().strip()
+
+            user_data.use_autoincrement = self._autoincrement_checkbox.isChecked()
+            user_data.current_number = self._autoincrement_spinbox.value()
+
             self.accept()
 
     def _validate_form(self) -> bool:

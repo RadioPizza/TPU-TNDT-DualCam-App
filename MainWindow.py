@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 from ui_fonts import TITLE_FONT, SUBTITLE_FONT
 from cameras import CameraFactory, CameraManager
 from FinishDialog import FinishDialog
-from heater_interface import Heater
+from heater import Heater
 from RetestDialog import RetestDialog
 from settings import Settings, UserData
 from SettingsWindow import SettingsWindow
@@ -195,7 +195,12 @@ class MainWindow(QMainWindow):
         logger.info(f"Начало контроля зоны {tuple(self.current_position)}")
         
         # Формируем имена файлов
+        # Если активирован серийный контроль, форматируем имя с ведущим нулем (02d).
+        # Это необходимо для корректной алфавитной сортировки папок в файловом менеджере ОС (напр. Объект_01, Объект_02).
         object_name = self.user_data.object_of_testing.replace(" ", "_")
+        if getattr(self.user_data, 'use_autoincrement', False):
+            object_name = f"{object_name}_{self.user_data.current_number:02d}"
+
         position = f"zone({self.current_position[0]},{self.current_position[1]})"
         base_path = f"{self.user_data.save_path}/{object_name}_{position}"
         
@@ -500,6 +505,17 @@ class MainWindow(QMainWindow):
     def handle_finish_accepted(self):
         """Обрабатывает принятие финального диалога"""
         logger.info("Контроль успешно завершён")
+
+        # Выполняется строго после успешного завершения, чтобы не засчитывать прерванные тесты.
+        if getattr(self.user_data, 'use_autoincrement', False):
+            self.settings.current_number = self.user_data.current_number + 1
+            self.settings.use_autoincrement = True
+            try:
+                self.settings.save_to_file()
+                logger.info(f"Счетчик автоинкремента обновлен: {self.settings.current_number}")
+            except Exception as e:
+                logger.error(f"Ошибка сохранения счетчика: {e}")
+            
         # Закрываем приложение
         self.close()
 
