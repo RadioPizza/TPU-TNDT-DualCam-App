@@ -28,8 +28,8 @@ class MainWindow(QMainWindow):
 
     VIDEO_STYLE = """
         QGraphicsView {
-            background-color: #333333;
-            border: 2px solid #3c3c3c;
+            background-color: palette(base);
+            border: 2px solid palette(dark);
             border-radius: 8px;
         }
     """
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
         self._create_widgets()
         self._setup_layout()
         self._create_status_bar()
-        self.update_position_status(self.current_position[0], self.current_position[1])
+        self.update_position_status(*self.current_position)
         self._connect_signals()
         
         # Инициализация
@@ -224,18 +224,29 @@ class MainWindow(QMainWindow):
             self._camera_manager.start_recording_all(base_path)
             self.update_recording_status(is_recording=True)
         except Exception as e:
-            logger.error(f"Не удалось начать запись: {e}")
+            logger.error(f"Не удалось начать запись видео: {e}")
             QMessageBox.critical(
                 self, 
-                "Ошибка записи", 
-                f"Не удалось начать запись: {e}"
+                "Ошибка камер", 
+                f"Не удалось запустить запись: {e}"
             )
             self.stop_testing()
             return
         
         # Включаем нагрев
-        self.heater.turn_on()
-        self.update_heater_status(is_on=True)
+        try:
+            self.heater.turn_on()
+            self.update_heater_status(is_on=True)
+        except Exception as e:
+            logger.error(f"Не удалось включить нагреватель: {e}")
+            self.update_heater_status(is_on=False, has_error=True)
+            QMessageBox.critical(
+                self, 
+                "Нагреватель: ошибка", 
+                f"Не удалось запустить нагреватель: {e}"
+            )
+            self.stop_testing()
+            return
         
         # Обновляем текст с оставшимся временем
         self._process_status_label.setText(
@@ -262,8 +273,12 @@ class MainWindow(QMainWindow):
     def start_cooling(self):
         """Переходит к процессу охлаждения"""
         # Выключаем нагреватель
-        self.heater.turn_off()
-        self.update_heater_status(is_on=False)
+        try:
+            self.heater.turn_off()
+            self.update_heater_status(is_on=False)
+        except Exception as e:
+            logger.error(f"Ошибка выключения нагревателя: {e}")
+            self.update_heater_status(is_on=True, has_error=True)
         
         # Обновляем текст процесса
         cooling_duration = (
@@ -285,6 +300,7 @@ class MainWindow(QMainWindow):
         
         # Останавливаем запись на всех камерах
         self._camera_manager.stop_recording_all()
+        self.update_recording_status(is_recording=False)
         
         # Деактивируем кнопку Stop после успешного завершения
         self._stop_button.setEnabled(False)
@@ -311,10 +327,16 @@ class MainWindow(QMainWindow):
         self._cooling_timer.stop()
         
         # Выключаем нагреватель
-        self.heater.turn_off()
+        try:
+            self.heater.turn_off()
+            self.update_heater_status(is_on=False)
+        except Exception as e:
+            logger.error(f"Ошибка выключения нагревателя при прерывании: {e}")
+            self.update_heater_status(is_on=False, has_error=True)
         
         # Останавливаем запись на всех камерах
         self._camera_manager.stop_recording_all()
+        self.update_recording_status(is_recording=False)
         
         # Останавливаем анимацию прогресс-бара
         self._progress_bar_animation.stop()
@@ -414,7 +436,7 @@ class MainWindow(QMainWindow):
         move_vector = direction_map[direction]
         self.last_moving = move_vector
         self.current_position += move_vector
-        self.update_position_status(self.current_position[0], self.current_position[1])
+        self.update_position_status(*self.current_position)
         
         # Закрываем диалог
         self._trajectory_dialog.allow_close_flag = True
@@ -548,7 +570,6 @@ class MainWindow(QMainWindow):
         try:
             self.heater.turn_off()
             self.update_heater_status(is_on=False)
-            self.update_recording_status(is_recording=False)
         except:
             pass
         
@@ -559,6 +580,7 @@ class MainWindow(QMainWindow):
         """Инициализирует строку состояния и элементы телеметрии"""
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
+        self.status_bar.setStyleSheet("QLabel { padding: 0 5px; }")
         self.lbl_position = QLabel("Координаты: (0, 0)")
         self.lbl_heater = QLabel("Нагреватель: выкл")
         
@@ -605,9 +627,9 @@ class MainWindow(QMainWindow):
             
             # Если памяти осталось меньше 5ГБ
             if free_gb < 5.0:
-                self.lbl_disk.setStyleSheet("color: #e74c3c; font-weight: bold; padding: 0 5px;")
+                self.lbl_disk.setStyleSheet("color: #e74c3c; font-weight: bold;")
             else:
-                self.lbl_disk.setStyleSheet("color: palette(window-text); padding: 0 5px;")
+                self.lbl_disk.setStyleSheet("color: palette(window-text);")
                 
         except Exception as e:
             self.lbl_disk.setText("Свободно: ошибка")
@@ -618,20 +640,20 @@ class MainWindow(QMainWindow):
     def update_heater_status(self, is_on: bool, has_error: bool = False):
         if has_error:
             self.lbl_heater.setText("Нагреватель: ошибка")
-            self.lbl_heater.setStyleSheet("color: red; padding: 0 5px;")
+            self.lbl_heater.setStyleSheet("color: #e74c3c;")
         else:
             state = "вкл" if is_on else "выкл"
             color = "green" if is_on else "palette(window-text)"
             self.lbl_heater.setText(f"Нагреватель: {state}")
-            self.lbl_heater.setStyleSheet(f"color: {color}; padding: 0 5px;")
+            self.lbl_heater.setStyleSheet(f"color: {color};")
 
     def update_recording_status(self, is_recording: bool):
         if is_recording:
             self.lbl_recording.setText("Запись: идет")
-            self.lbl_recording.setStyleSheet("color: red; font-weight: bold; padding: 0 5px;")
+            self.lbl_recording.setStyleSheet("color: #e74c3c; font-weight: bold;")
         else:
             self.lbl_recording.setText("Запись: выкл")
-            self.lbl_recording.setStyleSheet("color: palette(window-text); padding: 0 5px;")
+            self.lbl_recording.setStyleSheet("color: palette(window-text);")
 
     def update_camera_telemetry(self, cam_type: str, status: str, fps: int = 0):
         """
@@ -642,14 +664,14 @@ class MainWindow(QMainWindow):
             self.lbl_cam_vis.setText(f"Камера: {status}")
             self.lbl_fps_vis.setText(f"FPS: {fps}")
             if status != "ОК":
-                self.lbl_cam_vis.setStyleSheet("color: red; padding: 0 5px;")
+                self.lbl_cam_vis.setStyleSheet("color: #e74c3c;")
             else:
-                self.lbl_cam_vis.setStyleSheet("color: green; padding: 0 5px;")
-                
+                self.lbl_cam_vis.setStyleSheet("color: palette(window-text);") 
+
         elif cam_type == 'thermal':
             self.lbl_cam_therm.setText(f"Тепл.: {status}")
             self.lbl_fps_therm.setText(f"FPS: {fps}")
             if status != "ОК":
-                self.lbl_cam_therm.setStyleSheet("color: red; padding: 0 5px;")
+                self.lbl_cam_therm.setStyleSheet("color: #e74c3c;")
             else:
-                self.lbl_cam_therm.setStyleSheet("color: green; padding: 0 5px;")
+                self.lbl_cam_therm.setStyleSheet("color: palette(window-text);")
