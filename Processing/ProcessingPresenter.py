@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, QSize, QObject, Signal, Slot, QTimer, QEvent
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QToolButton, QFileDialog, QMessageBox, QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QApplication, QToolTip,
+    QLabel, QToolButton, QFileDialog, QMessageBox, QDialog, QVBoxLayout, QComboBox, QDialogButtonBox, QApplication, QToolTip, QPushButton
 )
 from PySide6.QtGui import QFont, QImage, QPixmap
 # Tseries, Timage - model
@@ -12,6 +12,7 @@ from scipy.io import savemat
 from pickle import dump as pickle_dump, load as pickle_load
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import sys
 
 
 from Processing import ParameterDialog, ProcessingWindow, PipelineManager
@@ -66,16 +67,18 @@ class ProcessingPresenter(QObject):
     palette = WB_PALETTE
     default_fps = 30
     fps = default_fps
+    bits_per_pixel = 16
 
     #figsize_scale = 4
     initial_data = None
-    _data = Tseries(array=np.zeros((1, 1, 1), dtype=np.float32))
+    _data = Tseries(array=np.zeros((1, 1, 1), dtype=f'float{bits_per_pixel}'))
     _path = ''
     colorbar = False
 
     _is_playing = False
     _current_frame_index = 0
     _current_frame = None
+    plots = [] # self.plots[i] = (ix, iy)
 
     def __init__(self, view: ProcessingWindow):
         """
@@ -198,8 +201,7 @@ class ProcessingPresenter(QObject):
     @Slot(int)
     def on_slider_value_changed(self, value: int):
         """Обработка изменения ползунка времени."""
-        if not self._is_playing:
-            self.set_current_frame(value)
+        self.set_current_frame(value)
 
     @Slot()
     def on_apply_pipeline(self):
@@ -237,8 +239,10 @@ class ProcessingPresenter(QObject):
                     self.fps = frames['frequency']
                 for possible_key in frames.keys():
                     if isinstance(frames[possible_key], np.ndarray):
-                        frames = frames[possible_key].astype('float64')
+                        frames = frames[possible_key].astype(f'float{self.bits_per_pixel}')
                         break
+            else:
+                frames = frames.astype(f'float{self.bits_per_pixel}')
             
             if isinstance(frames, dict):
                 raise ValueError('This dict has no array to be series')
@@ -258,6 +262,8 @@ class ProcessingPresenter(QObject):
             self._pipeline.not_applied()
 
             self._update_ui_from_model()
+
+            self.plots.clear()
 
             self.status_message.emit('Готов к обработке')
 
@@ -294,7 +300,7 @@ class ProcessingPresenter(QObject):
         """Показать/скрыть значение термограммы при наведении мыши."""
         if checked:
             if self._path == '':
-                self.initial_data = np.zeros((1, 1, 1), dtype=np.float32)
+                self.initial_data = np.zeros((1, 1, 1), dtype=f'float{self.bits_per_pixel}')
                 return
             try:
                 self.status_message.emit('Загрузка серии...')
@@ -385,7 +391,7 @@ class ProcessingPresenter(QObject):
         try:
             self.status_message.emit(f"Экспорт данных в {file_path}")
             QApplication.processEvents()
-            np.save(file_path, self._data.array)
+            np.save(file_path, self._data.__Tseries__arr)
             self.status_message.emit(f"Данные экспортированы в {file_path}")
         except Exception as e:
             QMessageBox.critical(self._view, "Ошибка экспорта", f"Не удалось экспортировать данные:\n{str(e)}")
@@ -406,7 +412,7 @@ class ProcessingPresenter(QObject):
         try:
             self.status_message.emit(f"Экспорт данных в {file_path}")
             QApplication.processEvents()
-            savemat(file_path, {'data': self._data.array})
+            savemat(file_path, {'data': self._data._Tseries__arr})
             self.status_message.emit(f"Данные экспортированы в {file_path}")
         except Exception as e:
             QMessageBox.critical(self._view, "Ошибка экспорта", f"Не удалось экспортировать данные:\n{str(e)}")
@@ -620,6 +626,7 @@ class ProcessingPresenter(QObject):
             if self.initial_data is not None:
                 self._data = Tseries(array=self.initial_data)
             else:
+                self._data = None # чтобы не было момента, когда в оперативке лежат и self._data и frames
                 frames = loadfile(self._path)
                 if isinstance(frames, dict):
                     for possible_key in frames.keys():
@@ -659,20 +666,20 @@ class ProcessingPresenter(QObject):
         self.update_colorbar()
     
     def update_colorbar(self):
-        colorbar = np.repeat(self.palette[255::-1].reshape(-1, 1, 3), 32, axis=1)
+        colorbar = np.repeat(self.palette[255::-1].reshape(-1, 1, 3), 32//32, axis=1)
 
         h, w, _ = colorbar.shape
         qimage = QImage(colorbar.astype('uint8'), w, h, w*3, QImage.Format.Format_RGB888)
         
         pixmap = QPixmap.fromImage(qimage)
         height = self._view._monitor_label.pixmap().size().height()
-        width = w * height // h
+        width = w * height // h * 32
         pixmap = pixmap.scaled(QSize(width, height), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.SmoothTransformation)
         
         self._view._colorbar_label.setPixmap(pixmap)
 
-        max_value = str(  self._current_frame.array.max()  ) + '0'*3
-        min_value = str(  self._current_frame.array.min()  ) + '0'*3
+        max_value = str(  self._current_frame._Timage__arr.max()  ) + '0'*3
+        min_value = str(  self._current_frame._Timage__arr.min()  ) + '0'*3
 
         self._view._colorbar_max_label.setText(max_value[:5])
         self._view._colorbar_min_label.setText(min_value[:5])
@@ -735,25 +742,29 @@ class ProcessingPresenter(QObject):
         else:
             return
     
-    def _show_plot(self, ix, iy):
+    def _show_plot(self, ix: int, iy: int):
+        self.plots.append((ix, iy))
+
         dialog = QDialog(self._view)
-        dialog.setWindowTitle(f"График значений в точке ({ix}, {iy})")
-        dialog.resize(800, 500)
+        dialog.setWindowTitle(f"График значений")
+        dialog.resize(1200, 750)
 
         layout = QVBoxLayout(dialog)
 
         # Создание фигуры и canvas
-        fig = Figure(figsize=(6, 4))
+        fig = Figure(figsize=(3, 2))
         canvas = FigureCanvas(fig)
         layout.addWidget(canvas)
 
         # Построение графика
         ax = fig.add_subplot(111)
-        ax.plot(self._data.array[iy, ix], color='red', linewidth=1.5)
+        for x, y in self.plots:
+            ax.plot(self._data._Tseries__arr[y, x], label=f'x={x}, y={y}') # _Tseries__arr нужен чтобы оптимизировать память, то есть не использовать скопированный self._data.array
         ax.set_xlabel("Кадр", fontsize=10)
         ax.set_ylabel("Значение", fontsize=10)
-        ax.set_title(f"Изменение значений в пикселе ({ix}, {iy})", fontsize=12)
+        ax.set_title(f"График значений", fontsize=12)
         ax.grid(True, linestyle='--', alpha=0.6)
+        ax.legend()
 
         # Автоматическое масштабирование осей
         ax.relim()
@@ -761,9 +772,23 @@ class ProcessingPresenter(QObject):
 
         canvas.draw()
 
-        # Кнопка закрытия
-        button_box = QDialogButtonBox(QDialogButtonBox.Close)
-        button_box.rejected.connect(dialog.reject)
-        layout.addWidget(button_box)
+        # Кнопки
+        buttons_layout = QHBoxLayout()
+
+        close_button = QPushButton('Закрыть')
+        close_button.setFixedWidth(125)
+        close_button.setFixedHeight(50)
+        close_button.clicked.connect(dialog.reject)
+
+        button_clear_plots = QPushButton('Очистить график')
+        button_clear_plots.setFixedWidth(125)
+        button_clear_plots.setFixedHeight(50)
+        button_clear_plots.clicked.connect(Slot()(lambda : (self.plots.clear(), dialog.reject()))) #TODO переделать
+
+        buttons_layout.addWidget(button_clear_plots)
+        buttons_layout.addStretch()
+        buttons_layout.addWidget(close_button)
+
+        layout.addLayout(buttons_layout)
 
         dialog.exec()

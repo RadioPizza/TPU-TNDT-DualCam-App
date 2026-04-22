@@ -207,10 +207,10 @@ class ProcessingWindow(QMainWindow):
 
         self.fps_label = QLabel("Кадров в секунду:")
         self.fps_label.setFont(fonts['small'])
-        self.fps_spinbox = QSpinBox()
-        self.fps_spinbox.setRange(1, 120)
-        self.fps_spinbox.setSingleStep(1)
-        self.fps_spinbox.setValue(10) # начальное значение, синхронизируется с presenter
+        self.fps_spinbox = QDoubleSpinBox()
+        self.fps_spinbox.setRange(1.0, 120.0)
+        self.fps_spinbox.setSingleStep(1.0)
+        self.fps_spinbox.setValue(10.0) # начальное значение, синхронизируется с presenter
         self.fps_spinbox.setFixedWidth(80)
         self.fps_spinbox.setFont(fonts['small'])
         toolbar_layout.addStretch()
