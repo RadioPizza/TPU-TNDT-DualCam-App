@@ -10,26 +10,65 @@ from PySide6.QtWidgets import (
 )
 from ui_fonts import TAB_FONT, FORM_LABEL_FONT
 from settings import Settings
+from ui_constants import (
+    CONTROL_HEIGHT,
+    CONTROL_WIDTH,
+    BUTTON_SIZE,
+    LAYOUT_SPACING,
+    WINDOW_MAIN_MIN,
+    ROUND_INDICATOR_SIZE,
+    CONTENT_WIDTH_MIN, 
+    CONTENT_WIDTH_MAX,
+    INDICATOR_RADIUS
 
+    )
 
 class SettingsWindow(QMainWindow):
     """Окно настроек приложения"""
     WIDGET_SPACING = 20
-    FIELD_WIDTH = 250
-    FIELD_HEIGHT = 32
-    BUTTON_HEIGHT = FIELD_HEIGHT + 3
-    BUTTON_SIZE = QSize(120, BUTTON_HEIGHT)
-    WINDOW_MIN_SIZE = (850, 425)
-    CONTENT_MIN_WIDTH = 800
-    CONTENT_MAX_WIDTH = 1200
 
-    INDICATOR_BORDER_RADIUS = 6
-    INDICATOR_BORDER_DIAMETER = INDICATOR_BORDER_RADIUS * 2
-    INDICATOR_SIZE = QSize(INDICATOR_BORDER_DIAMETER, INDICATOR_BORDER_DIAMETER)
+    GROUP_BOX_STYLE = """
+        QGroupBox {
+            font-weight: 600;
+            margin-top: 9px;
+            padding: 16px;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 20px;
+            padding: 0 5px;
+        }
+    """
 
-    HEATER_BUTTON_SIZE = QSize(FIELD_WIDTH, 55)
 
-    LAYOUT_SPACING = 12
+
+    TAB_BAR_STYLE = """
+            QTabBar::tab {
+                padding: 16px 46px;
+                margin-right: 4px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                min-width: 100px;
+                border-bottom: 1px solid palette(button);
+            }
+            QTabBar::tab:selected {
+                border-bottom: 3px solid palette(highlight);
+                background-color: palette(base);
+            }
+            QTabBar::tab:hover {
+                background-color: palette(button);
+            }
+            """
+
+
+    CHECKBOX_STYLE = """
+            QCheckBox {
+                spacing: 10px;
+            }
+        """
+
+    HEATER_BUTTON_SIZE = QSize(CONTROL_WIDTH, 55)
+
     LAYOUT_SPACING_SMALL = 10
     LAYOUT_SPACING_LARGE = 15
     CONTENT_WRAPPER_MARGINS = (0, 5, 0, 25)
@@ -55,37 +94,6 @@ class SettingsWindow(QMainWindow):
         INDICATOR_HEATING: "#e74c3c",
     }
 
-    GROUP_BOX_STYLE = """
-        QGroupBox {
-            font-weight: 600;
-            margin-top: 9px;
-            padding: 16px;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            left: 20px;
-            padding: 0 5px;
-        }
-    """
-
-    TAB_BAR_STYLE = """
-        QTabBar::tab {
-            padding: 16px 46px;
-            margin-right: 4px;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-            min-width: 100px;
-            border-bottom: 1px solid palette(button);
-        }
-        QTabBar::tab:selected {
-            border-bottom: 3px solid palette(highlight);
-            background-color: palette(base);
-        }
-        QTabBar::tab:hover {
-            background-color: palette(button);
-        }
-    """
-
     def __init__(self, settings: Settings, parent=None):
         super().__init__(parent)
         self._settings = settings
@@ -98,7 +106,8 @@ class SettingsWindow(QMainWindow):
 
     def _setup_window_properties(self):
         self.setWindowTitle("Настройки")
-        self.setMinimumSize(*self.WINDOW_MIN_SIZE)
+        self.setMinimumSize(WINDOW_MAIN_MIN)
+        self.setStyleSheet(self.CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
 
     def _create_widgets(self):
         self._central_widget = QWidget()
@@ -116,14 +125,14 @@ class SettingsWindow(QMainWindow):
         self._create_interface_tab(FORM_LABEL_FONT)
 
         self._save_button = QPushButton("Применить")
-        self._save_button.setMinimumSize(self.BUTTON_SIZE)
+        self._save_button.setMinimumSize(BUTTON_SIZE)
         self._save_button.setDefault(True)
 
         self._cancel_button = QPushButton("Отмена")
-        self._cancel_button.setMinimumSize(self.BUTTON_SIZE)
+        self._cancel_button.setMinimumSize(BUTTON_SIZE)
 
         self._reset_button = QPushButton("Сбросить")
-        self._reset_button.setMinimumSize(self.BUTTON_SIZE)
+        self._reset_button.setMinimumSize(BUTTON_SIZE)
         self._reset_button.setEnabled(False)
 
     def _setup_layout(self):
@@ -147,8 +156,8 @@ class SettingsWindow(QMainWindow):
         footer_layout.addWidget(self._save_button)
         content_wrapper_layout.addLayout(footer_layout)
 
-        content_wrapper.setMinimumWidth(self.CONTENT_MIN_WIDTH)
-        content_wrapper.setMaximumWidth(self.CONTENT_MAX_WIDTH)
+        content_wrapper.setMinimumWidth(CONTENT_WIDTH_MIN)
+        content_wrapper.setMaximumWidth(CONTENT_WIDTH_MAX)
 
         center_layout.addWidget(content_wrapper)
         center_layout.addStretch(1)
@@ -165,7 +174,7 @@ class SettingsWindow(QMainWindow):
         return f"""
             QFrame {{
                 background-color: {color};
-                border-radius: {self.INDICATOR_BORDER_RADIUS}px;
+                border-radius: {INDICATOR_RADIUS}px;
             }}
         """
 
@@ -175,14 +184,14 @@ class SettingsWindow(QMainWindow):
 
     def _create_indicator(self) -> QFrame:
         indicator = QFrame()
-        indicator.setFixedSize(self.INDICATOR_SIZE)
+        indicator.setFixedSize(ROUND_INDICATOR_SIZE)
         indicator.setStyleSheet(self._get_indicator_style(self.INDICATOR_DISCONNECTED))
         return indicator
 
     def _create_spinbox_row(self, label_text, default_value, min_val, max_val, font):
         """Создаёт горизонтальный layout с меткой и спинбоксом, возвращает layout и спинбокс."""
         layout = QHBoxLayout()
-        layout.setSpacing(self.LAYOUT_SPACING)
+        layout.setSpacing(LAYOUT_SPACING)
 
         label = QLabel(label_text)
         label.setFont(font)
@@ -190,8 +199,8 @@ class SettingsWindow(QMainWindow):
         layout.addStretch()
 
         spinbox = QSpinBox()
-        spinbox.setFixedHeight(self.FIELD_HEIGHT)
-        spinbox.setFixedWidth(self.FIELD_WIDTH)
+        spinbox.setFixedHeight(CONTROL_HEIGHT)
+        spinbox.setFixedWidth(CONTROL_WIDTH)
         spinbox.setRange(min_val, max_val)
         spinbox.setValue(default_value)
         spinbox.setStyleSheet(f"QSpinBox {{ padding-left: {self.SPINBOX_PADDING}px; }}")
@@ -202,7 +211,7 @@ class SettingsWindow(QMainWindow):
     def _create_combo_row(self, label_text, items, default_text, font):
         """Создаёт горизонтальный layout с меткой и комбобоксом, возвращает layout и комбобокс."""
         layout = QHBoxLayout()
-        layout.setSpacing(self.LAYOUT_SPACING)
+        layout.setSpacing(LAYOUT_SPACING)
 
         label = QLabel(label_text)
         label.setFont(font)
@@ -210,8 +219,8 @@ class SettingsWindow(QMainWindow):
         layout.addStretch()
 
         combo = QComboBox()
-        combo.setFixedHeight(self.FIELD_HEIGHT)
-        combo.setFixedWidth(self.FIELD_WIDTH)
+        combo.setFixedHeight(CONTROL_HEIGHT)
+        combo.setFixedWidth(CONTROL_WIDTH)
         combo.setStyleSheet(f"QComboBox {{ padding-left: {self.COMBOBOX_PADDING}px; }}")
         combo.addItems(items)
 
@@ -228,7 +237,7 @@ class SettingsWindow(QMainWindow):
         Возвращает layout и label значения для последующего обновления.
         """
         layout = QHBoxLayout()
-        layout.setSpacing(self.LAYOUT_SPACING)
+        layout.setSpacing(LAYOUT_SPACING)
 
         label = QLabel(label_text)
         label.setFont(font)
@@ -238,7 +247,7 @@ class SettingsWindow(QMainWindow):
         value_label = QLabel(value_text)
         value_label.setFont(font)
         value_label.setStyleSheet(f"QLabel {{ padding-left: {self.INFO_LABEL_PADDING}px; }}")
-        value_label.setFixedWidth(self.FIELD_WIDTH)
+        value_label.setFixedWidth(CONTROL_WIDTH)
         layout.addWidget(value_label)
         
         return layout, value_label
@@ -440,8 +449,8 @@ class SettingsWindow(QMainWindow):
         thermal_btn_layout.addStretch()
 
         calib_button = QPushButton("Ручная калибровка")
-        calib_button.setFixedWidth(self.FIELD_WIDTH)
-        calib_button.setFixedHeight(self.FIELD_HEIGHT)
+        calib_button.setFixedWidth(CONTROL_WIDTH)
+        calib_button.setFixedHeight(CONTROL_HEIGHT)
 
         thermal_btn_layout.addWidget(calib_button)
         thermal_layout.addLayout(thermal_btn_layout)
@@ -513,8 +522,8 @@ class SettingsWindow(QMainWindow):
         status_row_layout.addStretch()
 
         self._heater_connect_button = QPushButton("Подключить")
-        self._heater_connect_button.setFixedHeight(self.FIELD_HEIGHT)
-        self._heater_connect_button.setFixedWidth(self.FIELD_WIDTH)
+        self._heater_connect_button.setFixedHeight(CONTROL_HEIGHT)
+        self._heater_connect_button.setFixedWidth(CONTROL_WIDTH)
         self._heater_connect_button.setEnabled(False)
         status_row_layout.addWidget(self._heater_connect_button)
 

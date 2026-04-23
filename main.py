@@ -10,6 +10,8 @@ from heater import Heater
 from MainWindow import MainWindow
 from settings import PreviewSettings, Settings, UserData
 from StartDialog import StartDialog
+import diagnostics
+from heater import MockHeater, Heater
 
 # Настройка базового конфигуратора логирования
 logging.basicConfig(
@@ -29,50 +31,21 @@ settings = Settings.load_from_file()
 user_data = UserData.get_instance()
 preview_settings = PreviewSettings.get_instance()
 
+
 # Инициализация нагревателя
 if settings.mock_heater:
-    class MockHeater:
-        def turn_on(self):
-            logger.info("СИМУЛЯЦИЯ: Нагреватель включен")
-        
-        def turn_off(self):
-            logger.info("СИМУЛЯЦИЯ: Нагреватель выключен")
-    
-    heater = MockHeater()
+    heater = MockHeater(settings.heater_COM_port_number, settings.heater_baud_rate)
 else:
     heater = Heater(settings.heater_COM_port_number, settings.heater_baud_rate)
 
-if __name__ == '__main__':
-    # Диагностика PySpin и камер FLIR
+
+if __name__ == "__main__":
     try:
-        import PySpin
-        logger.info("PySpin успешно импортирован")
-        
-        # Быстрая проверка камер без длительного удержания ресурсов
-        system = PySpin.System.GetInstance()
-        cam_list = system.GetCameras()
-        num_cameras = cam_list.GetSize()
-        logger.info(f"Количество обнаруженных камер FLIR: {num_cameras}")
-        
-        if num_cameras > 0:
-            # Получаем информацию о первой камере
-            camera = cam_list.GetByIndex(0)
-            camera.Init()
-            
-            try:
-                nodemap = camera.GetNodeMap()
-                node_model = PySpin.CStringPtr(nodemap.GetNode("DeviceModelName"))
-                if PySpin.IsAvailable(node_model):
-                    logger.info(f"Модель камеры: {node_model.GetValue()}")
-            finally:
-                camera.DeInit()
-                del camera
-        
-        cam_list.Clear()
-        system.ReleaseInstance()
-        
+        camera_count = diagnostics.run_flir_diagnostics()
+        if camera_count == 0:
+            logger.warning("Внимание: Активных камер FLIR нет.")
     except Exception as e:
-        logger.error(f"Диагностика PySpin не удалась: {e}")
+        logger.error(f"Ошибка при вызове диагностики: {e}")
     
     # Инициализация приложения Qt
     app = QApplication(sys.argv)
