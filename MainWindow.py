@@ -3,12 +3,13 @@
 """
 import logging
 import os
+import shutil
 import numpy as np
 from PySide6.QtCore import QTimer, QPropertyAnimation, QEasingCurve, Qt, QSize
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QProgressBar, QSizePolicy,
-    QGraphicsView, QMessageBox, QDialog
+    QGraphicsView, QMessageBox, QDialog, QStatusBar
 )
 from ui_fonts import TITLE_FONT, SUBTITLE_FONT
 from cameras import CameraFactory, CameraManager
@@ -18,17 +19,17 @@ from RetestDialog import RetestDialog
 from settings import Settings, UserData
 from SettingsWindow import SettingsWindow
 from TrajectoryDialog import TrajectoryDialog
-
+from ui_constants import BUTTON_SIZE, WINDOW_MARGINS, WINDOW_MAIN_MIN, STATUS_BAR_LABEL_SIZE
 logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
-    BUTTON_SIZE = QSize(120, 40)
-    
+
+
     VIDEO_STYLE = """
         QGraphicsView {
-            background-color: #333333;
-            border: 2px solid #3c3c3c;
+            background-color: palette(base);
+            border: 2px solid palette(dark);
             border-radius: 8px;
         }
     """
@@ -51,6 +52,8 @@ class MainWindow(QMainWindow):
         self._setup_window_properties()
         self._create_widgets()
         self._setup_layout()
+        self._create_status_bar()
+        self.update_position_status(*self.current_position)
         self._connect_signals()
         
         # Инициализация
@@ -60,7 +63,7 @@ class MainWindow(QMainWindow):
 
     def _setup_window_properties(self):
         self.setWindowTitle("TPU-TNDT-DualCam-App")
-        self.setMinimumSize(1280, 720)
+        self.setMinimumSize(WINDOW_MAIN_MIN)
         self.showMaximized()
 
     def _create_widgets(self):
@@ -68,13 +71,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._central_widget)
         
         self._main_layout = QVBoxLayout(self._central_widget)
-        self._main_layout.setContentsMargins(30, 60, 30, 60)
+        self._main_layout.setContentsMargins(*WINDOW_MARGINS)
         
         self._visible_label = QLabel("Камера видимого спектра")
         self._visible_label.setFont(TITLE_FONT)
         
         self._visible_video = QGraphicsView()
-        self._visible_video.setMinimumSize(400, 200)
+        self._visible_video.setMinimumSize(QSize(400, 300))
         self._visible_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._visible_video.setStyleSheet(self.VIDEO_STYLE)
         
@@ -82,7 +85,7 @@ class MainWindow(QMainWindow):
         self._thermal_label.setFont(TITLE_FONT)
         
         self._thermal_video = QGraphicsView()
-        self._thermal_video.setMinimumSize(400, 200)
+        self._thermal_video.setMinimumSize(QSize(400, 300))
         self._thermal_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._thermal_video.setStyleSheet(self.VIDEO_STYLE)
         
@@ -97,15 +100,15 @@ class MainWindow(QMainWindow):
         self._progress_bar.setMinimumHeight(20)
         
         self._play_button = QPushButton("Старт")
-        self._play_button.setMinimumSize(self.BUTTON_SIZE)
+        self._play_button.setMinimumSize(BUTTON_SIZE)
         self._play_button.setDefault(True)
         
         self._stop_button = QPushButton("Стоп")
-        self._stop_button.setMinimumSize(self.BUTTON_SIZE)
+        self._stop_button.setMinimumSize(BUTTON_SIZE)
         self._stop_button.setEnabled(False)
         
         self._settings_button = QPushButton("Настройки")
-        self._settings_button.setMinimumSize(self.BUTTON_SIZE)
+        self._settings_button.setMinimumSize(BUTTON_SIZE)
 
     def _setup_layout(self):
         visible_layout = QVBoxLayout()
@@ -211,18 +214,31 @@ class MainWindow(QMainWindow):
         # Начинаем запись видео на всех камерах
         try:
             self._camera_manager.start_recording_all(base_path)
+            self.update_recording_status(is_recording=True)
         except Exception as e:
-            logger.error(f"Не удалось начать запись: {e}")
+            logger.error(f"Не удалось начать запись видео: {e}")
             QMessageBox.critical(
                 self, 
-                "Ошибка записи", 
-                f"Не удалось начать запись: {e}"
+                "Ошибка камер", 
+                f"Не удалось запустить запись: {e}"
             )
             self.stop_testing()
             return
         
         # Включаем нагрев
-        self.heater.turn_on()
+        try:
+            self.heater.turn_on()
+            self.update_heater_status(is_on=True)
+        except Exception as e:
+            logger.error(f"Не удалось включить нагреватель: {e}")
+            self.update_heater_status(is_on=False, has_error=True)
+            QMessageBox.critical(
+                self, 
+                "Нагреватель: ошибка", 
+                f"Не удалось запустить нагреватель: {e}"
+            )
+            self.stop_testing()
+            return
         
         # Обновляем текст с оставшимся временем
         self._process_status_label.setText(
@@ -249,7 +265,12 @@ class MainWindow(QMainWindow):
     def start_cooling(self):
         """Переходит к процессу охлаждения"""
         # Выключаем нагреватель
-        self.heater.turn_off()
+        try:
+            self.heater.turn_off()
+            self.update_heater_status(is_on=False)
+        except Exception as e:
+            logger.error(f"Ошибка выключения нагревателя: {e}")
+            self.update_heater_status(is_on=True, has_error=True)
         
         # Обновляем текст процесса
         cooling_duration = (
@@ -271,6 +292,7 @@ class MainWindow(QMainWindow):
         
         # Останавливаем запись на всех камерах
         self._camera_manager.stop_recording_all()
+        self.update_recording_status(is_recording=False)
         
         # Деактивируем кнопку Stop после успешного завершения
         self._stop_button.setEnabled(False)
@@ -297,10 +319,16 @@ class MainWindow(QMainWindow):
         self._cooling_timer.stop()
         
         # Выключаем нагреватель
-        self.heater.turn_off()
+        try:
+            self.heater.turn_off()
+            self.update_heater_status(is_on=False)
+        except Exception as e:
+            logger.error(f"Ошибка выключения нагревателя при прерывании: {e}")
+            self.update_heater_status(is_on=False, has_error=True)
         
         # Останавливаем запись на всех камерах
         self._camera_manager.stop_recording_all()
+        self.update_recording_status(is_recording=False)
         
         # Останавливаем анимацию прогресс-бара
         self._progress_bar_animation.stop()
@@ -400,6 +428,7 @@ class MainWindow(QMainWindow):
         move_vector = direction_map[direction]
         self.last_moving = move_vector
         self.current_position += move_vector
+        self.update_position_status(*self.current_position)
         
         # Закрываем диалог
         self._trajectory_dialog.allow_close_flag = True
@@ -532,8 +561,109 @@ class MainWindow(QMainWindow):
         # Выключаем нагреватель на всякий случай
         try:
             self.heater.turn_off()
+            self.update_heater_status(is_on=False)
         except:
             pass
         
         # Обновляем текст статуса
         self._process_status_label.setText("Готов к началу")
+
+    def _create_status_bar(self):
+        """Инициализирует строку состояния и элементы телеметрии"""
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.status_bar.setStyleSheet("QLabel { padding: 0 5px; }")
+        self.lbl_position = QLabel("Координаты: (0, 0)")
+        self.lbl_heater = QLabel("Нагреватель: выкл")
+        
+        self.lbl_cam_vis = QLabel("Камера: ожидание")
+        self.lbl_fps_vis = QLabel("FPS: 0")
+        
+        self.lbl_cam_therm = QLabel("Тепл.: ожидание")
+        self.lbl_fps_therm = QLabel("FPS: 0")
+        
+        self.lbl_recording = QLabel(" Запись: выкл")
+        self.lbl_disk = QLabel("Диск: вычисление...")
+
+        for label in [self.lbl_position, self.lbl_heater, self.lbl_cam_vis, self.lbl_fps_vis, self.lbl_cam_therm, self.lbl_fps_therm, self.lbl_recording]:
+            label.setFixedSize(STATUS_BAR_LABEL_SIZE) # Для всех одинаковый размер
+
+
+        self.status_bar.addWidget(self.lbl_position)
+        self.status_bar.addWidget(self.lbl_heater)
+        self.status_bar.addWidget(self.lbl_cam_vis)
+        self.status_bar.addWidget(self.lbl_fps_vis)
+        self.status_bar.addWidget(self.lbl_cam_therm)
+        self.status_bar.addWidget(self.lbl_fps_therm)
+
+        self.status_bar.addPermanentWidget(self.lbl_recording)
+        self.status_bar.addPermanentWidget(self.lbl_disk)
+
+        self.telemetry_timer = QTimer(self)
+        self.telemetry_timer.timeout.connect(self._update_disk_space)
+        self.telemetry_timer.start(500)
+        self._update_disk_space()
+
+
+    def _update_disk_space(self):
+        """Вычисляет оставшееся место на диске по пути сохранения."""
+        # Пытаемся получить путь из настроек пользователя, иначе берем корень
+        try:
+            user_data = UserData.get_instance()
+            path = user_data.save_path if user_data.save_path else "/"
+            
+            total, used, free = shutil.disk_usage(path)
+            free_gb = free / (1024 ** 3)
+            
+            self.lbl_disk.setText(f"Свободно: {free_gb:.1f} ГБ")
+            
+            # Если памяти осталось меньше 5ГБ
+            if free_gb < 5.0:
+                self.lbl_disk.setStyleSheet("color: #e74c3c; font-weight: bold;")
+            else:
+                self.lbl_disk.setStyleSheet("color: palette(window-text);")
+                
+        except Exception as e:
+            self.lbl_disk.setText("Свободно: ошибка")
+
+    def update_position_status(self, x: int, y: int):
+        self.lbl_position.setText(f"Зона: ({x}, {y})")
+
+    def update_heater_status(self, is_on: bool, has_error: bool = False):
+        if has_error:
+            self.lbl_heater.setText("Нагреватель: ошибка")
+            self.lbl_heater.setStyleSheet("color: #e74c3c;")
+        else:
+            state = "вкл" if is_on else "выкл"
+            color = "green" if is_on else "palette(window-text)"
+            self.lbl_heater.setText(f"Нагреватель: {state}")
+            self.lbl_heater.setStyleSheet(f"color: {color};")
+
+    def update_recording_status(self, is_recording: bool):
+        if is_recording:
+            self.lbl_recording.setText("Запись: идет")
+            self.lbl_recording.setStyleSheet("color: #e74c3c; font-weight: bold;")
+        else:
+            self.lbl_recording.setText("Запись: выкл")
+            self.lbl_recording.setStyleSheet("color: palette(window-text);")
+
+    def update_camera_telemetry(self, cam_type: str, status: str, fps: int = 0):
+        """
+        cam_type: 'visible' или 'thermal'
+        status: 'ОК', 'Ошибка', 'Ожидание'
+        """
+        if cam_type == 'visible':
+            self.lbl_cam_vis.setText(f"Камера: {status}")
+            self.lbl_fps_vis.setText(f"FPS: {fps}")
+            if status != "ОК":
+                self.lbl_cam_vis.setStyleSheet("color: #e74c3c;")
+            else:
+                self.lbl_cam_vis.setStyleSheet("color: palette(window-text);") 
+
+        elif cam_type == 'thermal':
+            self.lbl_cam_therm.setText(f"Тепл.: {status}")
+            self.lbl_fps_therm.setText(f"FPS: {fps}")
+            if status != "ОК":
+                self.lbl_cam_therm.setStyleSheet("color: #e74c3c;")
+            else:
+                self.lbl_cam_therm.setStyleSheet("color: palette(window-text);")

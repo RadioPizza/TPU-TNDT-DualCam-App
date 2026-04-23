@@ -29,3 +29,21 @@ class Heater(SerialCommunicator):
             logging.info("Нагреватель выключен")
         else:
             logging.error("Не удалось выключить нагреватель")
+
+class MockHeater:
+    
+    def __init__(self, com_port_number, baud_rate):
+        self.com_port_number = com_port_number
+        self.baud_rate = baud_rate
+        self.state = False
+        logging.info(f"СИМУЛЯЦИЯ: MockHeater инициализирован (Порт: {com_port_number}, Бод: {baud_rate})")
+
+    def turn_on(self) -> None:
+        self.state = True
+        logging.info("СИМУЛЯЦИЯ: Нагреватель включен")
+        
+
+    def turn_off(self) -> None:
+        self.state = False
+        logging.info("СИМУЛЯЦИЯ: Нагреватель выключен")
+        

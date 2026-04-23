@@ -2,16 +2,15 @@
 Модуль диалогового окна для подтверждения повторного контроля последней зоны
 """
 
-from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
     QDialog, QFrame, QLabel, QDialogButtonBox,
     QVBoxLayout
 )
+from ui_constants import DIALOG_SMALL, WINDOW_MARGINS, BUTTON_SIZE
 from ui_fonts import TITLE_FONT, SUBTITLE_FONT, FORM_LABEL_FONT
 
 
 class RetestDialog(QDialog):
-    BUTTON_SIZE = QSize(120, 45)
     
     def __init__(self, x: int, y: int, parent=None):
         super().__init__(parent)
@@ -24,7 +23,7 @@ class RetestDialog(QDialog):
     def _setup_window_properties(self):
         self.setModal(True)
         self.setWindowTitle("Повторный контроль зоны")
-        self.setFixedSize(450, 300)
+        self.setFixedSize(DIALOG_SMALL)
         
         # Центрирование окна относительно родителя
         if self.parent():
@@ -47,18 +46,18 @@ class RetestDialog(QDialog):
             QDialogButtonBox.Yes | QDialogButtonBox.No, self)
         self._button_box.button(QDialogButtonBox.Yes).setText("Да")
         self._button_box.button(QDialogButtonBox.No).setText("Нет")
-        self._button_box.button(QDialogButtonBox.Yes).setMinimumSize(self.BUTTON_SIZE)
-        self._button_box.button(QDialogButtonBox.No).setMinimumSize(self.BUTTON_SIZE)
+        self._button_box.button(QDialogButtonBox.Yes).setMinimumSize(BUTTON_SIZE)
+        self._button_box.button(QDialogButtonBox.No).setMinimumSize(BUTTON_SIZE)
         self._button_box.button(QDialogButtonBox.No).setDefault(True)
         self._button_box.accepted.connect(self.accept)
         self._button_box.rejected.connect(self.reject)
     
     def _setup_layout(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setContentsMargins(*WINDOW_MARGINS)
 
         frame_layout = QVBoxLayout(self._frame)
-        frame_layout.setContentsMargins(30, 30, 30, 30)
+        frame_layout.setContentsMargins(*WINDOW_MARGINS)
         frame_layout.setSpacing(3)
 
         frame_layout.addWidget(self._title_label)
