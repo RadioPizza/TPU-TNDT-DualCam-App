@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QScrollArea, QComboBox, QGroupBox,
     QSpinBox, QCheckBox, QMessageBox
 )
-from PySide6.QtGui import QFont
+from ui_fonts import TAB_FONT, FORM_LABEL_FONT
 from settings import Settings
 from ui_constants import (
     CONTROL_HEIGHT,
@@ -110,22 +110,19 @@ class SettingsWindow(QMainWindow):
         self.setStyleSheet(self.CHECKBOX_STYLE) #Применяет стиль ко всем чекбоксам
 
     def _create_widgets(self):
-        tab_font = QFont("Segoe UI", 11, QFont.Medium)
-        form_label_font = QFont("Segoe UI", 9, QFont.Normal)
-
         self._central_widget = QWidget()
         self.setCentralWidget(self._central_widget)
 
         self._tab_widget = QTabWidget()
         self._tab_widget.setDocumentMode(True)
         self._tab_widget.setMovable(False)
-        self._tab_widget.setFont(tab_font)
+        self._tab_widget.setFont(TAB_FONT)
         self._tab_widget.setStyleSheet(self.TAB_BAR_STYLE)
 
-        self._create_testing_tab(form_label_font)
-        self._create_cameras_tab(form_label_font)
-        self._create_heater_tab(form_label_font)
-        self._create_interface_tab(form_label_font)
+        self._create_testing_tab(FORM_LABEL_FONT)
+        self._create_cameras_tab(FORM_LABEL_FONT)
+        self._create_heater_tab(FORM_LABEL_FONT)
+        self._create_interface_tab(FORM_LABEL_FONT)
 
         self._save_button = QPushButton("Применить")
         self._save_button.setMinimumSize(BUTTON_SIZE)

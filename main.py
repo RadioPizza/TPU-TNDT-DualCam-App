@@ -6,7 +6,7 @@ import sys
 from PySide6.QtWidgets import QApplication, QDialog
 
 # Локальные модули
-from heater_interface import Heater
+from heater import Heater
 from MainWindow import MainWindow
 from settings import PreviewSettings, Settings, UserData
 from StartDialog import StartDialog
