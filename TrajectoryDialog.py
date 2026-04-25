@@ -38,7 +38,6 @@ class TrajectoryDialog(QDialog):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.allow_close_flag = False
         self._setup_window_properties()
         self._create_widgets()
         self._setup_layout()
@@ -76,7 +75,7 @@ class TrajectoryDialog(QDialog):
         self._right_button = self._create_arrow_button('right')
         
         self._action_label = QLabel("Либо выберите другое действие")
-        self._action_label.setFont(subtitle_font)
+        self._action_label.setFont(SUBTITLE_FONT)
         self._action_label.setAlignment(Qt.AlignCenter)
         
         self._preview_button = QPushButton("Предпросмотр результата")
@@ -135,53 +134,19 @@ class TrajectoryDialog(QDialog):
         main_layout.addWidget(self._frame)
     
     def _connect_signals(self):
-        self._left_button.clicked.connect(
-            lambda: self.direction_selected.emit('left')
-        )
-        self._up_button.clicked.connect(
-            lambda: self.direction_selected.emit('up')
-        )
-        self._down_button.clicked.connect(
-            lambda: self.direction_selected.emit('down')
-        )
-        self._right_button.clicked.connect(
-            lambda: self.direction_selected.emit('right')
-        )
+        self._left_button.clicked.connect(lambda: self._on_action_selected(self.direction_selected, 'left'))
+        self._up_button.clicked.connect(lambda: self._on_action_selected(self.direction_selected, 'up'))
+        self._down_button.clicked.connect(lambda: self._on_action_selected(self.direction_selected, 'down'))
+        self._right_button.clicked.connect(lambda: self._on_action_selected(self.direction_selected, 'right'))
 
-        self._preview_button.clicked.connect(self.preview_requested.emit)
-        self._repeat_button.clicked.connect(self.retest_requested.emit)
-        self._finish_button.clicked.connect(self.finish_requested.emit)
+        self._preview_button.clicked.connect(lambda: self._on_action_selected(self.preview_requested))
+        self._repeat_button.clicked.connect(lambda: self._on_action_selected(self.retest_requested))
+        self._finish_button.clicked.connect(lambda: self._on_action_selected(self.finish_requested))
     
-    def closeEvent(self, event):
-        if self.allow_close_flag:
-            event.accept()
+    def _on_action_selected(self, signal, payload=None):
+        """Вспомогательный метод для отправки сигнала и немедленного закрытия окна"""
+        if payload is not None:
+            signal.emit(payload)
         else:
-            event.ignore()
-
-
-if __name__ == "__main__":
-    """Тестирование диалогового окна"""
-    from PySide6.QtWidgets import QApplication
-    import sys
-    
-    app = QApplication(sys.argv)
-    
-    dialog = TrajectoryDialog()
-    
-    dialog.direction_selected.connect(
-        lambda direction: print(f"Выбрано направление: {direction}")
-    )
-    dialog.retest_requested.connect(
-        lambda: print("Запрошен повторный контроль")
-    )
-    dialog.preview_requested.connect(
-        lambda: print("Запрошен предпросмотр")
-    )
-    dialog.finish_requested.connect(
-        lambda: print("Запрошено завершение")
-    )
-    
-    dialog.allow_close_flag = True
-    
-    result = dialog.exec()
-    print(f"Диалог закрыт с кодом: {result}")
+            signal.emit()
+        self.accept()
