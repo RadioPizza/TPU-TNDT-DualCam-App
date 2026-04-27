@@ -5,7 +5,7 @@ import logging
 import os
 import shutil
 import numpy as np
-from PySide6.QtCore import QTimer, QPropertyAnimation, QEasingCurve, Qt, QSize
+from PySide6.QtCore import QTimer, QPropertyAnimation, QEasingCurve, Qt, QSize, QEvent
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QProgressBar, QSizePolicy,
@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 from ui_fonts import TITLE_FONT, SUBTITLE_FONT
 from cameras import CameraFactory, CameraManager
 from FinishDialog import FinishDialog
-from heater_interface import Heater
+from heater import Heater
 from RetestDialog import RetestDialog
 from settings import Settings, UserData
 from SettingsWindow import SettingsWindow
@@ -41,6 +41,7 @@ class MainWindow(QMainWindow):
         self.heater = heater
         self.settings = settings
         self.user_data = UserData.get_instance()
+
         
         # Поля состояния
         self.current_position = np.zeros(2, dtype=int)
@@ -60,6 +61,75 @@ class MainWindow(QMainWindow):
         self._initialize_cameras()
         self._initialize_timers()
         self._reset_main_window_state()
+
+        # Параметры полноэкранного режима
+        self._is_fullscreen = False
+        self._fullscreen_widget = None
+
+        # Установка фильтра
+        self._visible_video.installEventFilter(self)
+        self._thermal_video.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        """Перехватывает клики мыши по видеопотокам и переключает в полноэкранный режим"""
+        if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
+            if obj in (self._visible_video, self._thermal_video):
+                self._toggle_fullscreen(obj)
+                return True # Событие перехвачено и обработано
+        return super().eventFilter(obj, event)
+
+    def _toggle_fullscreen(self, widget):
+        """Управляет скрытием и отображением элементов интерфейса"""
+        if not self._is_fullscreen:
+            # Переход в полноэкранный режим
+            self._is_fullscreen = True
+            self._fullscreen_widget = widget
+            
+            # Скрываем текстовые метки и прогресс-бар
+            self._visible_label.hide()
+            self._thermal_label.hide()
+            self._process_status_label.hide()
+            self._progress_bar.hide()
+            
+            # Скрываем кнопки
+            self._play_button.hide()
+            self._stop_button.hide()
+            self._settings_button.hide()
+            
+            # Скрываем строку состояния
+            self.status_bar.hide()
+            
+            # Скрываем неактивный видеопоток
+            if widget == self._visible_video:
+                self._thermal_video.hide()
+            else:
+                self._visible_video.hide()
+                
+            # Разворачиваем главное окно на весь экран
+            self.showFullScreen()
+            
+        else:
+            # Возврат в стандартный режим
+            self._is_fullscreen = False
+            self._fullscreen_widget = None
+            
+            # Восстанавливаем видимость элементов
+            self._visible_label.show()
+            self._thermal_label.show()
+            self._process_status_label.show()
+            self._progress_bar.show()
+            
+            self._play_button.show()
+            self._stop_button.show()
+            self._settings_button.show()
+            
+            self.status_bar.show()
+            
+            self._visible_video.show()
+            self._thermal_video.show()
+            
+            # Возвращаем окно в максимизированный режим
+            self.showMaximized()
 
     def _setup_window_properties(self):
         self.setWindowTitle("TPU-TNDT-DualCam-App")
