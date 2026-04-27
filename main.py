@@ -6,12 +6,11 @@ import sys
 from PySide6.QtWidgets import QApplication, QDialog
 
 # Локальные модули
-from heater import Heater
 from MainWindow import MainWindow
 from settings import PreviewSettings, Settings, UserData
 from StartDialog import StartDialog
-import diagnostics
 from heater import MockHeater, Heater
+from cameras import detect_flir_cameras
 
 # Настройка базового конфигуратора логирования
 logging.basicConfig(
@@ -41,7 +40,7 @@ else:
 
 if __name__ == "__main__":
     try:
-        camera_count = diagnostics.run_flir_diagnostics()
+        camera_count = detect_flir_cameras()
         if camera_count == 0:
             logger.warning("Внимание: Активных камер FLIR нет.")
     except Exception as e:

@@ -205,11 +205,11 @@ class BaseCamera(ABC):
     
     def notify_camera_error(self, message: str):
         """Уведомляет пользователя об ошибке камеры."""
-        QMessageBox.critical(None, "Ошибка камеры", message)
+        #QMessageBox.critical(None, "Ошибка камеры", message)
     
     def notify_camera_reconnected(self, message: str):
         """Уведомляет пользователя о восстановлении камеры."""
-        QMessageBox.information(None, "Камера восстановлена", message)
+        #QMessageBox.information(None, "Камера восстановлена", message)
     
     def stop_recording_if_needed(self):
         """Останавливает запись видео, если она активна."""
@@ -790,6 +790,42 @@ class CameraManager:
 
 
 # ==================== UTILITY FUNCTIONS ====================
+def detect_flir_cameras() -> int:
+    """
+    Быстрая проверка наличия и доступности камер FLIR через PySpin.
+    Не удерживает ресурсы после выполнения. Возвращает количество обнаруженных камер.
+    Вызывается на этапе bootstrap до создания QApplication.
+    """
+    if not PYSPIN_AVAILABLE:
+        logger.warning("PySpin недоступен. Диагностика FLIR пропущена.")
+        return 0
+
+    try:
+        system = PySpin.System.GetInstance()
+        cam_list = system.GetCameras()
+        num_cameras = cam_list.GetSize()
+        logger.info(f"Количество обнаруженных камер FLIR: {num_cameras}")
+
+        if num_cameras > 0:
+            camera = cam_list.GetByIndex(0)
+            camera.Init()
+            try:
+                nodemap = camera.GetNodeMap()
+                node_model = PySpin.CStringPtr(nodemap.GetNode("DeviceModelName"))
+                if PySpin.IsAvailable(node_model):
+                    logger.info(f"Модель камеры: {node_model.GetValue()}")
+            finally:
+                camera.DeInit()
+                del camera
+
+        cam_list.Clear()
+        system.ReleaseInstance()
+        return num_cameras
+
+    except Exception as e:
+        logger.error(f"Диагностика PySpin не удалась: {e}")
+        return 0
+
 def get_available_cameras() -> List[Tuple[int, str]]:
     """
     Определяет доступные камеры и возвращает их индексы и имена.
